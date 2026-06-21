@@ -1,0 +1,8 @@
+name: Okaso
+version: ${project.version}
+main: com.zaryxstudios.okaso.bukkit.BukkitOkasoPlugin
+load: STARTUP
+authors: [ZaryxStudios]
+description: Okaso Framework — Modular Minecraft plugin development framework
+website: https://github.com/ZaryxStudios/OkasoFramework
+# Other plugins can depend on Okaso by adding 'depend: [Okaso]' to their plugin.yml

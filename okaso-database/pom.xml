@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.zaryxstudios.okaso</groupId>
+        <artifactId>okaso</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>okaso-database</artifactId>
+    <packaging>jar</packaging>
+    <name>Okaso Database</name>
+    <description>Database/storage module — depends on okaso-common + HikariCP.</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.zaryxstudios.okaso</groupId>
+            <artifactId>okaso-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+    </dependencies>
+</project>

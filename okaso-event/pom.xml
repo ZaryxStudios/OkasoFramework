@@ -1,0 +1,21 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.zaryxstudios.okaso</groupId>
+        <artifactId>okaso</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>okaso-event</artifactId>
+    <packaging>jar</packaging>
+    <name>Okaso Event</name>
+    <description>Event system module — depends only on okaso-common.</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.zaryxstudios.okaso</groupId>
+            <artifactId>okaso-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

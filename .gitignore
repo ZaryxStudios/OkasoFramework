@@ -1,0 +1,35 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+
+# Compiled
+*.class
+
+# IDE
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+bin/
+build/
+nbactions.xml
+nb-configuration.xml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.tmp
+
+# Editor swap
+*.swp
+*.swo
+*~
+
+# Misc
+*.md
