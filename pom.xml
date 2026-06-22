@@ -291,6 +291,19 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/ZaryxStudios/OkasoFramework</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/ZaryxStudios/OkasoFramework</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <modules>
         <module>okaso-common</module>
         <module>okaso-command</module>
