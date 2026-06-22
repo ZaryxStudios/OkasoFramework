@@ -25,6 +25,7 @@ import com.zaryxstudios.okaso.common.task.TaskScheduler;
 import com.zaryxstudios.okaso.common.updater.UpdateChecker;
 import com.zaryxstudios.okaso.common.webhook.WebhookClient;
 import com.zaryxstudios.okaso.common.world.WorldManager;
+import com.zaryxstudios.okaso.common.world.StructureManager;
 import com.zaryxstudios.okaso.common.module.ModuleManager;
 import com.zaryxstudios.okaso.config.OkasoConfigurationProvider;
 import com.zaryxstudios.okaso.entity.BukkitEntityService;
@@ -48,6 +49,7 @@ import com.zaryxstudios.okaso.task.BukkitTaskScheduler;
 import com.zaryxstudios.okaso.updater.OkasoUpdateChecker;
 import com.zaryxstudios.okaso.webhook.OkasoWebhookClient;
 import com.zaryxstudios.okaso.world.BukkitWorldManager;
+import com.zaryxstudios.okaso.world.structure.BukkitStructureManager;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -98,6 +100,8 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
         reg.register(EntityService.class, new BukkitEntityService());
 
         reg.register(WorldManager.class, new BukkitWorldManager());
+
+        reg.register(StructureManager.class, new BukkitStructureManager(this));
 
         reg.register(ItemBuilder.class, new BukkitItemBuilder(Material.STONE, 1));
 

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.zaryxstudios.okaso</groupId>
     <artifactId>okaso</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
     <name>Okaso</name>
     <description>Okaso — Modular Java framework for Minecraft plugin development (1.7.10 – 26.1.2)</description>
@@ -38,7 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <okaso.version>1.0.0</okaso.version>
+        <okaso.version>1.1.0</okaso.version>
         <spigot.api.version>1.18.2-R0.1-SNAPSHOT</spigot.api.version>
         <bungeecord.api.version>1.21-R0.3</bungeecord.api.version>
         <waterfall.api.version>1.18-R0.1-SNAPSHOT</waterfall.api.version>
