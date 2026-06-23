@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import lombok.Getter;
+
 public class DefaultModuleManager implements ModuleManager {
 
     private static final Logger LOG = Logger.getLogger(DefaultModuleManager.class.getName());
@@ -14,6 +16,7 @@ public class DefaultModuleManager implements ModuleManager {
     private final Map<String, Module> modules = new ConcurrentHashMap<>();
     private final Map<String, ModuleConfig> configs = new ConcurrentHashMap<>();
     private final ModuleDependencyResolver resolver = new ModuleDependencyResolver();
+    @Getter
     private final ModuleEventBus eventBus = new ModuleEventBus();
     private final List<ModuleLifecycleListener> listeners = new ArrayList<>();
 
@@ -52,10 +55,6 @@ public class DefaultModuleManager implements ModuleManager {
 
     public ModuleConfig getConfig(String name) {
         return configs.getOrDefault(name, new ModuleConfig(name));
-    }
-
-    public ModuleEventBus getEventBus() {
-        return eventBus;
     }
 
     public void addListener(ModuleLifecycleListener listener) {

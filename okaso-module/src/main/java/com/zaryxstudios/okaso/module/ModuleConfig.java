@@ -3,18 +3,17 @@ package com.zaryxstudios.okaso.module;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Getter;
+
 public class ModuleConfig {
 
+    @Getter
     private final String moduleName;
     private final Map<String, String> values;
 
     public ModuleConfig(String moduleName) {
         this.moduleName = moduleName;
         this.values = new HashMap<>();
-    }
-
-    public String getModuleName() {
-        return moduleName;
     }
 
     public void set(String key, String value) {
