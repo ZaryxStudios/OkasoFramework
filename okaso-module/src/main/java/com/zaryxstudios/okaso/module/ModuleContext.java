@@ -4,18 +4,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+
+@Getter
 public class ModuleContext {
 
     private final String name;
+    @Getter(AccessLevel.NONE)
     private final Map<String, Object> data;
 
     public ModuleContext(String name) {
         this.name = name;
         this.data = new HashMap<>();
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void set(String key, Object value) {

@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.Getter;
+
+@Getter
 public class CommandContext {
 
     private final String label;
@@ -16,10 +19,6 @@ public class CommandContext {
         this.label = label;
         this.args = args != null ? Collections.unmodifiableList(new ArrayList<>(args)) : Collections.emptyList();
     }
-
-    public CommandSender getSender() { return sender; }
-    public String getLabel() { return label; }
-    public List<String> getArgs() { return args; }
 
     public int length() { return args.size(); }
 

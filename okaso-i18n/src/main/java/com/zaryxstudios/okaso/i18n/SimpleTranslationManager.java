@@ -7,9 +7,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class SimpleTranslationManager implements TranslationManager {
 
     private final Map<Locale, Translator> translators;
+    @Getter @Setter
     private Locale defaultLocale;
 
     public SimpleTranslationManager() {
@@ -31,13 +35,4 @@ public class SimpleTranslationManager implements TranslationManager {
         translators.put(locale, translator);
     }
 
-    @Override
-    public Locale getDefaultLocale() {
-        return defaultLocale;
-    }
-
-    @Override
-    public void setDefaultLocale(Locale locale) {
-        this.defaultLocale = locale;
-    }
 }

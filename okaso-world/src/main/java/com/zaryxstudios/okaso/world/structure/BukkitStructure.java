@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
+import lombok.Getter;
+
+@Getter
 public class BukkitStructure implements Structure {
 
     private final String name;
@@ -44,26 +47,6 @@ public class BukkitStructure implements Structure {
                 }
             }
         }
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public int getWidth() {
-        return width;
-    }
-
-    @Override
-    public int getHeight() {
-        return height;
-    }
-
-    @Override
-    public int getLength() {
-        return length;
     }
 
     @Override

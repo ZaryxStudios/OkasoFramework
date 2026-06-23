@@ -3,6 +3,8 @@ package com.zaryxstudios.okaso.test;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+
 public final class PerformanceTest {
 
     private PerformanceTest() {
@@ -30,11 +32,11 @@ public final class PerformanceTest {
 
     public static final class BenchmarkResult {
         private final List<Long> samples;
-        private final long min;
-        private final long max;
-        private final double avg;
-        private final double median;
-        private final double opsPerSecond;
+        @Getter private final long min;
+        @Getter private final long max;
+        @Getter private final double avg;
+        @Getter private final double median;
+        @Getter private final double opsPerSecond;
 
         BenchmarkResult(List<Long> samples) {
             this.samples = new ArrayList<Long>(samples);
@@ -69,26 +71,6 @@ public final class PerformanceTest {
 
         public List<Long> getSamples() {
             return new ArrayList<Long>(samples);
-        }
-
-        public long getMin() {
-            return min;
-        }
-
-        public long getMax() {
-            return max;
-        }
-
-        public double getAvg() {
-            return avg;
-        }
-
-        public double getMedian() {
-            return median;
-        }
-
-        public double getOpsPerSecond() {
-            return opsPerSecond;
         }
 
         public String report() {

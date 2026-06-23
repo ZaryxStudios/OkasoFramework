@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import java.nio.file.Path;
 import java.util.logging.Level;
 
+import lombok.Getter;
+
 @Plugin(
     id = "okaso-velocity",
     name = "Okaso",
@@ -26,8 +28,10 @@ import java.util.logging.Level;
 )
 public final class VelocityOkasoPlugin implements OkasoPlugin {
 
+    @Getter
     private final ProxyServer server;
     private final Logger slf4jLogger;
+    @Getter
     private final Path dataDirectory;
 
     private OkasoAPI api;
@@ -80,11 +84,4 @@ public final class VelocityOkasoPlugin implements OkasoPlugin {
         return julLogger;
     }
 
-    public ProxyServer getServer() {
-        return server;
-    }
-
-    public Path getDataDirectory() {
-        return dataDirectory;
-    }
 }

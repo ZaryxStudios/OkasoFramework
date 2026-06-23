@@ -1,5 +1,8 @@
 package com.zaryxstudios.okaso.module;
 
+import lombok.Getter;
+
+@Getter
 public class ModuleVersion implements Comparable<ModuleVersion> {
 
     private final int major;
@@ -75,9 +78,4 @@ public class ModuleVersion implements Comparable<ModuleVersion> {
         return sb.toString();
     }
 
-    public int getMajor() { return major; }
-    public int getMinor() { return minor; }
-    public int getPatch() { return patch; }
-    public String getPreRelease() { return preRelease; }
-    public String getBuild() { return build; }
 }

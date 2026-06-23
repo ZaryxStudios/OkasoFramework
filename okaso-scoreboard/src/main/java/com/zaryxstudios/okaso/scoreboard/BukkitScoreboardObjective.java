@@ -13,6 +13,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class BukkitScoreboardObjective implements ScoreboardObjective {
 
     private static final Method GET_NEW_SCOREBOARD;
@@ -43,22 +46,13 @@ public class BukkitScoreboardObjective implements ScoreboardObjective {
         return mgr.getMainScoreboard();
     }
 
+    @Getter @Setter
     private String title;
     private final List<String> lines;
 
     public BukkitScoreboardObjective(String title) {
         this.title = title;
         this.lines = new ArrayList<String>();
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     @Override

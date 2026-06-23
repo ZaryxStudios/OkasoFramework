@@ -15,6 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
+
 public class CommandRegistryImpl {
 
     private final Map<String, CommandEntry> commands;
@@ -260,21 +262,15 @@ public class CommandRegistryImpl {
     }
 
     public static class CommandEntry {
-        String name;
-        String permission;
-        String description;
-        String usage;
+        @Getter String name;
+        @Getter String permission;
+        @Getter String description;
+        @Getter String usage;
         CommandHandler handler;
         TabCompleter tabCompleter;
-        Map<String, SubCommandEntry> subCommands = new LinkedHashMap<String, SubCommandEntry>();
+        @Getter Map<String, SubCommandEntry> subCommands = new LinkedHashMap<String, SubCommandEntry>();
         Object instance;
         Method method;
-
-        public String getName() { return name; }
-        public String getPermission() { return permission; }
-        public String getDescription() { return description; }
-        public String getUsage() { return usage; }
-        public Map<String, SubCommandEntry> getSubCommands() { return subCommands; }
 
         public void setTabCompleter(TabCompleter tabCompleter) {
             this.tabCompleter = tabCompleter;
@@ -282,16 +278,12 @@ public class CommandRegistryImpl {
     }
 
     public static class SubCommandEntry {
-        String name;
-        String permission;
-        String description;
+        @Getter String name;
+        @Getter String permission;
+        @Getter String description;
         String parentCommand;
         Method method;
         Object instance;
-
-        public String getName() { return name; }
-        public String getPermission() { return permission; }
-        public String getDescription() { return description; }
     }
 
     private static class ScanResult {

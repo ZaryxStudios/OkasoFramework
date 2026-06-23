@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import lombok.Getter;
+
 public class SimpleHistogram implements Histogram {
 
+    @Getter
     private final String name;
     private final List<Long> values;
     private final ReentrantReadWriteLock lock;
@@ -17,10 +20,6 @@ public class SimpleHistogram implements Histogram {
         this.name = name;
         this.values = new ArrayList<Long>();
         this.lock = new ReentrantReadWriteLock();
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

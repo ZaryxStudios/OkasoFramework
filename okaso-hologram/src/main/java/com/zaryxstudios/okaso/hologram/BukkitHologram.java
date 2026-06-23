@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+
 public class BukkitHologram implements Hologram {
 
     private static final boolean HAS_ARMOR_STAND;
@@ -60,6 +62,7 @@ public class BukkitHologram implements Hologram {
         ENTITY_TELEPORT   = teleport;
     }
 
+    @Getter
     private final String id;
     private final List<String> lines;
     private final List<Object> entities;
@@ -72,11 +75,6 @@ public class BukkitHologram implements Hologram {
         this.lines = new ArrayList<>(lines);
         this.entities = new ArrayList<>();
         this.active = false;
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override

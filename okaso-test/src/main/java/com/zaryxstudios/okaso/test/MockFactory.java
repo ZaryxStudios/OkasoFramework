@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public final class MockFactory {
 
     private MockFactory() {
@@ -19,56 +22,32 @@ public final class MockFactory {
     }
 
     public static final class MockPlayer {
-        private final String name;
+        @Getter private final String name;
         private final Map<String, String> metadata = new ConcurrentHashMap<String, String>();
-        private int health = 20;
-        private int food = 20;
-        private int level = 0;
-        private float exp = 0f;
-        private boolean online = true;
+        @Getter private int health = 20;
+        @Getter private int food = 20;
+        @Getter private int level = 0;
+        @Getter private float exp = 0f;
+        @Getter private boolean online = true;
 
         MockPlayer(String name) {
             this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getHealth() {
-            return health;
         }
 
         public void setHealth(int health) {
             this.health = Math.max(0, Math.min(health, 20));
         }
 
-        public int getFood() {
-            return food;
-        }
-
         public void setFood(int food) {
             this.food = Math.max(0, Math.min(food, 20));
-        }
-
-        public int getLevel() {
-            return level;
         }
 
         public void setLevel(int level) {
             this.level = Math.max(0, level);
         }
 
-        public float getExp() {
-            return exp;
-        }
-
         public void setExp(float exp) {
             this.exp = Math.max(0f, Math.min(exp, 1f));
-        }
-
-        public boolean isOnline() {
-            return online;
         }
 
         public void setOnline(boolean online) {
@@ -95,10 +74,10 @@ public final class MockFactory {
 
     public static final class MockServer {
         private final List<MockPlayer> players = new ArrayList<MockPlayer>();
-        private String version = "1.21";
-        private int port = 25565;
-        private String motd = "A Minecraft Server";
-        private int maxPlayers = 20;
+        @Getter @Setter private String version = "1.21";
+        @Getter @Setter private int port = 25565;
+        @Getter @Setter private String motd = "A Minecraft Server";
+        @Getter @Setter private int maxPlayers = 20;
 
         MockServer() {
         }
@@ -125,38 +104,6 @@ public final class MockFactory {
 
         public int getPlayerCount() {
             return getOnlinePlayers().size();
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public void setVersion(String version) {
-            this.version = version;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public String getMotd() {
-            return motd;
-        }
-
-        public void setMotd(String motd) {
-            this.motd = motd;
-        }
-
-        public int getMaxPlayers() {
-            return maxPlayers;
-        }
-
-        public void setMaxPlayers(int maxPlayers) {
-            this.maxPlayers = maxPlayers;
         }
 
         @Override

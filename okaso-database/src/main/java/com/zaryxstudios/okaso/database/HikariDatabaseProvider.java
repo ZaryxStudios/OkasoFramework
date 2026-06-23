@@ -13,8 +13,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import lombok.Getter;
+
 public class HikariDatabaseProvider {
 
+    @Getter
     private final HikariDataSource dataSource;
     private final AtomicBoolean initialized;
 
@@ -38,10 +41,6 @@ public class HikariDatabaseProvider {
 
     public HikariDatabaseProvider(String jdbcUrl, String username, String password) {
         this(jdbcUrl, username, password, 10);
-    }
-
-    public DataSource getDataSource() {
-        return dataSource;
     }
 
     public java.util.List<Map<String, Object>> query(String sql, Object... params) {

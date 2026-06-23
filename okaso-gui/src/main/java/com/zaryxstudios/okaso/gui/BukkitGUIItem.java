@@ -3,13 +3,20 @@ package com.zaryxstudios.okaso.gui;
 import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class BukkitGUIItem implements GUIItem {
 
+    @Getter @Setter
     private ItemStack itemStack;
+    @Setter
     private GUIClickHandler clickHandler;
 
+    @FunctionalInterface
     public interface GUIClickHandler {
         void onClick(GUIClickEvent event);
     }
@@ -23,9 +30,12 @@ public class BukkitGUIItem implements GUIItem {
         this(itemStack, null);
     }
 
-    @Override
-    public Object getItemStack() {
-        return itemStack;
+    public static BukkitGUIItem of(ItemStack itemStack, GUIClickHandler clickHandler) {
+        return new BukkitGUIItem(itemStack, clickHandler);
+    }
+
+    public static BukkitGUIItem of(ItemStack itemStack) {
+        return new BukkitGUIItem(itemStack);
     }
 
     @Override
@@ -35,11 +45,15 @@ public class BukkitGUIItem implements GUIItem {
         }
     }
 
-    public void setItemStack(ItemStack itemStack) {
-        this.itemStack = itemStack;
+    public boolean isAir() {
+        return itemStack == null || itemStack.getType() == Material.AIR;
     }
 
-    public void setClickHandler(GUIClickHandler clickHandler) {
-        this.clickHandler = clickHandler;
+    public boolean isSimilar(ItemStack other) {
+        return itemStack != null && itemStack.isSimilar(other);
+    }
+
+    public BukkitGUIItem copy() {
+        return new BukkitGUIItem(itemStack != null ? itemStack.clone() : null, clickHandler);
     }
 }
