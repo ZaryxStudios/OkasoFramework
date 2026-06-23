@@ -7,8 +7,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class BukkitGUIItem implements GUIItem {
 
-    private final ItemStack itemStack;
-    private final GUIClickHandler clickHandler;
+    private ItemStack itemStack;
+    private GUIClickHandler clickHandler;
 
     public interface GUIClickHandler {
         void onClick(GUIClickEvent event);
@@ -33,5 +33,13 @@ public class BukkitGUIItem implements GUIItem {
         if (clickHandler != null) {
             clickHandler.onClick(event);
         }
+    }
+
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
+    }
+
+    public void setClickHandler(GUIClickHandler clickHandler) {
+        this.clickHandler = clickHandler;
     }
 }

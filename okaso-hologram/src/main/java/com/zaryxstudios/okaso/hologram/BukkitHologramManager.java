@@ -18,7 +18,7 @@ public class BukkitHologramManager implements HologramManager {
     private final Map<String, BukkitHologram> holograms;
 
     public BukkitHologramManager() {
-        this.holograms = new ConcurrentHashMap<String, BukkitHologram>();
+        this.holograms = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -27,7 +27,7 @@ public class BukkitHologramManager implements HologramManager {
     }
 
     public Hologram createHologram(String id, Location location, List<String> lines) {
-        BukkitHologram hologram = new BukkitHologram(id, location, lines);
+        BukkitHologram hologram = new BukkitHologram(id, location.clone(), new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
     }
@@ -39,7 +39,7 @@ public class BukkitHologramManager implements HologramManager {
 
     @Override
     public Collection<Hologram> getHolograms() {
-        return Collections.<Hologram>unmodifiableCollection(holograms.values());
+        return Collections.unmodifiableCollection(new ArrayList<Hologram>(holograms.values()));
     }
 
     @Override
@@ -66,5 +66,13 @@ public class BukkitHologramManager implements HologramManager {
             h.stop();
         }
         holograms.clear();
+    }
+
+    public void stopAll() {
+        for (BukkitHologram h : holograms.values()) {
+            if (h.isRunning()) {
+                h.stop();
+            }
+        }
     }
 }

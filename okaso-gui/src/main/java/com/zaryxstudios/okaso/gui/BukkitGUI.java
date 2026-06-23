@@ -15,9 +15,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class BukkitGUI implements GUI, Listener {
 
@@ -26,17 +27,17 @@ public class BukkitGUI implements GUI, Listener {
     private final int size;
     private final Inventory inventory;
     private final Map<Integer, GUIItem> items;
-    private final Map<UUID, GUIItem> pendingClicks;
     private boolean registered;
+    private int viewerCount;
 
     public BukkitGUI(Plugin plugin, String title, int size) {
         this.plugin = plugin;
         this.title = title;
         this.size = size;
         this.inventory = Bukkit.createInventory(null, size, title);
-        this.items = new HashMap<Integer, GUIItem>();
-        this.pendingClicks = new HashMap<UUID, GUIItem>();
+        this.items = new HashMap<>();
         this.registered = false;
+        this.viewerCount = 0;
     }
 
     @Override
@@ -53,6 +54,7 @@ public class BukkitGUI implements GUI, Listener {
     public void open(Object player) {
         if (player instanceof Player) {
             registerListener();
+            viewerCount++;
             ((Player) player).openInventory(inventory);
         }
     }
@@ -112,6 +114,49 @@ public class BukkitGUI implements GUI, Listener {
         inventory.clear();
     }
 
+    public void updateSlot(int slot) {
+        if (slot < 0 || slot >= size) return;
+        inventory.clear(slot);
+        GUIItem item = items.get(slot);
+        if (item != null) {
+            Object bukkitItem = item.getItemStack();
+            if (bukkitItem instanceof ItemStack) {
+                inventory.setItem(slot, (ItemStack) bukkitItem);
+            }
+        }
+    }
+
+    public void updateAll() {
+        inventory.clear();
+        for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
+            int slot = entry.getKey();
+            Object bukkitItem = entry.getValue().getItemStack();
+            if (bukkitItem instanceof ItemStack) {
+                inventory.setItem(slot, (ItemStack) bukkitItem);
+            }
+        }
+    }
+
+    public List<HumanEntity> getViewers() {
+        return new ArrayList<>(inventory.getViewers());
+    }
+
+    public void fillEmpty(GUIItem item) {
+        Object bukkitItem = item.getItemStack();
+        if (!(bukkitItem instanceof ItemStack)) return;
+        ItemStack stack = (ItemStack) bukkitItem;
+        for (int slot = 0; slot < size; slot++) {
+            if (!items.containsKey(slot)) {
+                items.put(slot, item);
+                inventory.setItem(slot, stack);
+            }
+        }
+    }
+
+    public boolean contains(int slot) {
+        return items.containsKey(slot);
+    }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!event.getInventory().equals(inventory)) return;
@@ -135,9 +180,11 @@ public class BukkitGUI implements GUI, Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!event.getInventory().equals(inventory)) return;
-        if (registered) {
+        viewerCount--;
+        if (viewerCount <= 0 && registered) {
             HandlerList.unregisterAll(this);
             registered = false;
+            viewerCount = 0;
         }
     }
 

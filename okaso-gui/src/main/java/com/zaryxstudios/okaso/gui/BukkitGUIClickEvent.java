@@ -2,6 +2,9 @@ package com.zaryxstudios.okaso.gui;
 
 import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 public class BukkitGUIClickEvent implements GUIClickEvent {
 
     private final Object whoClicked;
@@ -64,5 +67,13 @@ public class BukkitGUIClickEvent implements GUIClickEvent {
     @Override
     public Object getClickItem() {
         return clickItem;
+    }
+
+    public Player getPlayer() {
+        return whoClicked instanceof Player ? (Player) whoClicked : null;
+    }
+
+    public ItemStack getClickedItem() {
+        return clickItem instanceof ItemStack ? (ItemStack) clickItem : null;
     }
 }
