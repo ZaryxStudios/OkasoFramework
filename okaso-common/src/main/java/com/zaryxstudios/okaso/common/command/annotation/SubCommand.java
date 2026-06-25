@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SubCommand {
     String name();
+    String[] aliases() default {};
     String permission() default "";
     String description() default "";
+    boolean playerOnly() default false;
 }
