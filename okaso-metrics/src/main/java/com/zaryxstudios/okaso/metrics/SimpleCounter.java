@@ -4,18 +4,17 @@ import com.zaryxstudios.okaso.common.metrics.Counter;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import lombok.Getter;
+
 public class SimpleCounter implements Counter {
 
     private final AtomicLong count;
+    @Getter
     private final String name;
 
     public SimpleCounter(String name) {
         this.name = name;
         this.count = new AtomicLong(0);
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

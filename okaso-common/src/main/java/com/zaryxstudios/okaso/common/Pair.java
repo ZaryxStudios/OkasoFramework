@@ -2,6 +2,9 @@ package com.zaryxstudios.okaso.common;
 
 import java.util.Objects;
 
+import lombok.Getter;
+
+@Getter
 public class Pair<L, R> {
 
     private final L left;
@@ -15,9 +18,6 @@ public class Pair<L, R> {
     public static <L, R> Pair<L, R> of(L left, R right) {
         return new Pair<>(left, right);
     }
-
-    public L getLeft() { return left; }
-    public R getRight() { return right; }
 
     @Override
     public boolean equals(Object o) {

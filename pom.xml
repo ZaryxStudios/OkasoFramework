@@ -47,8 +47,18 @@
         <snakeyaml.version>2.0</snakeyaml.version>
         <hikaricp.version>3.4.5</hikaricp.version>
         <jedis.version>4.4.3</jedis.version>
+        <lombok.version>1.18.30</lombok.version>
         <junit.version>4.13.2</junit.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <dependencyManagement>
         <dependencies>
@@ -352,6 +362,13 @@
                         <target>1.8</target>
                         <showWarnings>true</showWarnings>
                         <showDeprecation>true</showDeprecation>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>

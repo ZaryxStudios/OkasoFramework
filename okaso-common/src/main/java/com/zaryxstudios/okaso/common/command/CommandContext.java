@@ -1,10 +1,14 @@
 package com.zaryxstudios.okaso.common.command;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.Getter;
+
+@Getter
 public class CommandContext {
 
     private final String label;
@@ -17,16 +21,20 @@ public class CommandContext {
         this.args = args != null ? Collections.unmodifiableList(new ArrayList<>(args)) : Collections.emptyList();
     }
 
-    public CommandSender getSender() { return sender; }
-    public String getLabel() { return label; }
-    public List<String> getArgs() { return args; }
-
     public int length() { return args.size(); }
 
     public boolean hasArg(int index) { return index >= 0 && index < args.size(); }
 
     public Optional<String> arg(int index) {
         return hasArg(index) ? Optional.of(args.get(index)) : Optional.empty();
+    }
+
+    public String arg(int index, String defaultValue) {
+        return hasArg(index) ? args.get(index) : defaultValue;
+    }
+
+    public String joinArgs() {
+        return joinArgs(0);
     }
 
     public String joinArgs(int start) {
@@ -39,9 +47,37 @@ public class CommandContext {
         return sb.toString();
     }
 
+    public boolean isPlayer() {
+        return sender.isPlayer();
+    }
+
+    public boolean hasPermission(String permission) {
+        return sender.hasPermission(permission);
+    }
+
+    public void sendMessage(String message) {
+        sender.sendMessage(message);
+    }
+
+    public void sendMessage(String... messages) {
+        sender.sendMessage(messages);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> Optional<T> getSenderAs(Class<T> type) {
         if (type.isInstance(sender)) return Optional.of((T) sender);
         return Optional.empty();
+    }
+
+    public List<String> getArgs() {
+        return args;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public CommandSender getSender() {
+        return sender;
     }
 }

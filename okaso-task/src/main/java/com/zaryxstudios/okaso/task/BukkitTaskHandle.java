@@ -4,9 +4,12 @@ import com.zaryxstudios.okaso.common.task.TaskHandle;
 
 import org.bukkit.scheduler.BukkitTask;
 
+import lombok.Getter;
+
 public class BukkitTaskHandle implements TaskHandle {
 
     private final BukkitTask task;
+    @Getter
     private final int taskId;
 
     public BukkitTaskHandle(BukkitTask task) {
@@ -22,10 +25,5 @@ public class BukkitTaskHandle implements TaskHandle {
     @Override
     public void cancel() {
         task.cancel();
-    }
-
-    @Override
-    public int getTaskId() {
-        return taskId;
     }
 }

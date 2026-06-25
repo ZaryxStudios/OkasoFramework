@@ -10,8 +10,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.Getter;
+
 public class OkasoUpdateChecker implements UpdateChecker {
 
+    @Getter
     private final String currentVersion;
     private final String updateUrl;
     private final AtomicReference<String> latestVersion;
@@ -54,11 +57,6 @@ public class OkasoUpdateChecker implements UpdateChecker {
                 return Optional.empty();
             }
         });
-    }
-
-    @Override
-    public String getCurrentVersion() {
-        return currentVersion;
     }
 
     @Override

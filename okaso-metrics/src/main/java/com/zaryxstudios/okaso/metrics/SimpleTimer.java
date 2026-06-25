@@ -5,8 +5,11 @@ import com.zaryxstudios.okaso.common.metrics.Timer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import lombok.Getter;
+
 public class SimpleTimer implements Timer {
 
+    @Getter
     private final String name;
     private final AtomicLong totalNanos;
     private final AtomicLong count;
@@ -15,10 +18,6 @@ public class SimpleTimer implements Timer {
         this.name = name;
         this.totalNanos = new AtomicLong(0);
         this.count = new AtomicLong(0);
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

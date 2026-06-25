@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lombok.Getter;
+
 public class BukkitStructureManager implements StructureManager {
 
     private static final String FORMAT_HEADER = "OKASO_STRUCTURE_V1";
@@ -23,6 +25,7 @@ public class BukkitStructureManager implements StructureManager {
 
     private final Plugin plugin;
     private final Logger logger;
+    @Getter
     private File structureDirectory;
 
     public BukkitStructureManager(Plugin plugin) {
@@ -256,10 +259,6 @@ public class BukkitStructureManager implements StructureManager {
             dir.mkdirs();
         }
         this.structureDirectory = dir;
-    }
-
-    public File getStructureDirectory() {
-        return structureDirectory;
     }
 
     private File getStructureFile(String name) {

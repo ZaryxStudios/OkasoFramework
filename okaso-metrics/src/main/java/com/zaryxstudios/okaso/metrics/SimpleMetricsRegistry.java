@@ -9,11 +9,17 @@ import com.zaryxstudios.okaso.common.metrics.Timer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
+
 public class SimpleMetricsRegistry implements MetricsRegistry {
 
+    @Getter
     private final Map<String, Counter> counters;
+    @Getter
     private final Map<String, Gauge> gauges;
+    @Getter
     private final Map<String, Timer> timers;
+    @Getter
     private final Map<String, Histogram> histograms;
 
     public SimpleMetricsRegistry() {
@@ -56,19 +62,4 @@ public class SimpleMetricsRegistry implements MetricsRegistry {
         return histogram;
     }
 
-    public Map<String, Counter> getCounters() {
-        return counters;
-    }
-
-    public Map<String, Gauge> getGauges() {
-        return gauges;
-    }
-
-    public Map<String, Timer> getTimers() {
-        return timers;
-    }
-
-    public Map<String, Histogram> getHistograms() {
-        return histograms;
-    }
 }

@@ -11,4 +11,8 @@ public interface CommandSender {
     boolean hasPermission(String permission);
 
     boolean isPlayer();
+
+    default boolean isConsole() {
+        return !isPlayer();
+    }
 }

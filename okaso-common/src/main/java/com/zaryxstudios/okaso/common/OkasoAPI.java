@@ -4,12 +4,17 @@ import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
 import java.util.Objects;
 
+import lombok.Getter;
+
 public final class OkasoAPI {
 
     private static volatile OkasoAPI instance;
 
+    @Getter
     private OkasoPlugin plugin;
+    @Getter
     private ServiceRegistry serviceRegistry;
+    @Getter
     private boolean initialized;
 
     private OkasoAPI() {
@@ -32,18 +37,6 @@ public final class OkasoAPI {
         instance.plugin = plugin;
         instance.initialized = true;
         return instance;
-    }
-
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    public OkasoPlugin getPlugin() {
-        return plugin;
-    }
-
-    public ServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
     }
 
     public static <T> T service(Class<T> type) {

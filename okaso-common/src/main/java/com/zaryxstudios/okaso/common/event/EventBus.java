@@ -8,10 +8,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+import lombok.Getter;
+
 public class EventBus {
 
     private final Map<Class<?>, Map<EventPriority, CopyOnWriteArrayList<RegisteredHandler>>> handlers =
         new ConcurrentHashMap<>();
+    @Getter
     private volatile boolean shutdown;
 
     public EventBus() {}
@@ -78,8 +81,6 @@ public class EventBus {
         this.shutdown = true;
         handlers.clear();
     }
-
-    public boolean isShutdown() { return shutdown; }
 
     private static class RegisteredHandler {
         final Object owner;

@@ -2,13 +2,14 @@ package com.zaryxstudios.okaso.hologram;
 
 import com.zaryxstudios.okaso.common.hologram.Hologram;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.Getter;
 
 public class BukkitHologram implements Hologram {
 
@@ -22,11 +23,13 @@ public class BukkitHologram implements Hologram {
     private static final Method SET_CUSTOM_NAME;
     private static final Method SET_MARKER;
     private static final Method ENTITY_REMOVE;
+    private static final Method ENTITY_TELEPORT;
 
     static {
         Class<?> asClass = null;
         Method spawn = null, vis = null, grav = null, pickup = null,
-               nameVis = null, cname = null, marker = null, remove = null;
+               nameVis = null, cname = null, marker = null, remove = null,
+               teleport = null;
 
         try {
             asClass = Class.forName("org.bukkit.entity.ArmorStand");
@@ -40,6 +43,7 @@ public class BukkitHologram implements Hologram {
             cname   = asClass.getMethod("setCustomName", String.class);
             marker  = asClass.getMethod("setMarker", boolean.class);
             remove  = asClass.getMethod("remove");
+            teleport = asClass.getMethod("teleport", Location.class);
 
         } catch (Exception ignored) {
             asClass = null;
@@ -55,8 +59,10 @@ public class BukkitHologram implements Hologram {
         SET_CUSTOM_NAME   = cname;
         SET_MARKER        = marker;
         ENTITY_REMOVE     = remove;
+        ENTITY_TELEPORT   = teleport;
     }
 
+    @Getter
     private final String id;
     private final List<String> lines;
     private final List<Object> entities;
@@ -66,19 +72,14 @@ public class BukkitHologram implements Hologram {
     public BukkitHologram(String id, Location location, List<String> lines) {
         this.id = id;
         this.location = location.clone();
-        this.lines = new ArrayList<String>(lines);
-        this.entities = new ArrayList<Object>();
+        this.lines = new ArrayList<>(lines);
+        this.entities = new ArrayList<>();
         this.active = false;
     }
 
     @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
     public List<String> getLines() {
-        return new ArrayList<String>(lines);
+        return new ArrayList<>(lines);
     }
 
     @Override
@@ -107,7 +108,9 @@ public class BukkitHologram implements Hologram {
     public void addLine(String text) {
         lines.add(text);
         if (active) {
-            spawnLine(lines.size() - 1, location.clone().add(0, -0.25 * lines.size(), 0));
+            int index = lines.size() - 1;
+            Location lineLoc = location.clone().add(0, -0.25 * index, 0);
+            spawnLine(index, lineLoc);
         }
     }
 
@@ -146,9 +149,16 @@ public class BukkitHologram implements Hologram {
 
     @Override
     public void teleport(double x, double y, double z, float yaw, float pitch) {
-        this.location = new Location(location.getWorld(), x, y, z, yaw, pitch);
-        if (active) {
-            refresh();
+        Location oldLoc = this.location;
+        this.location = new Location(oldLoc.getWorld(), x, y, z, yaw, pitch);
+        if (active && ENTITY_TELEPORT != null) {
+            for (int i = 0; i < entities.size(); i++) {
+                Location lineLoc = this.location.clone().add(0, -0.25 * i, 0);
+                try {
+                    ENTITY_TELEPORT.invoke(entities.get(i), lineLoc);
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 
@@ -169,6 +179,10 @@ public class BukkitHologram implements Hologram {
     @Override
     public boolean isRunning() {
         return active;
+    }
+
+    public Location getLocation() {
+        return location.clone();
     }
 
     private void spawnAll() {

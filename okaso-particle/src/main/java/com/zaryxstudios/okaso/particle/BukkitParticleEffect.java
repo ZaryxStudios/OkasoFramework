@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import lombok.Getter;
+
 public class BukkitParticleEffect implements ParticleEffect {
 
     private static final boolean HAS_BUKKIT_API;
@@ -75,17 +77,13 @@ public class BukkitParticleEffect implements ParticleEffect {
         ENUM_PARTICLE_FLAME = flameEnum;
     }
 
+    @Getter
     private final String name;
     private final String particleType;
 
     public BukkitParticleEffect(String name, String particleType) {
         this.name = name;
         this.particleType = (particleType != null) ? particleType.toUpperCase() : "FLAME";
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override

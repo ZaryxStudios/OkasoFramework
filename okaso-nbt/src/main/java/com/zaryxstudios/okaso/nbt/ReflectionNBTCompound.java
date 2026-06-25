@@ -5,19 +5,18 @@ import com.zaryxstudios.okaso.common.nbt.NBTCompound;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import lombok.Getter;
+
 public class ReflectionNBTCompound implements NBTCompound {
 
     private static final String NMS_TAG = "net.minecraft.server";
     private static final String NMS_CLASS = "NBTTagCompound";
 
+    @Getter
     private final Object handle; 
 
     public ReflectionNBTCompound(Object handle) {
         this.handle = handle;
-    }
-
-    public Object getHandle() {
-        return handle;
     }
 
     @Override

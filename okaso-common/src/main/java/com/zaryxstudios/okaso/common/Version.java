@@ -4,6 +4,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
+
+@Getter
 public final class Version implements Comparable<Version> {
 
     private static final Pattern VERSION_PATTERN =
@@ -44,12 +47,6 @@ public final class Version implements Comparable<Version> {
     public static Version tryParse(String raw) {
         try { return parse(raw); } catch (IllegalArgumentException e) { return null; }
     }
-
-    public int getMajor() { return major; }
-    public int getMinor() { return minor; }
-    public int getPatch() { return patch; }
-    public String getSuffix() { return suffix; }
-    public String getRaw() { return raw; }
 
     public boolean hasSuffix() { return !suffix.isEmpty(); }
     public boolean isStable() { return !hasSuffix(); }
