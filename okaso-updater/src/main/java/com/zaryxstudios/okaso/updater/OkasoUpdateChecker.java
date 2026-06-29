@@ -28,9 +28,10 @@ public class OkasoUpdateChecker implements UpdateChecker {
     @Override
     public CompletableFuture<Optional<String>> checkForUpdate() {
         return CompletableFuture.supplyAsync(() -> {
+            HttpURLConnection conn = null;
             try {
                 URL url = new URL(updateUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
@@ -41,20 +42,24 @@ public class OkasoUpdateChecker implements UpdateChecker {
                     return Optional.empty();
                 }
 
-                BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
-                String latest = reader.readLine();
-                reader.close();
-                conn.disconnect();
-
-                if (latest != null) {
-                    latest = latest.trim();
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream()))) {
+                    String latest = reader.readLine();
+                    if (latest != null) {
+                        latest = latest.trim();
+                    }
+                    if (latest == null || latest.isEmpty()) {
+                        return Optional.empty();
+                    }
                     latestVersion.set(latest);
+                    return Optional.of(latest);
                 }
-
-                return Optional.ofNullable(latest);
             } catch (Exception e) {
                 return Optional.empty();
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
             }
         });
     }
@@ -69,6 +74,27 @@ public class OkasoUpdateChecker implements UpdateChecker {
     public boolean isUpdateAvailable() {
         String latest = latestVersion.get();
         if (latest == null) return false;
-        return !currentVersion.equals(latest);
+        return compareVersions(currentVersion, latest) < 0;
+    }
+
+    private int compareVersions(String v1, String v2) {
+        String[] parts1 = v1.split("\\.");
+        String[] parts2 = v2.split("\\.");
+        int maxLen = Math.max(parts1.length, parts2.length);
+        for (int i = 0; i < maxLen; i++) {
+            int p1 = i < parts1.length ? parseInt(parts1[i]) : 0;
+            int p2 = i < parts2.length ? parseInt(parts2[i]) : 0;
+            if (p1 < p2) return -1;
+            if (p1 > p2) return 1;
+        }
+        return 0;
+    }
+
+    private int parseInt(String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }
