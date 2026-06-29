@@ -50,6 +50,7 @@ import com.zaryxstudios.okaso.updater.OkasoUpdateChecker;
 import com.zaryxstudios.okaso.webhook.OkasoWebhookClient;
 import com.zaryxstudios.okaso.world.BukkitWorldManager;
 import com.zaryxstudios.okaso.world.structure.BukkitStructureManager;
+import com.zaryxstudios.okaso.bukkit.event.BukkitEventBusAdapter;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -147,6 +148,8 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
     }
 
     private void registerEventListeners() {
+        BukkitEventBusAdapter adapter = new BukkitEventBusAdapter(eventBus, this);
+        adapter.register();
     }
 
     @Override

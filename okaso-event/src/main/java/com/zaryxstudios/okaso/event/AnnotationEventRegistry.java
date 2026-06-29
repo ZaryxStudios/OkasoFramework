@@ -2,8 +2,8 @@ package com.zaryxstudios.okaso.event;
 
 import com.zaryxstudios.okaso.common.event.OkasoEvent;
 import com.zaryxstudios.okaso.common.event.EventBus;
-import com.zaryxstudios.okaso.common.event.EventHandler;
-import com.zaryxstudios.okaso.common.event.EventPriority;
+import com.zaryxstudios.okaso.common.event.OkasoEventHandler;
+import com.zaryxstudios.okaso.common.event.OkasoEventPriority;
 
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
@@ -22,7 +22,7 @@ public class AnnotationEventRegistry {
         Method[] methods = clazz.getDeclaredMethods();
 
         for (Method method : methods) {
-            EventHandler ann = method.getAnnotation(EventHandler.class);
+            OkasoEventHandler ann = method.getAnnotation(OkasoEventHandler.class);
             if (ann == null) continue;
 
             Class<?>[] paramTypes = method.getParameterTypes();
@@ -33,7 +33,7 @@ public class AnnotationEventRegistry {
             }
 
             final Class<?> eventClass = paramTypes[0];
-            EventPriority priority = ann.priority();
+            OkasoEventPriority priority = ann.priority();
             final Method finalMethod = method;
 
             if (!finalMethod.isAccessible()) {
@@ -58,7 +58,7 @@ public class AnnotationEventRegistry {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void registerUnsafe(Class<?> eventClass, EventPriority priority,
+    private void registerUnsafe(Class<?> eventClass, OkasoEventPriority priority,
                                 Object owner, java.util.function.Consumer<OkasoEvent> handler) {
         Class rawClass = eventClass;
         eventBus.register(rawClass, priority, owner, handler);

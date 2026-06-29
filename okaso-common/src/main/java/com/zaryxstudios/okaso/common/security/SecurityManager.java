@@ -7,4 +7,6 @@ public interface SecurityManager {
     String decrypt(String cipherText, String key);
     boolean isRateLimited(String key);
     String generateSalt();
+    String sha256Hwid(String identifier);
+    String hmacSha256(String data, String key);
 }
