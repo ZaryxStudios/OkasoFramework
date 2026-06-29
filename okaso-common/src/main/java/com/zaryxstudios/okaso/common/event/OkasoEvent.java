@@ -1,15 +1,15 @@
 package com.zaryxstudios.okaso.common.event;
 
-public abstract class Event {
+public abstract class OkasoEvent {
 
     private boolean cancelled;
     private boolean cancellable;
 
-    protected Event() {
+    protected OkasoEvent() {
         this(false);
     }
 
-    protected Event(boolean cancellable) {
+    protected OkasoEvent(boolean cancellable) {
         this.cancellable = cancellable;
     }
 

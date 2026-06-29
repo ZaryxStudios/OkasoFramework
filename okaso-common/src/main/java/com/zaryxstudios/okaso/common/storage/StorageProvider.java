@@ -2,6 +2,7 @@ package com.zaryxstudios.okaso.common.storage;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface StorageProvider {
     void store(String key, Object value);
@@ -10,7 +11,7 @@ public interface StorageProvider {
     void delete(String key);
     Map<String, Object> getAll();
     void clear();
-    java.util.Set<String> keys();
+    Set<String> keys();
     int size();
     boolean isEmpty();
 }

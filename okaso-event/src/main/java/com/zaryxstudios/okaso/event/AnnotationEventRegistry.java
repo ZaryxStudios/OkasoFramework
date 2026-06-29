@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.event;
 
-import com.zaryxstudios.okaso.common.event.Event;
+import com.zaryxstudios.okaso.common.event.OkasoEvent;
 import com.zaryxstudios.okaso.common.event.EventBus;
 import com.zaryxstudios.okaso.common.event.EventHandler;
 import com.zaryxstudios.okaso.common.event.EventPriority;
@@ -26,10 +26,10 @@ public class AnnotationEventRegistry {
             if (ann == null) continue;
 
             Class<?>[] paramTypes = method.getParameterTypes();
-            if (paramTypes.length != 1 || !Event.class.isAssignableFrom(paramTypes[0])) {
+            if (paramTypes.length != 1 || !OkasoEvent.class.isAssignableFrom(paramTypes[0])) {
                 throw new IllegalArgumentException(
                     "@EventHandler method " + method.getName() + " in " + clazz.getName()
-                    + " must accept exactly one Event parameter");
+                    + " must accept exactly one OkasoEvent parameter");
             }
 
             final Class<?> eventClass = paramTypes[0];
@@ -40,9 +40,9 @@ public class AnnotationEventRegistry {
                 finalMethod.setAccessible(true);
             }
 
-            registerUnsafe(eventClass, priority, listener, new java.util.function.Consumer<Event>() {
+            registerUnsafe(eventClass, priority, listener, new Consumer<OkasoEvent>() {
                 @Override
-                public void accept(Event event) {
+                public void accept(OkasoEvent event) {
                     try {
                         finalMethod.invoke(listener, event);
                     } catch (Exception e) {
@@ -59,7 +59,7 @@ public class AnnotationEventRegistry {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void registerUnsafe(Class<?> eventClass, EventPriority priority,
-                                Object owner, java.util.function.Consumer<Event> handler) {
+                                Object owner, java.util.function.Consumer<OkasoEvent> handler) {
         Class rawClass = eventClass;
         eventBus.register(rawClass, priority, owner, handler);
     }

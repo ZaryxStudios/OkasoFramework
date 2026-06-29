@@ -19,7 +19,7 @@ public class EventBus {
 
     public EventBus() {}
 
-    public <T extends Event> void register(Class<T> eventClass, EventPriority priority, Object owner, Consumer<T> handler) {
+    public <T extends OkasoEvent> void register(Class<T> eventClass, EventPriority priority, Object owner, Consumer<T> handler) {
         Objects.requireNonNull(eventClass, "eventClass");
         Objects.requireNonNull(priority, "priority");
         Objects.requireNonNull(handler, "handler");
@@ -32,7 +32,7 @@ public class EventBus {
         list.add(new RegisteredHandler(owner, handler));
     }
 
-    public <T extends Event> void register(Class<T> eventClass, Object owner, Consumer<T> handler) {
+    public <T extends OkasoEvent> void register(Class<T> eventClass, Object owner, Consumer<T> handler) {
         register(eventClass, EventPriority.NORMAL, owner, handler);
     }
 
@@ -45,7 +45,7 @@ public class EventBus {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Event> T publish(T event) {
+    public <T extends OkasoEvent> T publish(T event) {
         if (shutdown) return event;
 
         Map<EventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(event.getClass());
@@ -67,7 +67,7 @@ public class EventBus {
         return event;
     }
 
-    protected void onHandlerError(Event event, Exception exception) {
+    protected void onHandlerError(OkasoEvent event, Exception exception) {
         try {
             OkasoAPI api = OkasoAPI.getInstance();
             api.getPlugin().getOkasoLogger().warning(
