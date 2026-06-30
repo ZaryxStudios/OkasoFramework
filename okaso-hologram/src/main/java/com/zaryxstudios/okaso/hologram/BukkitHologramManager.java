@@ -1,11 +1,13 @@
 package com.zaryxstudios.okaso.hologram;
 
 import com.zaryxstudios.okaso.common.hologram.Hologram;
+import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
 
 import org.bukkit.Location;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,13 +25,30 @@ public class BukkitHologramManager implements HologramManager {
 
     @Override
     public Hologram createHologram(String id) {
-        return createHologram(id, new Location(null, 0, 0, 0), new ArrayList<String>());
+        return createHologram(id, new ArrayList<HologramLine>());
     }
 
-    public Hologram createHologram(String id, Location location, List<String> lines) {
+    @Override
+    public Hologram createHologram(String id, HologramLine... lines) {
+        return createHologram(id, Arrays.asList(lines));
+    }
+
+    @Override
+    public Hologram createHologram(String id, List<HologramLine> lines) {
+        Location fallback = new Location(null, 0, 0, 0);
+        BukkitHologram hologram = new BukkitHologram(id, fallback, new ArrayList<>(lines));
+        holograms.put(id, hologram);
+        return hologram;
+    }
+
+    public Hologram createHologram(String id, Location location, List<HologramLine> lines) {
         BukkitHologram hologram = new BukkitHologram(id, location.clone(), new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
+    }
+
+    public Hologram createHologram(String id, Location location, HologramLine... lines) {
+        return createHologram(id, location, Arrays.asList(lines));
     }
 
     @Override

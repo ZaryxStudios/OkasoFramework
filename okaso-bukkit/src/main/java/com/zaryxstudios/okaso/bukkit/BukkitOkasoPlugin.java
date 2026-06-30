@@ -131,7 +131,7 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
         reg.register(SecurityManager.class, new OkasoSecurityManager(30_000L, 20));
 
         String currentVersion = getDescription().getVersion();
-        String updateUrl = getConfig().getString("update-check.url", "https://example.com/version.txt");
+        String updateUrl = "https://raw.githubusercontent.com/ZaryxStudios/OkasoFramework/refs/heads/main/version.txt";
         reg.register(UpdateChecker.class, new OkasoUpdateChecker(currentVersion, updateUrl));
 
         File dataFolder = getDataFolder();
