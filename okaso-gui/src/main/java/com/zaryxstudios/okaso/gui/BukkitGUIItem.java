@@ -13,6 +13,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -258,12 +260,12 @@ public class BukkitGUIItem implements GUIItem {
         private boolean tryAttributeGlow(ItemMeta meta, ItemStack stack) {
             try {
                 Method addAttributeModifier = meta.getClass().getMethod(
-                    "addAttributeModifier", org.bukkit.attribute.Attribute.class,
-                    org.bukkit.attribute.AttributeModifier.class);
-                addAttributeModifier.invoke(meta, org.bukkit.attribute.Attribute.GENERIC_LUCK,
-                    new org.bukkit.attribute.AttributeModifier(
+                    "addAttributeModifier", Attribute.class,
+                    AttributeModifier.class);
+                addAttributeModifier.invoke(meta, Attribute.GENERIC_LUCK,
+                    new AttributeModifier(
                         UUID.randomUUID(), "okaso_glow", 0,
-                        org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER));
+                        AttributeModifier.Operation.ADD_NUMBER));
                 return true;
             } catch (Exception ignored) {
                 return false;
@@ -285,7 +287,7 @@ public class BukkitGUIItem implements GUIItem {
                 if (lore != null && !lore.isEmpty()) {
                     meta.setLore(lore.stream()
                         .map(TextColorizer::translate)
-                        .collect(java.util.stream.Collectors.toList()));
+                        .collect(Collectors.toList()));
                 }
                 if (!enchantments.isEmpty()) {
                     for (Map.Entry<Enchantment, Integer> e : enchantments.entrySet()) {
@@ -373,7 +375,7 @@ public class BukkitGUIItem implements GUIItem {
         if (meta != null) {
             meta.setLore(lore.stream()
                 .map(TextColorizer::translate)
-                .collect(java.util.stream.Collectors.toList()));
+                .collect(Collectors.toList()));
             itemStack.setItemMeta(meta);
         }
     }

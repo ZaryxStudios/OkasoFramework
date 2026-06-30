@@ -77,6 +77,35 @@ public class EventBus {
         }
     }
 
+    public boolean hasHandlers(Class<?> eventClass) {
+        Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(eventClass);
+        if (priorityMap == null) return false;
+        for (CopyOnWriteArrayList<RegisteredHandler> list : priorityMap.values()) {
+            if (!list.isEmpty()) return true;
+        }
+        return false;
+    }
+
+    public int getHandlerCount(Class<?> eventClass) {
+        Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(eventClass);
+        if (priorityMap == null) return 0;
+        int count = 0;
+        for (CopyOnWriteArrayList<RegisteredHandler> list : priorityMap.values()) {
+            count += list.size();
+        }
+        return count;
+    }
+
+    public int getTotalHandlerCount() {
+        int count = 0;
+        for (Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> pm : handlers.values()) {
+            for (CopyOnWriteArrayList<RegisteredHandler> list : pm.values()) {
+                count += list.size();
+            }
+        }
+        return count;
+    }
+
     public void shutdown() {
         this.shutdown = true;
         handlers.clear();

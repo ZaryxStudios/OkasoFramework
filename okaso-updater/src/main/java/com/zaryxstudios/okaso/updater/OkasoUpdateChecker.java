@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.updater;
 
+import com.zaryxstudios.okaso.common.module.ModuleVersion;
 import com.zaryxstudios.okaso.common.updater.UpdateChecker;
 
 import java.io.BufferedReader;
@@ -74,27 +75,10 @@ public class OkasoUpdateChecker implements UpdateChecker {
     public boolean isUpdateAvailable() {
         String latest = latestVersion.get();
         if (latest == null) return false;
-        return compareVersions(currentVersion, latest) < 0;
-    }
-
-    private int compareVersions(String v1, String v2) {
-        String[] parts1 = v1.split("\\.");
-        String[] parts2 = v2.split("\\.");
-        int maxLen = Math.max(parts1.length, parts2.length);
-        for (int i = 0; i < maxLen; i++) {
-            int p1 = i < parts1.length ? parseInt(parts1[i]) : 0;
-            int p2 = i < parts2.length ? parseInt(parts2[i]) : 0;
-            if (p1 < p2) return -1;
-            if (p1 > p2) return 1;
-        }
-        return 0;
-    }
-
-    private int parseInt(String s) {
         try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            return 0;
+            return ModuleVersion.parse(currentVersion).compareTo(ModuleVersion.parse(latest)) < 0;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 }
