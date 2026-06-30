@@ -7,5 +7,5 @@ public interface NetworkManager {
     void registerIncomingChannel(String channel);
     void registerOutgoingChannel(String channel);
     boolean isChannelRegistered(String channel);
-    java.util.Set<String> getRegisteredChannels();
+    Set<String> getRegisteredChannels();
 }

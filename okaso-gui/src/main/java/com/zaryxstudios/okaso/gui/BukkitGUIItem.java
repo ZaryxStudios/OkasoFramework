@@ -5,13 +5,19 @@ import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,8 +122,8 @@ public class BukkitGUIItem implements GUIItem {
                 if (meta.hasLore()) this.lore = meta.getLore();
                 if (meta.hasEnchants()) this.enchantments.putAll(meta.getEnchants());
                 this.flags.addAll(meta.getItemFlags());
-                if (meta instanceof org.bukkit.inventory.meta.SkullMeta) {
-                    org.bukkit.inventory.meta.SkullMeta skull = (org.bukkit.inventory.meta.SkullMeta) meta;
+                if (meta instanceof SkullMeta) {
+                    SkullMeta skull = (SkullMeta) meta;
                     if (skull.hasOwner()) {
                         try {
                             this.skullOwner = (String) SkullMeta.class.getMethod("getOwner").invoke(skull);
@@ -174,6 +180,13 @@ public class BukkitGUIItem implements GUIItem {
             return this;
         }
 
+        public Builder enchantList(Map<Enchantment, Integer> enchantments) {
+            if (enchantments != null) {
+                this.enchantments.putAll(enchantments);
+            }
+            return this;
+        }
+
         public Builder glow() {
             this.glow = true;
             return this;
@@ -209,6 +222,56 @@ public class BukkitGUIItem implements GUIItem {
             return this;
         }
 
+        private void applyGlow(ItemMeta meta, ItemStack stack) {
+            if (tryFakeEnchantmentGlow(meta)) return;
+            if (tryAttributeGlow(meta, stack)) return;
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+        }
+
+        private boolean tryFakeEnchantmentGlow(ItemMeta meta) {
+            try {
+                Field acceptingNew = Enchantment.class.getDeclaredField("acceptingNew");
+                acceptingNew.setAccessible(true);
+                acceptingNew.setBoolean(null, true);
+
+                Enchantment fakeGlow = new Enchantment(NamespacedKey.minecraft("okaso_glow")) {
+                    @Override public String getName() { return "okaso_glow"; }
+                    @Override public int getMaxLevel() { return 1; }
+                    @Override public int getStartLevel() { return 1; }
+                    @Override public EnchantmentTarget getItemTarget() { return EnchantmentTarget.ALL; }
+                    @Override public boolean isTreasure() { return false; }
+                    @Override public boolean isCursed() { return false; }
+                    @Override public boolean conflictsWith(Enchantment other) { return false; }
+                    @Override public boolean canEnchantItem(ItemStack item) { return true; }
+                };
+
+                try {
+                    Enchantment.registerEnchantment(fakeGlow);
+                } catch (IllegalArgumentException ignored) {
+                }
+
+                meta.addEnchant(fakeGlow, 1, true);
+                return true;
+            } catch (Exception ignored) {
+                return false;
+            }
+        }
+
+        private boolean tryAttributeGlow(ItemMeta meta, ItemStack stack) {
+            try {
+                Method addAttributeModifier = meta.getClass().getMethod(
+                    "addAttributeModifier", Attribute.class,
+                    AttributeModifier.class);
+                addAttributeModifier.invoke(meta, Attribute.GENERIC_LUCK,
+                    new AttributeModifier(
+                        UUID.randomUUID(), "okaso_glow", 0,
+                        AttributeModifier.Operation.ADD_NUMBER));
+                return true;
+            } catch (Exception ignored) {
+                return false;
+            }
+        }
+
         public BukkitGUIItem build() {
             ItemStack stack = new ItemStack(material, amount);
 
@@ -224,7 +287,7 @@ public class BukkitGUIItem implements GUIItem {
                 if (lore != null && !lore.isEmpty()) {
                     meta.setLore(lore.stream()
                         .map(TextColorizer::translate)
-                        .collect(java.util.stream.Collectors.toList()));
+                        .collect(Collectors.toList()));
                 }
                 if (!enchantments.isEmpty()) {
                     for (Map.Entry<Enchantment, Integer> e : enchantments.entrySet()) {
@@ -233,7 +296,7 @@ public class BukkitGUIItem implements GUIItem {
                 }
                 if (glow) {
                     if (!meta.hasEnchants()) {
-                        meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                        applyGlow(meta, stack);
                     }
                     meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                 }
@@ -312,7 +375,7 @@ public class BukkitGUIItem implements GUIItem {
         if (meta != null) {
             meta.setLore(lore.stream()
                 .map(TextColorizer::translate)
-                .collect(java.util.stream.Collectors.toList()));
+                .collect(Collectors.toList()));
             itemStack.setItemMeta(meta);
         }
     }

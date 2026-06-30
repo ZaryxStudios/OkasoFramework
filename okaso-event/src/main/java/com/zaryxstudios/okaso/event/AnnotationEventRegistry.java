@@ -1,11 +1,13 @@
 package com.zaryxstudios.okaso.event;
 
-import com.zaryxstudios.okaso.common.event.Event;
+import com.zaryxstudios.okaso.common.event.OkasoEvent;
 import com.zaryxstudios.okaso.common.event.EventBus;
-import com.zaryxstudios.okaso.common.event.EventHandler;
-import com.zaryxstudios.okaso.common.event.EventPriority;
+import com.zaryxstudios.okaso.common.event.OkasoEventHandler;
+import com.zaryxstudios.okaso.common.event.OkasoEventPriority;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class AnnotationEventRegistry {
@@ -16,38 +18,31 @@ public class AnnotationEventRegistry {
         this.eventBus = eventBus;
     }
 
-    @SuppressWarnings("unchecked")
     public void register(Object listener) {
-        Class<?> clazz = listener.getClass();
-        Method[] methods = clazz.getDeclaredMethods();
-
-        for (Method method : methods) {
-            EventHandler ann = method.getAnnotation(EventHandler.class);
+        for (Method method : findAllMethods(listener.getClass())) {
+            OkasoEventHandler ann = method.getAnnotation(OkasoEventHandler.class);
             if (ann == null) continue;
 
             Class<?>[] paramTypes = method.getParameterTypes();
-            if (paramTypes.length != 1 || !Event.class.isAssignableFrom(paramTypes[0])) {
+            if (paramTypes.length != 1 || !OkasoEvent.class.isAssignableFrom(paramTypes[0])) {
                 throw new IllegalArgumentException(
-                    "@EventHandler method " + method.getName() + " in " + clazz.getName()
-                    + " must accept exactly one Event parameter");
+                    "@OkasoEventHandler method " + method.getName() + " in "
+                    + listener.getClass().getName()
+                    + " must accept exactly one OkasoEvent parameter");
             }
 
-            final Class<?> eventClass = paramTypes[0];
-            EventPriority priority = ann.priority();
-            final Method finalMethod = method;
+            Class<?> eventClass = paramTypes[0];
+            OkasoEventPriority priority = ann.priority();
 
-            if (!finalMethod.isAccessible()) {
-                finalMethod.setAccessible(true);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
             }
 
-            registerUnsafe(eventClass, priority, listener, new java.util.function.Consumer<Event>() {
-                @Override
-                public void accept(Event event) {
-                    try {
-                        finalMethod.invoke(listener, event);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            registerUnsafe(eventClass, priority, listener, event -> {
+                try {
+                    method.invoke(listener, event);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             });
         }
@@ -57,10 +52,25 @@ public class AnnotationEventRegistry {
         eventBus.unregister(listener);
     }
 
+    public void unregisterAll() {
+        eventBus.shutdown();
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void registerUnsafe(Class<?> eventClass, EventPriority priority,
-                                Object owner, java.util.function.Consumer<Event> handler) {
-        Class rawClass = eventClass;
-        eventBus.register(rawClass, priority, owner, handler);
+    private void registerUnsafe(Class<?> eventClass, OkasoEventPriority priority,
+                                Object owner, Consumer<OkasoEvent> handler) {
+        eventBus.register((Class) eventClass, priority, owner, (Consumer) handler);
+    }
+
+    private static List<Method> findAllMethods(Class<?> clazz) {
+        List<Method> methods = new ArrayList<>();
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            for (Method m : current.getDeclaredMethods()) {
+                methods.add(m);
+            }
+            current = current.getSuperclass();
+        }
+        return methods;
     }
 }

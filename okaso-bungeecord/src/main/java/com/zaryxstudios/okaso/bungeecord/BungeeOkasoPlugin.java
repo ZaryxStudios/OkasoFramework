@@ -3,6 +3,8 @@ package com.zaryxstudios.okaso.bungeecord;
 import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
+import com.zaryxstudios.okaso.common.task.TaskScheduler;
+import com.zaryxstudios.okaso.bungeecord.task.BungeeTaskScheduler;
 
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -15,8 +17,14 @@ public class BungeeOkasoPlugin extends Plugin implements OkasoPlugin {
     @Override
     public void onEnable() {
         api = OkasoAPI.init(this);
+        registerServices();
         onOkasoEnable();
         getLogger().info("Okaso BungeeCord adapter enabled.");
+    }
+
+    private void registerServices() {
+        ServiceRegistry reg = api.getServiceRegistry();
+        reg.register(TaskScheduler.class, new BungeeTaskScheduler(this));
     }
 
     @Override

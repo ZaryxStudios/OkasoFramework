@@ -5,21 +5,17 @@
     <parent>
         <groupId>com.zaryxstudios.okaso</groupId>
         <artifactId>okaso</artifactId>
-        <version>1.2.0</version>
+        <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>okaso-updater</artifactId>
     <packaging>jar</packaging>
     <name>Okaso Updater</name>
-    <description>Updater module — depends on okaso-common + spigot-api.</description>
+    <description>Updater module — depends on okaso-common.</description>
     <dependencies>
         <dependency>
             <groupId>com.zaryxstudios.okaso</groupId>
             <artifactId>okaso-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class BukkitItemBuilder implements ItemBuilder {
 
@@ -244,6 +245,7 @@ public class BukkitItemBuilder implements ItemBuilder {
         return this;
     }
 
+    @Override
     public ItemBuilder skullOwner(String name) {
         if (meta instanceof SkullMeta && name != null) {
             try {
@@ -288,6 +290,7 @@ public class BukkitItemBuilder implements ItemBuilder {
         return this;
     }
 
+    @Override
     public ItemBuilder flags(String... flags) {
         if (meta == null || flags == null) return this;
         try {
@@ -304,6 +307,19 @@ public class BukkitItemBuilder implements ItemBuilder {
                 }
             }
         } catch (Exception ignored) {
+        }
+        return this;
+    }
+
+    @Override
+    public ItemBuilder enchantList(Map<String, Integer> enchantments) {
+        if (meta != null && enchantments != null) {
+            for (Map.Entry<String, Integer> entry : enchantments.entrySet()) {
+                Enchantment ench = Enchantment.getByName(entry.getKey().toUpperCase());
+                if (ench != null) {
+                    meta.addEnchant(ench, entry.getValue(), true);
+                }
+            }
         }
         return this;
     }

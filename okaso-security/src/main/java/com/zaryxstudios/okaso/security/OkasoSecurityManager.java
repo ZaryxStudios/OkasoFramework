@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 public class OkasoSecurityManager implements SecurityManager {
@@ -115,6 +116,38 @@ public class OkasoSecurityManager implements SecurityManager {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    @Override
+    public String sha256Hwid(String identifier) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(identifier.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
+    }
+
+    @Override
+    public String hmacSha256(String data, String key) {
+        try {
+            SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(keySpec);
+            byte[] result = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : result) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("HMAC-SHA256 computation failed", e);
+        }
     }
 
     private static class RateLimitEntry {

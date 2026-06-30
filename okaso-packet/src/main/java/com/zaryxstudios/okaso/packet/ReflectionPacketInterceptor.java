@@ -5,6 +5,7 @@ import com.zaryxstudios.okaso.common.packet.PacketInterceptor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 
 public class ReflectionPacketInterceptor implements PacketInterceptor {
 
@@ -34,6 +35,6 @@ public class ReflectionPacketInterceptor implements PacketInterceptor {
     }
 
     public Map<String, PacketHandler> getHandlers() {
-        return java.util.Collections.unmodifiableMap(handlers);
+        return Collections.unmodifiableMap(handlers);
     }
 }

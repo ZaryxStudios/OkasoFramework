@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.common.event;
 
-public enum EventPriority {
+public enum OkasoEventPriority {
     LOWEST,
     LOW,
     NORMAL,

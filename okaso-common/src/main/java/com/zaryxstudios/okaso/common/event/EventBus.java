@@ -12,32 +12,32 @@ import lombok.Getter;
 
 public class EventBus {
 
-    private final Map<Class<?>, Map<EventPriority, CopyOnWriteArrayList<RegisteredHandler>>> handlers =
+    private final Map<Class<?>, Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>>> handlers =
         new ConcurrentHashMap<>();
     @Getter
     private volatile boolean shutdown;
 
     public EventBus() {}
 
-    public <T extends Event> void register(Class<T> eventClass, EventPriority priority, Object owner, Consumer<T> handler) {
+    public <T extends OkasoEvent> void register(Class<T> eventClass, OkasoEventPriority priority, Object owner, Consumer<T> handler) {
         Objects.requireNonNull(eventClass, "eventClass");
         Objects.requireNonNull(priority, "priority");
         Objects.requireNonNull(handler, "handler");
         if (shutdown) throw new IllegalStateException("EventBus is shut down");
 
-        Map<EventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap =
+        Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap =
             handlers.computeIfAbsent(eventClass, k -> new ConcurrentHashMap<>());
         CopyOnWriteArrayList<RegisteredHandler> list =
             priorityMap.computeIfAbsent(priority, k -> new CopyOnWriteArrayList<>());
         list.add(new RegisteredHandler(owner, handler));
     }
 
-    public <T extends Event> void register(Class<T> eventClass, Object owner, Consumer<T> handler) {
-        register(eventClass, EventPriority.NORMAL, owner, handler);
+    public <T extends OkasoEvent> void register(Class<T> eventClass, Object owner, Consumer<T> handler) {
+        register(eventClass, OkasoEventPriority.NORMAL, owner, handler);
     }
 
     public void unregister(Object owner) {
-        for (Map<EventPriority, CopyOnWriteArrayList<RegisteredHandler>> pm : handlers.values()) {
+        for (Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> pm : handlers.values()) {
             for (CopyOnWriteArrayList<RegisteredHandler> list : pm.values()) {
                 list.removeIf(reg -> reg.owner == owner);
             }
@@ -45,17 +45,17 @@ public class EventBus {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Event> T publish(T event) {
+    public <T extends OkasoEvent> T publish(T event) {
         if (shutdown) return event;
 
-        Map<EventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(event.getClass());
+        Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(event.getClass());
         if (priorityMap == null) return event;
 
-        for (EventPriority priority : EventPriority.values()) {
+        for (OkasoEventPriority priority : OkasoEventPriority.values()) {
             CopyOnWriteArrayList<RegisteredHandler> list = priorityMap.get(priority);
             if (list != null) {
                 for (RegisteredHandler reg : list) {
-                    if (event.isCancelled() && priority != EventPriority.MONITOR) break;
+                    if (event.isCancelled() && priority != OkasoEventPriority.MONITOR) break;
                     try {
                         ((Consumer<T>) reg.handler).accept(event);
                     } catch (Exception e) {
@@ -67,7 +67,7 @@ public class EventBus {
         return event;
     }
 
-    protected void onHandlerError(Event event, Exception exception) {
+    protected void onHandlerError(OkasoEvent event, Exception exception) {
         try {
             OkasoAPI api = OkasoAPI.getInstance();
             api.getPlugin().getOkasoLogger().warning(
@@ -75,6 +75,35 @@ public class EventBus {
         } catch (Exception ignored) {
             System.err.println("[Okaso EventBus] Handler error for " + event.getClass().getSimpleName() + ": " + exception.getMessage());
         }
+    }
+
+    public boolean hasHandlers(Class<?> eventClass) {
+        Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(eventClass);
+        if (priorityMap == null) return false;
+        for (CopyOnWriteArrayList<RegisteredHandler> list : priorityMap.values()) {
+            if (!list.isEmpty()) return true;
+        }
+        return false;
+    }
+
+    public int getHandlerCount(Class<?> eventClass) {
+        Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> priorityMap = handlers.get(eventClass);
+        if (priorityMap == null) return 0;
+        int count = 0;
+        for (CopyOnWriteArrayList<RegisteredHandler> list : priorityMap.values()) {
+            count += list.size();
+        }
+        return count;
+    }
+
+    public int getTotalHandlerCount() {
+        int count = 0;
+        for (Map<OkasoEventPriority, CopyOnWriteArrayList<RegisteredHandler>> pm : handlers.values()) {
+            for (CopyOnWriteArrayList<RegisteredHandler> list : pm.values()) {
+                count += list.size();
+            }
+        }
+        return count;
     }
 
     public void shutdown() {

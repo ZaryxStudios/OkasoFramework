@@ -61,7 +61,7 @@ public class CommandRegistryImpl {
             return;
         }
 
-        for (Method method : clazz.getDeclaredMethods()) {
+        for (Method method : findAllMethods(clazz)) {
             Command cmdAnn = method.getAnnotation(Command.class);
             if (cmdAnn != null) {
                 registerCommandMethod(handler, method, cmdAnn);
@@ -84,7 +84,7 @@ public class CommandRegistryImpl {
             entry.handler = (CommandHandler) handler;
         }
 
-        for (Method method : clazz.getDeclaredMethods()) {
+        for (Method method : findAllMethods(clazz)) {
             SubCommand subAnn = method.getAnnotation(SubCommand.class);
             if (subAnn != null) {
                 registerSubCommandFromMethod(entry, handler, method, subAnn);
@@ -369,7 +369,7 @@ public class CommandRegistryImpl {
     private ScanResult scanSubCommands(Object handler) {
         ScanResult result = new ScanResult();
         Class<?> clazz = handler.getClass();
-        for (Method method : clazz.getDeclaredMethods()) {
+        for (Method method : findAllMethods(clazz)) {
             SubCommand subAnn = method.getAnnotation(SubCommand.class);
             if (subAnn == null) continue;
 
@@ -498,5 +498,17 @@ public class CommandRegistryImpl {
     private static class ScanResult {
         Map<String, SubCommandEntry> subCommands = new LinkedHashMap<>();
         Map<String, SubCommandEntry> orphanSubCommands = new LinkedHashMap<>();
+    }
+
+    private static List<Method> findAllMethods(Class<?> clazz) {
+        List<Method> methods = new ArrayList<>();
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            for (Method m : current.getDeclaredMethods()) {
+                methods.add(m);
+            }
+            current = current.getSuperclass();
+        }
+        return methods;
     }
 }

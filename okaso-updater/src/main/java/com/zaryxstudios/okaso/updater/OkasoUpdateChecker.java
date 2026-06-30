@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.updater;
 
+import com.zaryxstudios.okaso.common.module.ModuleVersion;
 import com.zaryxstudios.okaso.common.updater.UpdateChecker;
 
 import java.io.BufferedReader;
@@ -28,9 +29,10 @@ public class OkasoUpdateChecker implements UpdateChecker {
     @Override
     public CompletableFuture<Optional<String>> checkForUpdate() {
         return CompletableFuture.supplyAsync(() -> {
+            HttpURLConnection conn = null;
             try {
                 URL url = new URL(updateUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
@@ -41,20 +43,24 @@ public class OkasoUpdateChecker implements UpdateChecker {
                     return Optional.empty();
                 }
 
-                BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
-                String latest = reader.readLine();
-                reader.close();
-                conn.disconnect();
-
-                if (latest != null) {
-                    latest = latest.trim();
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream()))) {
+                    String latest = reader.readLine();
+                    if (latest != null) {
+                        latest = latest.trim();
+                    }
+                    if (latest == null || latest.isEmpty()) {
+                        return Optional.empty();
+                    }
                     latestVersion.set(latest);
+                    return Optional.of(latest);
                 }
-
-                return Optional.ofNullable(latest);
             } catch (Exception e) {
                 return Optional.empty();
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
             }
         });
     }
@@ -69,6 +75,10 @@ public class OkasoUpdateChecker implements UpdateChecker {
     public boolean isUpdateAvailable() {
         String latest = latestVersion.get();
         if (latest == null) return false;
-        return !currentVersion.equals(latest);
+        try {
+            return ModuleVersion.parse(currentVersion).compareTo(ModuleVersion.parse(latest)) < 0;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

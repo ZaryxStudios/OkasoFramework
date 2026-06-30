@@ -1,4 +1,4 @@
-package com.zaryxstudios.okaso.module;
+package com.zaryxstudios.okaso.common.module;
 
 import lombok.Getter;
 
