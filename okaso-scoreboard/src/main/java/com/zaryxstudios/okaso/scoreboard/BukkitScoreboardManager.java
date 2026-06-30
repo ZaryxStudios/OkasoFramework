@@ -6,6 +6,8 @@ import com.zaryxstudios.okaso.common.scoreboard.ScoreboardObjective;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -91,9 +93,9 @@ public class BukkitScoreboardManager implements ScoreboardManager {
         Player p = (Player) player;
         Scoreboard board = p.getScoreboard();
         if (board == null) return 0;
-        org.bukkit.scoreboard.Objective obj = board.getObjective(objectiveName);
+        Objective obj = board.getObjective(objectiveName);
         if (obj == null) return 0;
-        org.bukkit.scoreboard.Score score = obj.getScore(p.getName());
+        Score score = obj.getScore(p.getName());
         return score != null ? score.getScore() : 0;
     }
 
