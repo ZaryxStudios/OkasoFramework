@@ -16,10 +16,10 @@ mvn install -DskipTests
 
 The build produces shaded JARs in each adapter's `target/` directory:
 
-- `okaso-bukkit/target/okaso-bukkit-1.0.0.jar` — for Bukkit/Spigot/Paper servers
-- `okaso-bungeecord/target/okaso-bungeecord-1.0.0.jar` — for BungeeCord proxies
-- `okaso-velocity/target/okaso-velocity-1.0.0.jar` — for Velocity proxies
-- `okaso-waterfall/target/okaso-waterfall-1.0.0.jar` — for Waterfall proxies
+- `okaso-bukkit/target/okaso-bukkit-1.3.1.jar` — for Bukkit/Spigot/Paper servers
+- `okaso-bungeecord/target/okaso-bungeecord-1.3.1.jar` — for BungeeCord proxies
+- `okaso-velocity/target/okaso-velocity-1.3.1.jar` — for Velocity proxies
+- `okaso-waterfall/target/okaso-waterfall-1.3.1.jar` — for Waterfall proxies
 
 ## Installation
 
@@ -32,13 +32,13 @@ Copy the appropriate adapter JAR into your server or proxy's `plugins/` folder a
 ```xml
 <dependency>
     <groupId>com.zaryxstudios.okaso</groupId>
-    <artifactId>okaso-common</artifactId>
-    <version>1.0.0</version>
+    <artifactId>okaso-bukkit</artifactId>
+    <version>1.3.1</version>
     <scope>provided</scope>
 </dependency>
 ```
 
-Do not shade Okaso classes into your JAR. Use `provided` scope.
+Use the adapter for your platform (`okaso-bukkit`, `okaso-bungeecord`, `okaso-velocity`, or `okaso-waterfall`) with `provided` scope. Do not shade Okaso classes into your JAR.
 
 ### 2. Declare the dependency in plugin.yml
 
