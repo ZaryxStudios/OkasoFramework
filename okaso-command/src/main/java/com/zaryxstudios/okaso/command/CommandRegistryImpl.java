@@ -16,12 +16,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import lombok.Getter;
 
@@ -162,34 +163,21 @@ public class CommandRegistryImpl {
     private boolean dispatchToEntry(CommandSender sender, String label, String[] args, CommandEntry entry) {
         if (entry.permission != null && !entry.permission.isEmpty()) {
             if (!sender.hasPermission(entry.permission)) {
-                sender.sendMessage("§cYou don't have permission to use this command.");
+                sender.sendMessage(provider().get(Messages.COMMAND_NO_PERMISSION));
                 return true;
             }
         }
 
         if (entry.playerOnly && !sender.isPlayer()) {
-            sender.sendMessage("§cOnly players can use this command.");
+            sender.sendMessage(provider().get(Messages.COMMAND_PLAYER_ONLY));
             return true;
         }
 
         if (entry.consoleOnly && sender.isPlayer()) {
-            sender.sendMessage("§cOnly the console can use this command.");
+            sender.sendMessage(provider().get(Messages.COMMAND_CONSOLE_ONLY));
             return true;
         }
 
-        if (entry.cooldown > 0 && sender.isPlayer()) {
-            String name = sender.getName();
-            UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
-            long now = System.currentTimeMillis();
-            Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(uuid, k -> new HashMap<>());
-            Long lastUse = playerCooldowns.get(entry.name);
-            if (lastUse != null && (now - lastUse) < entry.cooldown * 50L) {
-                long remaining = (entry.cooldown * 50L - (now - lastUse)) / 50;
-                sender.sendMessage("§cPlease wait " + remaining + " ticks before using this command again.");
-                return true;
-            }
-            playerCooldowns.put(entry.name, now);
-        }
         if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
             String subName = args[0].toLowerCase();
             SubCommandEntry sub = entry.subCommands.get(subName);
@@ -201,6 +189,20 @@ public class CommandRegistryImpl {
         if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
             showHelp(sender, entry);
             return true;
+        }
+
+        if (entry.cooldown > 0 && sender.isPlayer()) {
+            String name = sender.getName();
+            UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
+            long now = System.currentTimeMillis();
+            Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(uuid, k -> new HashMap<>());
+            Long lastUse = playerCooldowns.get(entry.name);
+            if (lastUse != null && (now - lastUse) < entry.cooldown * 50L) {
+                long remaining = (entry.cooldown * 50L - (now - lastUse)) / 50;
+                sender.sendMessage(provider().format(Messages.COMMAND_COOLDOWN, remaining));
+                return true;
+            }
+            playerCooldowns.put(entry.name, now);
         }
 
         List<String> cmdArgs = args != null
@@ -398,9 +400,12 @@ public class CommandRegistryImpl {
         sender.sendMessage(p.format(Messages.COMMAND_HELP_HEADER, entry.name, entry.description));
         if (!entry.subCommands.isEmpty()) {
             sender.sendMessage(p.get(Messages.COMMAND_HELP_SUBTITLE));
+            Set<String> seen = new HashSet<>();
             for (SubCommandEntry sub : entry.subCommands.values()) {
                 if (sub.permission == null || sub.permission.isEmpty() || sender.hasPermission(sub.permission)) {
-                    sender.sendMessage(p.format(Messages.COMMAND_HELP_ENTRY, sub.name, sub.description));
+                    if (seen.add(sub.name)) {
+                        sender.sendMessage(p.format(Messages.COMMAND_HELP_ENTRY, sub.name, sub.description));
+                    }
                 }
             }
         }
