@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    permission:
+    permissions:
       contents: write
     
     steps:
@@ -27,21 +27,40 @@ jobs:
           mvn install -DskipTests \
             --batch-mode
 
+      - name: Generate changelog
+        run: |
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          PREVIOUS_TAG=$(git tag --list 'v*' --sort=-version:refname \
+            | grep -A 999 "$CURRENT_TAG" | tail -n +2 | head -1)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGES=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD --no-merges)
+          fi
+
+          {
+            echo "## Okaso ${{ github.ref_name }}"
+            echo ""
+            echo "Download the adapter for your platform:"
+            echo ""
+            echo "| File | Platform |"
+            echo "|------|----------|"
+            echo "| \`okaso-bukkit-*.jar\` | Bukkit / Spigot / Paper |"
+            echo "| \`okaso-bungeecord-*.jar\` | BungeeCord |"
+            echo "| \`okaso-waterfall-*.jar\` | Waterfall |"
+            echo "| \`okaso-velocity-*.jar\` | Velocity |"
+            echo ""
+            echo "### Changelog"
+            echo ""
+            echo "$CHANGES"
+          } > release_body.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: Okaso ${{ github.ref_name }}
-          body: |
-            ## Okaso ${{ github.ref_name }}
-
-            Download the adapter for your platform:
-
-            | File | Platform |
-            |------|----------|
-            | `okaso-bukkit-*.jar` | Bukkit / Spigot / Paper |
-            | `okaso-bungeecord-*.jar` | BungeeCord |
-            | `okaso-waterfall-*.jar` | Waterfall |
-            | `okaso-velocity-*.jar` | Velocity |
+          body_path: release_body.md
           files: |
             okaso-bukkit/target/*.jar
             okaso-bungeecord/target/*.jar
