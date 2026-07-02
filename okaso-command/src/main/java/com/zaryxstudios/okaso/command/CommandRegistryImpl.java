@@ -89,6 +89,11 @@ public class CommandRegistryImpl {
                 + "The command '" + entry.name + "' will not be executable.");
         }
 
+        commands.put(entry.name, entry);
+        for (String alias : cmdAnn.aliases()) {
+            commands.put(alias.toLowerCase(), entry);
+        }
+
         for (Method method : findAllMethods(clazz)) {
             SubCommand subAnn = method.getAnnotation(SubCommand.class);
             if (subAnn != null) {
@@ -99,11 +104,6 @@ public class CommandRegistryImpl {
             if (mCmdAnn != null) {
                 registerCommandMethod(handler, method, mCmdAnn);
             }
-        }
-
-        commands.put(entry.name, entry);
-        for (String alias : cmdAnn.aliases()) {
-            commands.put(alias.toLowerCase(), entry);
         }
     }
 
@@ -117,9 +117,16 @@ public class CommandRegistryImpl {
         sub.method = method;
         sub.instance = handler;
 
-        parent.subCommands.put(sub.name, sub);
+        SubCommandEntry existing = parent.subCommands.put(sub.name, sub);
+        if (existing != null && existing != sub) {
+            System.err.println("[Okaso] SubCommand '" + sub.name + "' overwrites existing subcommand in '" + parent.name + "'.");
+        }
         for (String alias : sub.aliases) {
-            parent.subCommands.put(alias, sub);
+            if (alias.equals(sub.name)) continue;
+            SubCommandEntry aliasExisting = parent.subCommands.put(alias, sub);
+            if (aliasExisting != null && aliasExisting != sub) {
+                System.err.println("[Okaso] SubCommand alias '" + alias + "' conflicts with existing subcommand '" + aliasExisting.name + "' in '" + parent.name + "'.");
+            }
         }
     }
 
@@ -308,9 +315,7 @@ public class CommandRegistryImpl {
         for (String k : toRemove) {
             commands.remove(k);
         }
-        if (entry.subCommands != null) {
-            entry.subCommands.clear();
-        }
+        entry.subCommands.clear();
     }
 
     public void clear() {
