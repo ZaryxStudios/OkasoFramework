@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 8
         uses: actions/setup-java@v4
@@ -34,10 +36,13 @@ jobs:
             | grep -x -A 999 "$CURRENT_TAG" | tail -n +2 | head -1)
 
           if [ -z "$PREVIOUS_TAG" ]; then
-            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges)
+            RANGE="HEAD"
           else
-            CHANGES=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD --no-merges)
+            RANGE="$PREVIOUS_TAG..HEAD"
           fi
+
+          MERGES=$(git log --pretty=format:"- %s (%h)" --merges "$RANGE")
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges "$RANGE")
 
           {
             echo "## Okaso ${{ github.ref_name }}"
@@ -53,7 +58,15 @@ jobs:
             echo ""
             echo "### Changelog"
             echo ""
-            echo "$CHANGES"
+            if [ -n "$MERGES" ]; then
+              echo "#### Pull Requests"
+              echo "$MERGES"
+              echo ""
+            fi
+            if [ -n "$COMMITS" ]; then
+              echo "#### Commits"
+              echo "$COMMITS"
+            fi
           } > release_body.md
 
       - name: Create GitHub Release
