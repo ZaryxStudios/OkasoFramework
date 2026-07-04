@@ -31,7 +31,7 @@ jobs:
         run: |
           CURRENT_TAG="${GITHUB_REF_NAME}"
           PREVIOUS_TAG=$(git tag --list 'v*' --sort=-version:refname \
-            | grep -A 999 "$CURRENT_TAG" | tail -n +2 | head -1)
+            | grep -x -A 999 "$CURRENT_TAG" | tail -n +2 | head -1)
 
           if [ -z "$PREVIOUS_TAG" ]; then
             CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges)
