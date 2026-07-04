@@ -224,6 +224,7 @@ public class BukkitGUIItem implements GUIItem {
                 stack.setDurability(durability);
             }
 
+            Map<Enchantment, Integer> preGlowEnchants = null;
             ItemMeta meta = stack.getItemMeta();
             if (meta != null) {
                 if (displayName != null) {
@@ -239,7 +240,6 @@ public class BukkitGUIItem implements GUIItem {
                         meta.addEnchant(e.getKey(), e.getValue(), true);
                     }
                 }
-                Map<Enchantment, Integer> preGlowEnchants = null;
                 if (glow) {
                     preGlowEnchants = new HashMap<>(meta.getEnchants());
                     if (!meta.hasEnchants()) {
