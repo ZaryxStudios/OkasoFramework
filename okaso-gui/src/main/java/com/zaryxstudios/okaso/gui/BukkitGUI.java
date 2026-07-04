@@ -2,6 +2,7 @@ package com.zaryxstudios.okaso.gui;
 
 import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
+import com.zaryxstudios.okaso.common.text.TextColorizer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -15,6 +16,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -34,19 +36,15 @@ import lombok.Getter;
 public class BukkitGUI implements GUI, Listener {
 
     private final Plugin plugin;
-    @Getter
     private final String title;
-    @Getter
     private final int size;
     @Getter
     private final Inventory inventory;
     private final Map<Integer, GUIItem> items;
     private boolean registered;
-    private int viewerCount;
     private Consumer<Object> openHandler;
     private Consumer<Object> closeHandler;
 
-    @Getter
     private int page;
     private List<GUIItem> pageableItems;
     private int pageSize;
@@ -55,7 +53,6 @@ public class BukkitGUI implements GUI, Listener {
     private int animTick;
     private List<Runnable> animFrames;
 
-    private BukkitGUI confirmParent;
     private Consumer<Boolean> confirmCallback;
 
     public BukkitGUI(Plugin plugin, String title, int size) {
@@ -65,21 +62,30 @@ public class BukkitGUI implements GUI, Listener {
         this.inventory = Bukkit.createInventory(null, size, title);
         this.items = new HashMap<>();
         this.registered = false;
-        this.viewerCount = 0;
         this.page = 0;
         this.pageableItems = null;
         this.pageSize = size;
     }
 
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public int getSize() {
+        return size;
+    }
+
+    @Override
+    public int getPage() {
+        return page;
+    }
 
     @Override
     public void open(Object player) {
         if (player instanceof Player) {
             registerListener();
-            boolean alreadyViewing = isViewing(player);
-            if (!alreadyViewing) {
-                viewerCount++;
-            }
             ((Player) player).openInventory(inventory);
             if (openHandler != null) {
                 openHandler.accept(player);
@@ -122,6 +128,7 @@ public class BukkitGUI implements GUI, Listener {
 
     @Override
     public int addItem(GUIItem item) {
+        if (item == null) return -1;
         for (int slot = 0; slot < size; slot++) {
             if (!items.containsKey(slot)) {
                 setItem(slot, item);
@@ -178,9 +185,10 @@ public class BukkitGUI implements GUI, Listener {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Collection<Object> getViewers() {
-        return new ArrayList<>((Collection<? extends Object>) (Object) inventory.getViewers());
+        Collection<Object> result = new ArrayList<>();
+        result.addAll(inventory.getViewers());
+        return result;
     }
 
     @Override
@@ -213,6 +221,7 @@ public class BukkitGUI implements GUI, Listener {
 
     @Override
     public void fillEmpty(GUIItem item) {
+        if (item == null) return;
         Object bukkitItem = item.getItemStack();
         if (!(bukkitItem instanceof ItemStack)) return;
         ItemStack stack = (ItemStack) bukkitItem;
@@ -226,6 +235,7 @@ public class BukkitGUI implements GUI, Listener {
 
     @Override
     public void fillBorder(GUIItem item) {
+        if (item == null) return;
         Object bukkitItem = item.getItemStack();
         if (!(bukkitItem instanceof ItemStack)) return;
         ItemStack stack = (ItemStack) bukkitItem;
@@ -343,6 +353,7 @@ public class BukkitGUI implements GUI, Listener {
     }
 
     public void setItems(Map<Integer, GUIItem> items) {
+        if (items == null) return;
         for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
             setItem(entry.getKey(), entry.getValue());
         }
@@ -412,6 +423,18 @@ public class BukkitGUI implements GUI, Listener {
     }
 
     public void setPageableItems(List<GUIItem> items, int pageSize) {
+        if (items == null) {
+            this.pageableItems = null;
+            this.page = 0;
+            renderPage();
+            return;
+        }
+        if (pageSize <= 0) {
+            this.pageableItems = null;
+            this.page = 0;
+            renderPage();
+            return;
+        }
         this.pageableItems = new ArrayList<>(items);
         this.pageSize = pageSize;
         this.page = 0;
@@ -441,6 +464,7 @@ public class BukkitGUI implements GUI, Listener {
     }
 
     public void animate(List<Runnable> frames, long intervalTicks) {
+        if (frames == null || frames.isEmpty()) return;
         stopAnimation();
         this.animFrames = new ArrayList<>(frames);
         this.animTick = 0;
@@ -453,6 +477,7 @@ public class BukkitGUI implements GUI, Listener {
     }
 
     public void animateSlots(Map<Integer, List<ItemStack>> slotAnimations, long intervalTicks) {
+        if (slotAnimations == null || slotAnimations.isEmpty()) return;
         stopAnimation();
         int maxFrames = slotAnimations.values().stream()
             .mapToInt(List::size)
@@ -489,17 +514,29 @@ public class BukkitGUI implements GUI, Listener {
                         String confirmTitle, String cancelTitle, int confirmSlot, int cancelSlot) {
         this.confirmCallback = callback;
         if (confirmItem != null) {
-            BukkitGUIItem confirmBtn = new BukkitGUIItem(
-                confirmItem.getItemStack() instanceof ItemStack ? (ItemStack) confirmItem.getItemStack() : null,
-                event -> handleConfirm(true)
-            );
+            ItemStack stack = confirmItem.getItemStack() instanceof ItemStack ? (ItemStack) confirmItem.getItemStack() : null;
+            if (stack != null && confirmTitle != null) {
+                stack = stack.clone();
+                ItemMeta meta = stack.getItemMeta();
+                if (meta != null) {
+                    meta.setDisplayName(TextColorizer.translate(confirmTitle));
+                    stack.setItemMeta(meta);
+                }
+            }
+            BukkitGUIItem confirmBtn = new BukkitGUIItem(stack, event -> handleConfirm(true));
             setItem(confirmSlot, confirmBtn);
         }
         if (cancelItem != null) {
-            BukkitGUIItem cancelBtn = new BukkitGUIItem(
-                cancelItem.getItemStack() instanceof ItemStack ? (ItemStack) cancelItem.getItemStack() : null,
-                event -> handleConfirm(false)
-            );
+            ItemStack stack = cancelItem.getItemStack() instanceof ItemStack ? (ItemStack) cancelItem.getItemStack() : null;
+            if (stack != null && cancelTitle != null) {
+                stack = stack.clone();
+                ItemMeta meta = stack.getItemMeta();
+                if (meta != null) {
+                    meta.setDisplayName(TextColorizer.translate(cancelTitle));
+                    stack.setItemMeta(meta);
+                }
+            }
+            BukkitGUIItem cancelBtn = new BukkitGUIItem(stack, event -> handleConfirm(false));
             setItem(cancelSlot, cancelBtn);
         }
     }
@@ -523,11 +560,6 @@ public class BukkitGUI implements GUI, Listener {
         int rawSlot = event.getRawSlot();
         boolean topInv = rawSlot < size;
 
-        if (topInv || event.isShiftClick()) {
-            event.setCancelled(true);
-        }
-
-
         if (topInv) {
             int slot = rawSlot;
             GUIItem item = items.get(slot);
@@ -544,22 +576,22 @@ public class BukkitGUI implements GUI, Listener {
                 if (clickEvent.isCancelled()) {
                     event.setCancelled(true);
                 }
+            } else {
+                event.setCancelled(true);
             }
+        } else if (event.isShiftClick()) {
+            event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
         if (event.getInventory().equals(inventory)) {
-            boolean allTop = true;
             for (int slot : event.getRawSlots()) {
-                if (slot >= size) {
-                    allTop = false;
-                    break;
+                if (slot < size) {
+                    event.setCancelled(true);
+                    return;
                 }
-            }
-            if (allTop) {
-                event.setCancelled(true);
             }
         }
     }
@@ -567,16 +599,13 @@ public class BukkitGUI implements GUI, Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!event.getInventory().equals(inventory)) return;
-        viewerCount--;
-        if (viewerCount < 0) viewerCount = 0;
         if (closeHandler != null) {
             closeHandler.accept(event.getPlayer());
         }
-        if (viewerCount <= 0 && registered) {
+        if (inventory.getViewers().isEmpty() && registered) {
             stopAnimation();
             HandlerList.unregisterAll(this);
             registered = false;
-            viewerCount = 0;
         }
     }
 

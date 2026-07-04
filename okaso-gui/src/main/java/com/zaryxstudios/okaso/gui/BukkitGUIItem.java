@@ -5,19 +5,12 @@ import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +18,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -35,8 +27,11 @@ public class BukkitGUIItem implements GUIItem {
 
     @Getter @Setter
     private ItemStack itemStack;
-    @Setter
+    @Getter @Setter
     private GUIClickHandler clickHandler;
+
+    /** Snapshot of enchantments before glow was applied, used to safely restore on setGlow(false). */
+    private Map<Enchantment, Integer> enchantmentsBeforeGlow;
 
     @FunctionalInterface
     public interface GUIClickHandler {
@@ -125,19 +120,15 @@ public class BukkitGUIItem implements GUIItem {
                 if (meta instanceof SkullMeta) {
                     SkullMeta skull = (SkullMeta) meta;
                     if (skull.hasOwner()) {
-                        try {
-                            this.skullOwner = (String) SkullMeta.class.getMethod("getOwner").invoke(skull);
-                        } catch (Exception ignored) {}
+                        this.skullOwner = skull.getOwner();
                     }
                 }
                 try {
-                    Method isUnbr = meta.getClass().getMethod("isUnbreakable");
-                    this.unbreakable = (boolean) isUnbr.invoke(meta);
-                } catch (Exception ignored) {}
+                    this.unbreakable = meta.isUnbreakable();
+                } catch (NoSuchMethodError ignored) {}
                 try {
-                    Method getCmd = meta.getClass().getMethod("getCustomModelData");
-                    this.customModelData = (int) getCmd.invoke(meta);
-                } catch (Exception ignored) {}
+                    this.customModelData = meta.getCustomModelData();
+                } catch (NoSuchMethodError ignored) {}
             }
             return this;
         }
@@ -222,54 +213,8 @@ public class BukkitGUIItem implements GUIItem {
             return this;
         }
 
-        private void applyGlow(ItemMeta meta, ItemStack stack) {
-            if (tryFakeEnchantmentGlow(meta)) return;
-            if (tryAttributeGlow(meta, stack)) return;
+        private void applyGlow(ItemMeta meta) {
             meta.addEnchant(Enchantment.DURABILITY, 1, true);
-        }
-
-        private boolean tryFakeEnchantmentGlow(ItemMeta meta) {
-            try {
-                Field acceptingNew = Enchantment.class.getDeclaredField("acceptingNew");
-                acceptingNew.setAccessible(true);
-                acceptingNew.setBoolean(null, true);
-
-                Enchantment fakeGlow = new Enchantment(NamespacedKey.minecraft("okaso_glow")) {
-                    @Override public String getName() { return "okaso_glow"; }
-                    @Override public int getMaxLevel() { return 1; }
-                    @Override public int getStartLevel() { return 1; }
-                    @Override public EnchantmentTarget getItemTarget() { return EnchantmentTarget.ALL; }
-                    @Override public boolean isTreasure() { return false; }
-                    @Override public boolean isCursed() { return false; }
-                    @Override public boolean conflictsWith(Enchantment other) { return false; }
-                    @Override public boolean canEnchantItem(ItemStack item) { return true; }
-                };
-
-                try {
-                    Enchantment.registerEnchantment(fakeGlow);
-                } catch (IllegalArgumentException ignored) {
-                }
-
-                meta.addEnchant(fakeGlow, 1, true);
-                return true;
-            } catch (Exception ignored) {
-                return false;
-            }
-        }
-
-        private boolean tryAttributeGlow(ItemMeta meta, ItemStack stack) {
-            try {
-                Method addAttributeModifier = meta.getClass().getMethod(
-                    "addAttributeModifier", Attribute.class,
-                    AttributeModifier.class);
-                addAttributeModifier.invoke(meta, Attribute.GENERIC_LUCK,
-                    new AttributeModifier(
-                        UUID.randomUUID(), "okaso_glow", 0,
-                        AttributeModifier.Operation.ADD_NUMBER));
-                return true;
-            } catch (Exception ignored) {
-                return false;
-            }
         }
 
         public BukkitGUIItem build() {
@@ -279,6 +224,7 @@ public class BukkitGUIItem implements GUIItem {
                 stack.setDurability(durability);
             }
 
+            Map<Enchantment, Integer> preGlowEnchants = null;
             ItemMeta meta = stack.getItemMeta();
             if (meta != null) {
                 if (displayName != null) {
@@ -295,8 +241,9 @@ public class BukkitGUIItem implements GUIItem {
                     }
                 }
                 if (glow) {
+                    preGlowEnchants = new HashMap<>(meta.getEnchants());
                     if (!meta.hasEnchants()) {
-                        applyGlow(meta, stack);
+                        applyGlow(meta);
                     }
                     meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                 }
@@ -318,15 +265,16 @@ public class BukkitGUIItem implements GUIItem {
                     meta.addItemFlags(flags.toArray(new ItemFlag[0]));
                 }
                 if (skullOwner != null && meta instanceof SkullMeta) {
-                    try {
-                        SkullMeta.class.getMethod("setOwner", String.class).invoke(meta, skullOwner);
-                    } catch (Exception ignored) {
-                    }
+                    ((SkullMeta) meta).setOwner(skullOwner);
                 }
                 stack.setItemMeta(meta);
             }
 
-            return new BukkitGUIItem(stack, clickHandler);
+            BukkitGUIItem result = new BukkitGUIItem(stack, clickHandler);
+            if (preGlowEnchants != null) {
+                result.enchantmentsBeforeGlow = preGlowEnchants;
+            }
+            return result;
         }
     }
 
@@ -420,12 +368,20 @@ public class BukkitGUIItem implements GUIItem {
         if (meta == null) return;
         if (glow) {
             if (!meta.hasEnchants()) {
+                this.enchantmentsBeforeGlow = new HashMap<>();
                 meta.addEnchant(Enchantment.DURABILITY, 1, true);
             }
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         } else {
-            for (Enchantment e : meta.getEnchants().keySet()) {
-                meta.removeEnchant(e);
+            if (this.enchantmentsBeforeGlow != null) {
+                Map<Enchantment, Integer> original = this.enchantmentsBeforeGlow;
+                this.enchantmentsBeforeGlow = null;
+                for (Enchantment e : new ArrayList<>(meta.getEnchants().keySet())) {
+                    meta.removeEnchant(e);
+                }
+                for (Map.Entry<Enchantment, Integer> e : original.entrySet()) {
+                    meta.addEnchant(e.getKey(), e.getValue(), true);
+                }
             }
             meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
@@ -437,8 +393,8 @@ public class BukkitGUIItem implements GUIItem {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return false;
         try {
-            return (boolean) ItemMeta.class.getMethod("isUnbreakable").invoke(meta);
-        } catch (Exception e) {
+            return meta.isUnbreakable();
+        } catch (NoSuchMethodError e) {
             return false;
         }
     }
@@ -553,6 +509,10 @@ public class BukkitGUIItem implements GUIItem {
     }
 
     public BukkitGUIItem copy() {
-        return new BukkitGUIItem(itemStack != null ? itemStack.clone() : null, clickHandler);
+        BukkitGUIItem copy = new BukkitGUIItem(itemStack != null ? itemStack.clone() : null, clickHandler);
+        if (this.enchantmentsBeforeGlow != null) {
+            copy.enchantmentsBeforeGlow = new HashMap<>(this.enchantmentsBeforeGlow);
+        }
+        return copy;
     }
 }

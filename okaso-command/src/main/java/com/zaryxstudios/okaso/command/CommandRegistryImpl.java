@@ -29,7 +29,7 @@ import lombok.Getter;
 public class CommandRegistryImpl {
 
     private final Map<String, CommandEntry> commands;
-    private final Map<UUID, Map<String, Long>> cooldowns;
+    private final Map<String, Map<String, Long>> cooldowns;
     private MessageProvider messageProvider;
 
     public CommandRegistryImpl() {
@@ -83,6 +83,15 @@ public class CommandRegistryImpl {
 
         if (handler instanceof CommandHandler) {
             entry.handler = (CommandHandler) handler;
+        } else {
+            System.err.println("[Okaso] Class '" + clazz.getSimpleName()
+                + "' has @Command but does not implement CommandHandler. "
+                + "The command '" + entry.name + "' will not be executable.");
+        }
+
+        commands.put(entry.name, entry);
+        for (String alias : cmdAnn.aliases()) {
+            commands.put(alias.toLowerCase(), entry);
         }
 
         for (Method method : findAllMethods(clazz)) {
@@ -96,11 +105,6 @@ public class CommandRegistryImpl {
                 registerCommandMethod(handler, method, mCmdAnn);
             }
         }
-
-        commands.put(entry.name, entry);
-        for (String alias : cmdAnn.aliases()) {
-            commands.put(alias.toLowerCase(), entry);
-        }
     }
 
     private void registerSubCommandFromMethod(CommandEntry parent, Object handler, Method method, SubCommand ann) {
@@ -113,9 +117,16 @@ public class CommandRegistryImpl {
         sub.method = method;
         sub.instance = handler;
 
-        parent.subCommands.put(sub.name, sub);
+        SubCommandEntry existing = parent.subCommands.put(sub.name, sub);
+        if (existing != null && existing != sub) {
+            System.err.println("[Okaso] SubCommand '" + sub.name + "' overwrites existing subcommand in '" + parent.name + "'.");
+        }
         for (String alias : sub.aliases) {
-            parent.subCommands.put(alias, sub);
+            if (alias.equals(sub.name)) continue;
+            SubCommandEntry aliasExisting = parent.subCommands.put(alias, sub);
+            if (aliasExisting != null && aliasExisting != sub) {
+                System.err.println("[Okaso] SubCommand alias '" + alias + "' conflicts with existing subcommand '" + aliasExisting.name + "' in '" + parent.name + "'.");
+            }
         }
     }
 
@@ -178,24 +189,10 @@ public class CommandRegistryImpl {
             return true;
         }
 
-        if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
-            String subName = args[0].toLowerCase();
-            SubCommandEntry sub = entry.subCommands.get(subName);
-            if (sub != null) {
-                return dispatchSubCommand(sender, args, entry, sub);
-            }
-        }
-
-        if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
-            showHelp(sender, entry);
-            return true;
-        }
-
         if (entry.cooldown > 0 && sender.isPlayer()) {
             String name = sender.getName();
-            UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
             long now = System.currentTimeMillis();
-            Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(uuid, k -> new HashMap<>());
+            Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(name, k -> new HashMap<>());
             Long lastUse = playerCooldowns.get(entry.name);
             if (lastUse != null && (now - lastUse) < entry.cooldown * 50L) {
                 long remaining = (entry.cooldown * 50L - (now - lastUse)) / 50;
@@ -203,6 +200,19 @@ public class CommandRegistryImpl {
                 return true;
             }
             playerCooldowns.put(entry.name, now);
+        }
+
+        if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
+            String subName = args[0].toLowerCase();
+            SubCommandEntry sub = entry.subCommands.get(subName);
+            if (sub != null) {
+                return dispatchSubCommand(sender, args, sub);
+            }
+        }
+
+        if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
+            showHelp(sender, entry);
+            return true;
         }
 
         List<String> cmdArgs = args != null
@@ -213,7 +223,7 @@ public class CommandRegistryImpl {
         return true;
     }
 
-    private boolean dispatchSubCommand(CommandSender sender, String[] args, CommandEntry parent, SubCommandEntry sub) {
+    private boolean dispatchSubCommand(CommandSender sender, String[] args, SubCommandEntry sub) {
         if (sub.permission != null && !sub.permission.isEmpty()) {
             if (!sender.hasPermission(sub.permission)) {
                 sender.sendMessage(provider().get(Messages.COMMAND_SUB_NO_PERMISSION));
@@ -265,11 +275,17 @@ public class CommandRegistryImpl {
             } else if (args.length > 1 && !entry.subCommands.isEmpty()) {
                 String subName = args[0].toLowerCase();
                 SubCommandEntry sub = entry.subCommands.get(subName);
-                if (sub != null && sub.tabCompleter != null) {
+                if (sub != null) {
                     List<String> subArgs = new ArrayList<>(Arrays.asList(args));
                     subArgs.remove(0);
-                    CommandContext ctx = new CommandContext(sender, sub.name, subArgs);
-                    return sub.tabCompleter.onTabComplete(ctx);
+                    if (sub.tabCompleter != null) {
+                        CommandContext ctx = new CommandContext(sender, sub.name, subArgs);
+                        return sub.tabCompleter.onTabComplete(ctx);
+                    }
+                    if (entry.tabCompleter != null) {
+                        CommandContext ctx = new CommandContext(sender, entry.name, subArgs);
+                        return entry.tabCompleter.onTabComplete(ctx);
+                    }
                 }
             }
         }
@@ -299,9 +315,7 @@ public class CommandRegistryImpl {
         for (String k : toRemove) {
             commands.remove(k);
         }
-        if (entry.subCommands != null) {
-            entry.subCommands.clear();
-        }
+        entry.subCommands.clear();
     }
 
     public void clear() {
@@ -333,16 +347,6 @@ public class CommandRegistryImpl {
         entry.instance = handler;
         entry.method = method;
 
-        ScanResult scan = scanSubCommands(handler);
-        for (SubCommandEntry sub : scan.subCommands.values()) {
-            entry.subCommands.put(sub.name, sub);
-            if (sub.aliases != null) {
-                for (String alias : sub.aliases) {
-                    entry.subCommands.put(alias, sub);
-                }
-            }
-        }
-
         if (CommandHandler.class.isAssignableFrom(handler.getClass())) {
             entry.handler = (CommandHandler) handler;
         } else {
@@ -354,6 +358,7 @@ public class CommandRegistryImpl {
             commands.put(alias.toLowerCase(), entry);
         }
 
+        ScanResult scan = scanSubCommands(handler);
         for (Map.Entry<String, SubCommandEntry> subEntry : scan.orphanSubCommands.entrySet()) {
             SubCommandEntry sub = subEntry.getValue();
             CommandEntry parent = commands.get(sub.parentCommand);
@@ -420,7 +425,8 @@ public class CommandRegistryImpl {
     }
 
     public void clearCooldowns(UUID playerId) {
-        cooldowns.remove(playerId);
+        cooldowns.keySet().removeIf(name ->
+            UUID.nameUUIDFromBytes(name.getBytes()).equals(playerId));
     }
 
     private CommandHandler createReflectiveHandler(final Object instance, final Method method) {
