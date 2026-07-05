@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,12 +24,21 @@ import lombok.Setter;
 
 public class BukkitGUIItem implements GUIItem {
 
-    @Getter @Setter
     private ItemStack itemStack;
+
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
+        this.enchantmentsBeforeGlow = null;
+    }
+
+    @Override
+    public ItemStack getItemStack() {
+        return itemStack;
+    }
+
     @Getter @Setter
     private GUIClickHandler clickHandler;
 
-    /** Snapshot of enchantments before glow was applied, used to safely restore on setGlow(false). */
     private Map<Enchantment, Integer> enchantmentsBeforeGlow;
 
     @FunctionalInterface
@@ -109,6 +117,7 @@ public class BukkitGUIItem implements GUIItem {
         private GUIClickHandler clickHandler;
 
         public Builder itemStack(ItemStack stack) {
+            if (stack == null) return this;
             this.material = stack.getType();
             this.amount = stack.getAmount();
             if (stack.hasItemMeta()) {
@@ -256,9 +265,8 @@ public class BukkitGUIItem implements GUIItem {
                 }
                 if (customModelData >= 0) {
                     try {
-                        Method setCmd = meta.getClass().getMethod("setCustomModelData", Integer.TYPE);
-                        setCmd.invoke(meta, customModelData);
-                    } catch (Exception ignored) {
+                        meta.setCustomModelData(customModelData);
+                    } catch (NoSuchMethodError ignored) {
                     }
                 }
                 if (!flags.isEmpty()) {
@@ -291,7 +299,7 @@ public class BukkitGUIItem implements GUIItem {
     }
 
     public void setAmount(int amount) {
-        if (itemStack != null) {
+        if (itemStack != null && amount > 0 && amount <= itemStack.getMaxStackSize()) {
             itemStack.setAmount(amount);
         }
     }
@@ -306,7 +314,11 @@ public class BukkitGUIItem implements GUIItem {
         if (itemStack == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(TextColorizer.translate(name));
+            if (name != null) {
+                meta.setDisplayName(TextColorizer.translate(name));
+            } else {
+                meta.setDisplayName(null);
+            }
             itemStack.setItemMeta(meta);
         }
     }
@@ -321,15 +333,24 @@ public class BukkitGUIItem implements GUIItem {
         if (itemStack == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
-            meta.setLore(lore.stream()
-                .map(TextColorizer::translate)
-                .collect(Collectors.toList()));
+            if (lore != null) {
+                meta.setLore(lore.stream()
+                    .filter(java.util.Objects::nonNull)
+                    .map(TextColorizer::translate)
+                    .collect(Collectors.toList()));
+            } else {
+                meta.setLore(null);
+            }
             itemStack.setItemMeta(meta);
         }
     }
 
     public void setLore(String... lore) {
-        setLore(Arrays.asList(lore));
+        if (lore != null) {
+            setLore(Arrays.asList(lore));
+        } else {
+            setLore((List<String>) null);
+        }
     }
 
     public void addLore(String line) {
@@ -339,6 +360,8 @@ public class BukkitGUIItem implements GUIItem {
             List<String> lore = meta.getLore();
             if (lore == null) {
                 lore = new ArrayList<>();
+            } else {
+                lore = new ArrayList<>(lore);
             }
             lore.add(TextColorizer.translate(line));
             meta.setLore(lore);
@@ -357,6 +380,7 @@ public class BukkitGUIItem implements GUIItem {
 
     public boolean hasGlow() {
         if (itemStack == null) return false;
+        if (enchantmentsBeforeGlow != null) return true;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null || !meta.hasEnchants()) return false;
         return meta.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS);
@@ -376,11 +400,15 @@ public class BukkitGUIItem implements GUIItem {
             if (this.enchantmentsBeforeGlow != null) {
                 Map<Enchantment, Integer> original = this.enchantmentsBeforeGlow;
                 this.enchantmentsBeforeGlow = null;
-                for (Enchantment e : new ArrayList<>(meta.getEnchants().keySet())) {
-                    meta.removeEnchant(e);
-                }
-                for (Map.Entry<Enchantment, Integer> e : original.entrySet()) {
-                    meta.addEnchant(e.getKey(), e.getValue(), true);
+                if (original.isEmpty()) {
+                    meta.removeEnchant(Enchantment.DURABILITY);
+                } else {
+                    for (Enchantment e : new ArrayList<>(meta.getEnchants().keySet())) {
+                        meta.removeEnchant(e);
+                    }
+                    for (Map.Entry<Enchantment, Integer> e : original.entrySet()) {
+                        meta.addEnchant(e.getKey(), e.getValue(), true);
+                    }
                 }
             }
             meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -420,9 +448,8 @@ public class BukkitGUIItem implements GUIItem {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return -1;
         try {
-            Method getCmd = meta.getClass().getMethod("getCustomModelData");
-            return (int) getCmd.invoke(meta);
-        } catch (Exception e) {
+            return meta.getCustomModelData();
+        } catch (NoSuchMethodError e) {
             return -1;
         }
     }
@@ -432,9 +459,8 @@ public class BukkitGUIItem implements GUIItem {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return;
         try {
-            Method setCmd = meta.getClass().getMethod("setCustomModelData", Integer.TYPE);
-            setCmd.invoke(meta, data);
-        } catch (Exception ignored) {
+            meta.setCustomModelData(data);
+        } catch (NoSuchMethodError ignored) {
         }
         itemStack.setItemMeta(meta);
     }
@@ -446,7 +472,7 @@ public class BukkitGUIItem implements GUIItem {
     }
 
     public void addFlags(ItemFlag... flags) {
-        if (itemStack == null) return;
+        if (itemStack == null || flags == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
             meta.addItemFlags(flags);
@@ -455,7 +481,7 @@ public class BukkitGUIItem implements GUIItem {
     }
 
     public void removeFlags(ItemFlag... flags) {
-        if (itemStack == null) return;
+        if (itemStack == null || flags == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
             meta.removeItemFlags(flags);
