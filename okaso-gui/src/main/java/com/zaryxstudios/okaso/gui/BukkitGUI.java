@@ -56,6 +56,9 @@ public class BukkitGUI implements GUI, Listener {
     private Consumer<Boolean> confirmCallback;
 
     public BukkitGUI(Plugin plugin, String title, int size) {
+        if (size % 9 != 0 || size < 9 || size > 54) {
+            throw new IllegalArgumentException("Inventory size must be a multiple of 9 between 9 and 54");
+        }
         this.plugin = plugin;
         this.title = title;
         this.size = size;
@@ -177,6 +180,8 @@ public class BukkitGUI implements GUI, Listener {
     public void clear() {
         items.clear();
         inventory.clear();
+        pageableItems = null;
+        page = 0;
     }
 
     @Override
@@ -254,6 +259,7 @@ public class BukkitGUI implements GUI, Listener {
 
     @Override
     public void fillRow(int row, GUIItem item) {
+        if (item == null) return;
         int start = row * 9;
         int end = Math.min(start + 9, size);
         for (int slot = start; slot < end; slot++) {
@@ -265,6 +271,7 @@ public class BukkitGUI implements GUI, Listener {
 
     @Override
     public void fillColumn(int column, GUIItem item) {
+        if (item == null) return;
         if (column < 0 || column > 8) return;
         int rows = getRows();
         for (int row = 0; row < rows; row++) {
@@ -387,7 +394,6 @@ public class BukkitGUI implements GUI, Listener {
         if (pageableItems == null) return;
         if (page < 0) page = 0;
         if (page >= getTotalPages()) page = getTotalPages() - 1;
-        if (page < 0) page = 0;
         this.page = page;
         renderPage();
     }
@@ -465,6 +471,7 @@ public class BukkitGUI implements GUI, Listener {
 
     public void animate(List<Runnable> frames, long intervalTicks) {
         if (frames == null || frames.isEmpty()) return;
+        if (intervalTicks <= 0) intervalTicks = 1;
         stopAnimation();
         this.animFrames = new ArrayList<>(frames);
         this.animTick = 0;
@@ -478,6 +485,10 @@ public class BukkitGUI implements GUI, Listener {
 
     public void animateSlots(Map<Integer, List<ItemStack>> slotAnimations, long intervalTicks) {
         if (slotAnimations == null || slotAnimations.isEmpty()) return;
+        if (intervalTicks <= 0) intervalTicks = 1;
+        for (int slot : slotAnimations.keySet()) {
+            if (slot < 0 || slot >= size) return;
+        }
         stopAnimation();
         int maxFrames = slotAnimations.values().stream()
             .mapToInt(List::size)
@@ -515,12 +526,14 @@ public class BukkitGUI implements GUI, Listener {
         this.confirmCallback = callback;
         if (confirmItem != null) {
             ItemStack stack = confirmItem.getItemStack() instanceof ItemStack ? (ItemStack) confirmItem.getItemStack() : null;
-            if (stack != null && confirmTitle != null) {
+            if (stack != null) {
                 stack = stack.clone();
-                ItemMeta meta = stack.getItemMeta();
-                if (meta != null) {
-                    meta.setDisplayName(TextColorizer.translate(confirmTitle));
-                    stack.setItemMeta(meta);
+                if (confirmTitle != null) {
+                    ItemMeta meta = stack.getItemMeta();
+                    if (meta != null) {
+                        meta.setDisplayName(TextColorizer.translate(confirmTitle));
+                        stack.setItemMeta(meta);
+                    }
                 }
             }
             BukkitGUIItem confirmBtn = new BukkitGUIItem(stack, event -> handleConfirm(true));
@@ -528,12 +541,14 @@ public class BukkitGUI implements GUI, Listener {
         }
         if (cancelItem != null) {
             ItemStack stack = cancelItem.getItemStack() instanceof ItemStack ? (ItemStack) cancelItem.getItemStack() : null;
-            if (stack != null && cancelTitle != null) {
+            if (stack != null) {
                 stack = stack.clone();
-                ItemMeta meta = stack.getItemMeta();
-                if (meta != null) {
-                    meta.setDisplayName(TextColorizer.translate(cancelTitle));
-                    stack.setItemMeta(meta);
+                if (cancelTitle != null) {
+                    ItemMeta meta = stack.getItemMeta();
+                    if (meta != null) {
+                        meta.setDisplayName(TextColorizer.translate(cancelTitle));
+                        stack.setItemMeta(meta);
+                    }
                 }
             }
             BukkitGUIItem cancelBtn = new BukkitGUIItem(stack, event -> handleConfirm(false));
