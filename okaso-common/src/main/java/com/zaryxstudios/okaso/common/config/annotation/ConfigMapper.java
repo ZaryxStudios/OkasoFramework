@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.common.config.annotation;
 
-import com.zaryxstudios.okaso.common.config.ConfigurationSection;
+import com.zaryxstudios.okaso.common.config.OkasoConfigurationSection;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public final class ConfigMapper {
     private ConfigMapper() {
     }
 
-    public static <T> T mapFromSection(T instance, ConfigurationSection section) {
+    public static <T> T mapFromSection(T instance, OkasoConfigurationSection section) {
         if (instance == null || section == null) return instance;
         Class<?> clazz = instance.getClass();
         for (Field field : findAllFields(clazz)) {
@@ -30,7 +30,7 @@ public final class ConfigMapper {
         return instance;
     }
 
-    public static <T> T mapFromSection(Class<T> type, ConfigurationSection section) {
+    public static <T> T mapFromSection(Class<T> type, OkasoConfigurationSection section) {
         try {
             return mapFromSection(type.newInstance(), section);
         } catch (Exception e) {
@@ -38,7 +38,7 @@ public final class ConfigMapper {
         }
     }
 
-    private static Object resolveValue(ConfigurationSection section, String path, Class<?> fieldType) {
+    private static Object resolveValue(OkasoConfigurationSection section, String path, Class<?> fieldType) {
         if (fieldType == String.class) return section.getString(path);
         if (fieldType == int.class || fieldType == Integer.class) return section.getInt(path);
         if (fieldType == double.class || fieldType == Double.class) return section.getDouble(path);
