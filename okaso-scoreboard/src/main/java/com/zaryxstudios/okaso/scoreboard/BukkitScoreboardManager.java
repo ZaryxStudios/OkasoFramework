@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.scoreboard;
 
-import com.zaryxstudios.okaso.common.scoreboard.ScoreboardManager;
+import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardManager;
 import com.zaryxstudios.okaso.common.scoreboard.ScoreboardObjective;
 
 import org.bukkit.Bukkit;
@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BukkitScoreboardManager implements ScoreboardManager {
+public class BukkitScoreboardManager implements OkasoScoreboardManager {
 
     private static final Method GET_NEW_SCOREBOARD;
 

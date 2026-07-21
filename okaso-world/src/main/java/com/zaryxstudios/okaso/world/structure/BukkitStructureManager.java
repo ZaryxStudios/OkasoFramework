@@ -1,7 +1,7 @@
 package com.zaryxstudios.okaso.world.structure;
 
-import com.zaryxstudios.okaso.common.world.Structure;
-import com.zaryxstudios.okaso.common.world.StructureManager;
+import com.zaryxstudios.okaso.common.world.OkasoStructure;
+import com.zaryxstudios.okaso.common.world.OkasoStructureManager;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 import lombok.Getter;
 
-public class BukkitStructureManager implements StructureManager {
+public class BukkitStructureManager implements OkasoStructureManager {
 
     private static final String FORMAT_HEADER = "OKASO_STRUCTURE_V1";
     private static final String FILE_EXTENSION = ".okstr";
@@ -72,7 +72,7 @@ public class BukkitStructureManager implements StructureManager {
     }
 
     @Override
-    public Optional<Structure> loadStructure(String name) {
+    public Optional<OkasoStructure> loadStructure(String name) {
         BukkitStructure structure = loadStructureFromFile(name);
         return Optional.ofNullable(structure);
     }
@@ -88,7 +88,7 @@ public class BukkitStructureManager implements StructureManager {
     }
 
     @Override
-    public boolean placeStructure(Structure structure, Object location) {
+    public boolean placeStructure(OkasoStructure structure, Object location) {
         if (!(location instanceof Location)) {
             logger.warning("placeStructure: location must be a Bukkit Location");
             return false;

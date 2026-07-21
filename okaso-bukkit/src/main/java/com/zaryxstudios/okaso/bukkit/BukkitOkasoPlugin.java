@@ -2,7 +2,7 @@ package com.zaryxstudios.okaso.bukkit;
 
 import com.zaryxstudios.okaso.command.CommandRegistryImpl;
 import com.zaryxstudios.okaso.common.OkasoAPI;
-import com.zaryxstudios.okaso.common.config.ConfigurationProvider;
+import com.zaryxstudios.okaso.common.config.OkasoConfigurationProvider;
 import com.zaryxstudios.okaso.common.entity.EntityService;
 import com.zaryxstudios.okaso.common.event.EventBus;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
@@ -16,7 +16,7 @@ import com.zaryxstudios.okaso.common.permission.PermissionManager;
 import org.bukkit.Material;
 import com.zaryxstudios.okaso.common.placeholder.PlaceholderRegistry;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
-import com.zaryxstudios.okaso.common.scoreboard.ScoreboardManager;
+import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardManager;
 import com.zaryxstudios.okaso.common.security.SecurityManager;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
 import com.zaryxstudios.okaso.common.storage.StorageProvider;
@@ -25,9 +25,9 @@ import com.zaryxstudios.okaso.common.task.TaskScheduler;
 import com.zaryxstudios.okaso.common.updater.UpdateChecker;
 import com.zaryxstudios.okaso.common.webhook.WebhookClient;
 import com.zaryxstudios.okaso.common.world.WorldManager;
-import com.zaryxstudios.okaso.common.world.StructureManager;
+import com.zaryxstudios.okaso.common.world.OkasoStructureManager;
 import com.zaryxstudios.okaso.common.module.ModuleManager;
-import com.zaryxstudios.okaso.config.OkasoConfigurationProvider;
+import com.zaryxstudios.okaso.config.DefaultConfigurationProvider;
 import com.zaryxstudios.okaso.entity.BukkitEntityService;
 import com.zaryxstudios.okaso.event.AnnotationEventRegistry;
 import com.zaryxstudios.okaso.hologram.BukkitHologramManager;
@@ -96,13 +96,13 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
         eventBus = new EventBus();
         reg.register(EventBus.class, eventBus);
 
-        reg.register(ConfigurationProvider.class, new OkasoConfigurationProvider());
+        reg.register(OkasoConfigurationProvider.class, new DefaultConfigurationProvider());
 
         reg.register(EntityService.class, new BukkitEntityService());
 
         reg.register(WorldManager.class, new BukkitWorldManager());
 
-        reg.register(StructureManager.class, new BukkitStructureManager(this));
+        reg.register(OkasoStructureManager.class, new BukkitStructureManager(this));
 
         reg.register(ItemBuilder.class, new BukkitItemBuilder(Material.STONE, 1));
 
@@ -110,7 +110,7 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
 
         reg.register(PlaceholderRegistry.class, new SimplePlaceholderRegistry());
 
-        reg.register(ScoreboardManager.class, new BukkitScoreboardManager());
+        reg.register(OkasoScoreboardManager.class, new BukkitScoreboardManager());
 
         reg.register(TabListManager.class, new BukkitTabListManager());
 

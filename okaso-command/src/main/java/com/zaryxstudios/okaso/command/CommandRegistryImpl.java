@@ -3,9 +3,9 @@ package com.zaryxstudios.okaso.command;
 import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.command.CommandContext;
 import com.zaryxstudios.okaso.common.command.CommandHandler;
-import com.zaryxstudios.okaso.common.command.CommandSender;
-import com.zaryxstudios.okaso.common.command.TabCompleter;
-import com.zaryxstudios.okaso.common.command.annotation.Command;
+import com.zaryxstudios.okaso.common.command.OkasoCommandSender;
+import com.zaryxstudios.okaso.common.command.OkasoTabCompleter;
+import com.zaryxstudios.okaso.common.command.annotation.OkasoCommand;
 import com.zaryxstudios.okaso.common.command.annotation.SubCommand;
 import com.zaryxstudios.okaso.common.message.DefaultMessageProvider;
 import com.zaryxstudios.okaso.common.message.MessageProvider;
@@ -56,21 +56,21 @@ public class CommandRegistryImpl {
     public void registerCommand(Object handler) {
         Class<?> clazz = handler.getClass();
 
-        Command classCmd = clazz.getAnnotation(Command.class);
+        OkasoCommand classCmd = clazz.getAnnotation(OkasoCommand.class);
         if (classCmd != null) {
             registerCommandFromClass(handler, clazz, classCmd);
             return;
         }
 
         for (Method method : findAllMethods(clazz)) {
-            Command cmdAnn = method.getAnnotation(Command.class);
+            OkasoCommand cmdAnn = method.getAnnotation(OkasoCommand.class);
             if (cmdAnn != null) {
                 registerCommandMethod(handler, method, cmdAnn);
             }
         }
     }
 
-    private void registerCommandFromClass(Object handler, Class<?> clazz, Command cmdAnn) {
+    private void registerCommandFromClass(Object handler, Class<?> clazz, OkasoCommand cmdAnn) {
         CommandEntry entry = new CommandEntry();
         entry.name = cmdAnn.name().toLowerCase();
         entry.permission = cmdAnn.permission();
@@ -85,7 +85,7 @@ public class CommandRegistryImpl {
             entry.handler = (CommandHandler) handler;
         } else {
             System.err.println("[Okaso] Class '" + clazz.getSimpleName()
-                + "' has @Command but does not implement CommandHandler. "
+                + "' has @OkasoCommand but does not implement CommandHandler. "
                 + "The command '" + entry.name + "' will not be executable.");
         }
 
@@ -100,7 +100,7 @@ public class CommandRegistryImpl {
                 registerSubCommandFromMethod(entry, handler, method, subAnn);
                 continue;
             }
-            Command mCmdAnn = method.getAnnotation(Command.class);
+            OkasoCommand mCmdAnn = method.getAnnotation(OkasoCommand.class);
             if (mCmdAnn != null) {
                 registerCommandMethod(handler, method, mCmdAnn);
             }
@@ -134,7 +134,7 @@ public class CommandRegistryImpl {
         registerCommand(name, null, "", "", "", handler);
     }
 
-    public void registerCommand(String name, CommandHandler handler, TabCompleter tabCompleter) {
+    public void registerCommand(String name, CommandHandler handler, OkasoTabCompleter tabCompleter) {
         registerCommand(name, null, "", "", "", handler);
         CommandEntry entry = commands.get(name.toLowerCase());
         if (entry != null) {
@@ -161,7 +161,7 @@ public class CommandRegistryImpl {
         }
     }
 
-    public boolean dispatch(CommandSender sender, String label, String[] args) {
+    public boolean dispatch(OkasoCommandSender sender, String label, String[] args) {
         if (label == null) return false;
 
         String cmdName = label.toLowerCase();
@@ -171,7 +171,7 @@ public class CommandRegistryImpl {
         return dispatchToEntry(sender, label, args, entry);
     }
 
-    private boolean dispatchToEntry(CommandSender sender, String label, String[] args, CommandEntry entry) {
+    private boolean dispatchToEntry(OkasoCommandSender sender, String label, String[] args, CommandEntry entry) {
         if (entry.permission != null && !entry.permission.isEmpty()) {
             if (!sender.hasPermission(entry.permission)) {
                 sender.sendMessage(provider().get(Messages.COMMAND_NO_PERMISSION));
@@ -223,7 +223,7 @@ public class CommandRegistryImpl {
         return true;
     }
 
-    private boolean dispatchSubCommand(CommandSender sender, String[] args, SubCommandEntry sub) {
+    private boolean dispatchSubCommand(OkasoCommandSender sender, String[] args, SubCommandEntry sub) {
         if (sub.permission != null && !sub.permission.isEmpty()) {
             if (!sender.hasPermission(sub.permission)) {
                 sender.sendMessage(provider().get(Messages.COMMAND_SUB_NO_PERMISSION));
@@ -245,7 +245,7 @@ public class CommandRegistryImpl {
         return true;
     }
 
-    public List<String> tabComplete(CommandSender sender, String label, String[] args) {
+    public List<String> tabComplete(OkasoCommandSender sender, String label, String[] args) {
         if (label == null) return Collections.emptyList();
 
         String cmdName = label.toLowerCase();
@@ -335,7 +335,7 @@ public class CommandRegistryImpl {
         return commands.containsKey(name.toLowerCase());
     }
 
-    private void registerCommandMethod(Object handler, Method method, Command cmdAnn) {
+    private void registerCommandMethod(Object handler, Method method, OkasoCommand cmdAnn) {
         CommandEntry entry = new CommandEntry();
         entry.name = cmdAnn.name().toLowerCase();
         entry.permission = cmdAnn.permission();
@@ -389,7 +389,7 @@ public class CommandRegistryImpl {
             sub.method = method;
             sub.instance = handler;
 
-            Command parentCmd = method.getDeclaringClass().getAnnotation(Command.class);
+            OkasoCommand parentCmd = method.getDeclaringClass().getAnnotation(OkasoCommand.class);
             if (parentCmd != null) {
                 sub.parentCommand = parentCmd.name().toLowerCase();
                 result.subCommands.put(sub.name, sub);
@@ -400,7 +400,7 @@ public class CommandRegistryImpl {
         return result;
     }
 
-    public void showHelp(CommandSender sender, CommandEntry entry) {
+    public void showHelp(OkasoCommandSender sender, CommandEntry entry) {
         MessageProvider p = provider();
         sender.sendMessage(p.format(Messages.COMMAND_HELP_HEADER, entry.name, entry.description));
         if (!entry.subCommands.isEmpty()) {
@@ -416,7 +416,7 @@ public class CommandRegistryImpl {
         }
     }
 
-    public void showHelp(CommandSender sender, String commandName) {
+    public void showHelp(OkasoCommandSender sender, String commandName) {
         getCommand(commandName).ifPresent(entry -> showHelp(sender, entry));
     }
 
@@ -472,12 +472,12 @@ public class CommandRegistryImpl {
         boolean consoleOnly;
         int cooldown;
         CommandHandler handler;
-        TabCompleter tabCompleter;
+        OkasoTabCompleter tabCompleter;
         @Getter Map<String, SubCommandEntry> subCommands = new LinkedHashMap<>();
         Object instance;
         Method method;
 
-        public void setTabCompleter(TabCompleter tabCompleter) {
+        public void setTabCompleter(OkasoTabCompleter tabCompleter) {
             this.tabCompleter = tabCompleter;
         }
 
@@ -499,9 +499,9 @@ public class CommandRegistryImpl {
         String parentCommand;
         Method method;
         Object instance;
-        TabCompleter tabCompleter;
+        OkasoTabCompleter tabCompleter;
 
-        public void setTabCompleter(TabCompleter tabCompleter) {
+        public void setTabCompleter(OkasoTabCompleter tabCompleter) {
             this.tabCompleter = tabCompleter;
         }
     }

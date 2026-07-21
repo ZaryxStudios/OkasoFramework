@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.config;
 
-import com.zaryxstudios.okaso.common.config.ConfigurationSection;
+import com.zaryxstudios.okaso.common.config.OkasoConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class OkasoConfigurationSection implements ConfigurationSection {
+public class DefaultConfigurationSection implements OkasoConfigurationSection {
 
     private final Map<String, Object> data;
 
@@ -128,12 +128,12 @@ public class OkasoConfigurationSection implements ConfigurationSection {
 
     @Override
     @SuppressWarnings("unchecked")
-    public ConfigurationSection getSection(String path) {
+    public OkasoConfigurationSection getSection(String path) {
         Object value = resolve(path);
         if (value instanceof Map) {
-            return new OkasoConfigurationSection((Map<String, Object>) value);
+            return new DefaultConfigurationSection((Map<String, Object>) value);
         }
-        return new OkasoConfigurationSection();
+        return new DefaultConfigurationSection();
     }
 
     @Override
