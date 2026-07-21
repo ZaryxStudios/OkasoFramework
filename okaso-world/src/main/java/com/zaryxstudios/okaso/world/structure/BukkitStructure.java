@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.world.structure;
 
-import com.zaryxstudios.okaso.common.world.Structure;
+import com.zaryxstudios.okaso.common.world.OkasoStructure;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import lombok.Getter;
 
 @Getter
-public class BukkitStructure implements Structure {
+public class BukkitStructure implements OkasoStructure {
 
     private final String name;
     private int width;
@@ -141,7 +141,7 @@ public class BukkitStructure implements Structure {
     }
 
     @Override
-    public Structure copy() {
+    public OkasoStructure copy() {
         return new BukkitStructure(this);
     }
 

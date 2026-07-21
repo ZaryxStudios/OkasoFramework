@@ -3,7 +3,7 @@ package com.zaryxstudios.okaso.common.world;
 import java.util.Collection;
 import java.util.Optional;
 
-public interface Structure {
+public interface OkasoStructure {
 
     String getName();
 
@@ -21,7 +21,7 @@ public interface Structure {
 
     void mirror(boolean flipX, boolean flipZ);
 
-    Structure copy();
+    OkasoStructure copy();
 
     boolean hasBlock(int x, int y, int z);
 

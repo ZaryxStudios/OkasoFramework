@@ -1,7 +1,7 @@
 package com.zaryxstudios.okaso.config;
 
-import com.zaryxstudios.okaso.common.config.ConfigurationProvider;
-import com.zaryxstudios.okaso.common.config.ConfigurationSection;
+import com.zaryxstudios.okaso.common.config.OkasoConfigurationProvider;
+import com.zaryxstudios.okaso.common.config.OkasoConfigurationSection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class OkasoConfigurationProvider implements ConfigurationProvider {
+public class DefaultConfigurationProvider implements OkasoConfigurationProvider {
 
     private final Yaml yaml;
     private final ObjectMapper mapper;
@@ -35,38 +35,38 @@ public class OkasoConfigurationProvider implements ConfigurationProvider {
 
     @Override
     @SuppressWarnings("unchecked")
-    public ConfigurationSection load(File file) {
+    public OkasoConfigurationSection load(File file) {
         if (file == null || !file.exists()) {
-            return new OkasoConfigurationSection();
+            return new DefaultConfigurationSection();
         }
 
         String name = file.getName().toLowerCase();
         try (InputStream is = new FileInputStream(file)) {
             if (name.endsWith(".json")) {
                 Map<String, Object> raw = mapper.readValue(is, LinkedHashMap.class);
-                return new OkasoConfigurationSection(raw);
+                return new DefaultConfigurationSection(raw);
             } else {
                 Object loaded = yaml.load(is);
                 if (loaded instanceof Map) {
-                    return new OkasoConfigurationSection((Map<String, Object>) loaded);
+                    return new DefaultConfigurationSection((Map<String, Object>) loaded);
                 }
-                return new OkasoConfigurationSection();
+                return new DefaultConfigurationSection();
             }
         } catch (IOException e) {
-            return new OkasoConfigurationSection();
+            return new DefaultConfigurationSection();
         }
     }
 
     @Override
-    public void save(ConfigurationSection section, File file) {
+    public void save(OkasoConfigurationSection section, File file) {
         if (section == null || file == null) return;
 
-        if (!(section instanceof OkasoConfigurationSection)) {
+        if (!(section instanceof DefaultConfigurationSection)) {
             throw new IllegalArgumentException(
                 "Cannot save section of type " + section.getClass().getName());
         }
 
-        Map<String, Object> data = ((OkasoConfigurationSection) section).getRaw();
+        Map<String, Object> data = ((DefaultConfigurationSection) section).getRaw();
 
         String name = file.getName().toLowerCase();
         File parent = file.getParentFile();
