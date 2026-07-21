@@ -14,6 +14,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,6 +41,8 @@ public class BukkitGUI implements GUI, Listener {
     private final int size;
     @Getter
     private final Inventory inventory;
+    @Getter
+    private final InventoryType inventoryType;
     private final Map<Integer, GUIItem> items;
     private boolean registered;
     private Consumer<Object> openHandler;
@@ -48,6 +51,9 @@ public class BukkitGUI implements GUI, Listener {
     private int page;
     private List<GUIItem> pageableItems;
     private int pageSize;
+
+    private final Set<Integer> freeSlots;
+    private Consumer<Integer> dragHandler;
 
     private BukkitTask animTask;
     private int animTick;
@@ -62,12 +68,38 @@ public class BukkitGUI implements GUI, Listener {
         this.plugin = plugin;
         this.title = title;
         this.size = size;
+        this.inventoryType = InventoryType.CHEST;
         this.inventory = Bukkit.createInventory(null, size, title);
         this.items = new HashMap<>();
+        this.freeSlots = new HashSet<>();
         this.registered = false;
         this.page = 0;
         this.pageableItems = null;
         this.pageSize = size;
+    }
+
+    public BukkitGUI(Plugin plugin, String title, InventoryType type) {
+        if (type == null) {
+            throw new IllegalArgumentException("InventoryType cannot be null");
+        }
+        if (type == InventoryType.CHEST) {
+            throw new IllegalArgumentException("Use the size-based constructor for CHEST inventory type");
+        }
+        if (!type.isCreatable()) {
+            throw new IllegalArgumentException("InventoryType " + type + " is not creatable");
+        }
+        int invSize = type.getDefaultSize();
+        this.plugin = plugin;
+        this.title = title;
+        this.size = invSize;
+        this.inventoryType = type;
+        this.inventory = Bukkit.createInventory(null, type, title);
+        this.items = new HashMap<>();
+        this.freeSlots = new HashSet<>();
+        this.registered = false;
+        this.page = 0;
+        this.pageableItems = null;
+        this.pageSize = invSize;
     }
 
     @Override
@@ -221,7 +253,20 @@ public class BukkitGUI implements GUI, Listener {
 
     @Override
     public int getRows() {
-        return size / 9;
+        if (inventoryType == InventoryType.CHEST) {
+            return size / 9;
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean hasGridLayout() {
+        return inventoryType == InventoryType.CHEST;
+    }
+
+    @Override
+    public String getInventoryType() {
+        return inventoryType.name();
     }
 
     @Override
@@ -302,12 +347,56 @@ public class BukkitGUI implements GUI, Listener {
         return slot >= 0 && slot < size;
     }
 
+    public void setFreeSlot(int slot) {
+        if (slot >= 0 && slot < size) {
+            freeSlots.add(slot);
+        }
+    }
+
+    public void setFreeSlots(int... slots) {
+        for (int slot : slots) {
+            if (slot >= 0 && slot < size) {
+                freeSlots.add(slot);
+            }
+        }
+    }
+
+    public void setFreeSlots(Collection<Integer> slots) {
+        for (int slot : slots) {
+            if (slot >= 0 && slot < size) {
+                freeSlots.add(slot);
+            }
+        }
+    }
+
+    public boolean isFreeSlot(int slot) {
+        return freeSlots.contains(slot);
+    }
+
+    public void removeFreeSlot(int slot) {
+        freeSlots.remove(slot);
+    }
+
+    public void clearFreeSlots() {
+        freeSlots.clear();
+    }
+
+    public Set<Integer> getFreeSlots() {
+        return new HashSet<>(freeSlots);
+    }
+
+    public void setDragHandler(Consumer<Integer> handler) {
+        this.dragHandler = handler;
+    }
+
+    @Override
     public boolean setItemIfAbsent(int slot, GUIItem item) {
         if (items.containsKey(slot)) return false;
         setItem(slot, item);
         return true;
     }
 
+    @Override
     public void swap(int slot1, int slot2) {
         if (slot1 < 0 || slot1 >= size || slot2 < 0 || slot2 >= size) return;
         if (slot1 == slot2) return;
@@ -335,6 +424,7 @@ public class BukkitGUI implements GUI, Listener {
         }
     }
 
+    @Override
     public void moveItem(int fromSlot, int toSlot) {
         if (fromSlot < 0 || fromSlot >= size || toSlot < 0 || toSlot >= size) return;
         if (fromSlot == toSlot) return;
@@ -349,16 +439,19 @@ public class BukkitGUI implements GUI, Listener {
         inventory.clear(fromSlot);
     }
 
+    @Override
     public void setSlotEmpty(int slot) {
         if (slot < 0 || slot >= size) return;
         items.remove(slot);
         inventory.clear(slot);
     }
 
+    @Override
     public Set<Integer> getOccupiedSlots() {
         return new HashSet<>(items.keySet());
     }
 
+    @Override
     public void setItems(Map<Integer, GUIItem> items) {
         if (items == null) return;
         for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
@@ -366,6 +459,7 @@ public class BukkitGUI implements GUI, Listener {
         }
     }
 
+    @Override
     public int findSlot(Predicate<GUIItem> predicate) {
         for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
             if (predicate.test(entry.getValue())) {
@@ -375,6 +469,7 @@ public class BukkitGUI implements GUI, Listener {
         return -1;
     }
 
+    @Override
     public List<Integer> findSlots(Predicate<GUIItem> predicate) {
         return items.entrySet().stream()
             .filter(e -> predicate.test(e.getValue()))
@@ -382,6 +477,7 @@ public class BukkitGUI implements GUI, Listener {
             .collect(Collectors.toList());
     }
 
+    @Override
     public boolean replaceItem(Predicate<GUIItem> predicate, GUIItem newItem) {
         int slot = findSlot(predicate);
         if (slot == -1) return false;
@@ -568,6 +664,272 @@ public class BukkitGUI implements GUI, Listener {
         }
     }
 
+    public static final class Slots {
+        private Slots() {}
+
+        public static final class Furnace {
+            public static final int INPUT = 0;
+            public static final int FUEL = 1;
+            public static final int OUTPUT = 2;
+            private Furnace() {}
+        }
+
+        public static final class BlastFurnace {
+            public static final int INPUT = 0;
+            public static final int FUEL = 1;
+            public static final int OUTPUT = 2;
+            private BlastFurnace() {}
+        }
+
+        public static final class Smoker {
+            public static final int INPUT = 0;
+            public static final int FUEL = 1;
+            public static final int OUTPUT = 2;
+            private Smoker() {}
+        }
+
+        public static final class Dispenser {
+            public static final int SLOT_1 = 0;
+            public static final int SLOT_2 = 1;
+            public static final int SLOT_3 = 2;
+            public static final int SLOT_4 = 3;
+            public static final int SLOT_5 = 4;
+            public static final int SLOT_6 = 5;
+            public static final int SLOT_7 = 6;
+            public static final int SLOT_8 = 7;
+            public static final int SLOT_9 = 8;
+            private Dispenser() {}
+        }
+
+        public static final class Dropper {
+            public static final int SLOT_1 = 0;
+            public static final int SLOT_2 = 1;
+            public static final int SLOT_3 = 2;
+            public static final int SLOT_4 = 3;
+            public static final int SLOT_5 = 4;
+            public static final int SLOT_6 = 5;
+            public static final int SLOT_7 = 6;
+            public static final int SLOT_8 = 7;
+            public static final int SLOT_9 = 8;
+            private Dropper() {}
+        }
+
+        public static final class Hopper {
+            public static final int SLOT_1 = 0;
+            public static final int SLOT_2 = 1;
+            public static final int SLOT_3 = 2;
+            public static final int SLOT_4 = 3;
+            public static final int SLOT_5 = 4;
+            private Hopper() {}
+        }
+
+        public static final class BrewingStand {
+            public static final int POTION_LEFT = 0;
+            public static final int POTION_MIDDLE = 1;
+            public static final int POTION_RIGHT = 2;
+            public static final int INGREDIENT = 3;
+            private BrewingStand() {}
+        }
+
+        public static final class Workbench {
+            public static final int CRAFT_1 = 0;
+            public static final int CRAFT_2 = 1;
+            public static final int CRAFT_3 = 2;
+            public static final int CRAFT_4 = 3;
+            public static final int CRAFT_5 = 4;
+            public static final int CRAFT_6 = 5;
+            public static final int CRAFT_7 = 6;
+            public static final int CRAFT_8 = 7;
+            public static final int CRAFT_9 = 8;
+            public static final int RESULT = 9;
+            private Workbench() {}
+        }
+
+        public static final class Crafting {
+            public static final int CRAFT_1 = 0;
+            public static final int CRAFT_2 = 1;
+            public static final int CRAFT_3 = 2;
+            public static final int CRAFT_4 = 3;
+            public static final int RESULT = 4;
+            private Crafting() {}
+        }
+
+        public static final class Enchanting {
+            public static final int ITEM = 0;
+            public static final int LAPIS = 1;
+            private Enchanting() {}
+        }
+
+        public static final class Anvil {
+            public static final int INPUT_LEFT = 0;
+            public static final int INPUT_RIGHT = 1;
+            public static final int RESULT = 2;
+            private Anvil() {}
+        }
+
+        public static final class Smithing {
+            public static final int INPUT_LEFT = 0;
+            public static final int INPUT_RIGHT = 1;
+            public static final int RESULT = 2;
+            private Smithing() {}
+        }
+
+        public static final class Grindstone {
+            public static final int INPUT_LEFT = 0;
+            public static final int INPUT_RIGHT = 1;
+            public static final int RESULT = 2;
+            private Grindstone() {}
+        }
+
+        public static final class Stonecutter {
+            public static final int INPUT = 0;
+            public static final int RESULT = 1;
+            private Stonecutter() {}
+        }
+
+        public static final class Cartography {
+            public static final int INPUT_MAP = 0;
+            public static final int INPUT_PAPER = 1;
+            public static final int RESULT = 2;
+            private Cartography() {}
+        }
+
+        public static final class Loom {
+            public static final int BANNER = 0;
+            public static final int DYE = 1;
+            public static final int PATTERN = 2;
+            public static final int RESULT = 3;
+            private Loom() {}
+        }
+
+        public static final class Merchant {
+            public static final int INPUT_LEFT = 0;
+            public static final int INPUT_RIGHT = 1;
+            public static final int RESULT = 2;
+            private Merchant() {}
+        }
+
+        public static final class Beacon {
+            public static final int PAYMENT = 0;
+            private Beacon() {}
+        }
+    }
+
+    public static Builder builder(Plugin plugin) {
+        return new Builder(plugin);
+    }
+
+    public static final class Builder {
+        private final Plugin plugin;
+        private String title;
+        private int size;
+        private InventoryType type;
+        private final Map<Integer, GUIItem> items = new HashMap<>();
+        private final Set<Integer> freeSlots = new HashSet<>();
+        private Consumer<Object> openHandler;
+        private Consumer<Object> closeHandler;
+        private Consumer<Integer> dragHandler;
+
+        private Builder(Plugin plugin) {
+            this.plugin = plugin;
+        }
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder size(int size) {
+            this.size = size;
+            this.type = null;
+            return this;
+        }
+
+        public Builder type(InventoryType type) {
+            this.type = type;
+            this.size = 0;
+            return this;
+        }
+
+        public Builder item(int slot, GUIItem item) {
+            this.items.put(slot, item);
+            return this;
+        }
+
+        public Builder item(int slot, Material material) {
+            this.items.put(slot, BukkitGUIItem.of(material));
+            return this;
+        }
+
+        public Builder item(int slot, Material material, String name) {
+            this.items.put(slot, BukkitGUIItem.of(material, name));
+            return this;
+        }
+
+        public Builder items(Map<Integer, GUIItem> items) {
+            if (items != null) {
+                this.items.putAll(items);
+            }
+            return this;
+        }
+
+        public Builder freeSlot(int... slots) {
+            for (int s : slots) {
+                this.freeSlots.add(s);
+            }
+            return this;
+        }
+
+        public Builder freeSlots(Collection<Integer> slots) {
+            this.freeSlots.addAll(slots);
+            return this;
+        }
+
+        public Builder openHandler(Consumer<Object> handler) {
+            this.openHandler = handler;
+            return this;
+        }
+
+        public Builder closeHandler(Consumer<Object> handler) {
+            this.closeHandler = handler;
+            return this;
+        }
+
+        public Builder dragHandler(Consumer<Integer> handler) {
+            this.dragHandler = handler;
+            return this;
+        }
+
+        public BukkitGUI build() {
+            if (title == null) {
+                throw new IllegalStateException("Title is required");
+            }
+            BukkitGUI gui;
+            if (type != null) {
+                gui = new BukkitGUI(plugin, title, type);
+            } else {
+                if (size <= 0) size = 9;
+                gui = new BukkitGUI(plugin, title, size);
+            }
+            for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
+                gui.setItem(entry.getKey(), entry.getValue());
+            }
+            for (int slot : freeSlots) {
+                gui.setFreeSlot(slot);
+            }
+            if (openHandler != null) {
+                gui.setOpenHandler(openHandler);
+            }
+            if (closeHandler != null) {
+                gui.setCloseHandler(closeHandler);
+            }
+            if (dragHandler != null) {
+                gui.setDragHandler(dragHandler);
+            }
+            return gui;
+        }
+    }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!event.getInventory().equals(inventory)) return;
@@ -591,21 +953,42 @@ public class BukkitGUI implements GUI, Listener {
                 if (clickEvent.isCancelled()) {
                     event.setCancelled(true);
                 }
-            } else {
+            } else if (!freeSlots.contains(slot)) {
                 event.setCancelled(true);
             }
         } else if (event.isShiftClick()) {
-            event.setCancelled(true);
+            boolean allFree = true;
+            for (int i = 0; i < size; i++) {
+                if (!freeSlots.contains(i)) {
+                    allFree = false;
+                    break;
+                }
+            }
+            if (!allFree) {
+                event.setCancelled(true);
+            }
         }
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
         if (event.getInventory().equals(inventory)) {
+            boolean allFree = true;
             for (int slot : event.getRawSlots()) {
-                if (slot < size) {
-                    event.setCancelled(true);
-                    return;
+                if (slot < size && !freeSlots.contains(slot)) {
+                    allFree = false;
+                    break;
+                }
+            }
+            if (!allFree) {
+                event.setCancelled(true);
+                return;
+            }
+            if (dragHandler != null) {
+                for (int slot : event.getRawSlots()) {
+                    if (slot < size) {
+                        dragHandler.accept(slot);
+                    }
                 }
             }
         }

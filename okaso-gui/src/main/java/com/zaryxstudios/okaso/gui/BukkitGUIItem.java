@@ -11,12 +11,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -114,6 +117,7 @@ public class BukkitGUIItem implements GUIItem {
         private short durability = -1;
         private Collection<ItemFlag> flags = new ArrayList<>();
         private String skullOwner;
+        private String texture;
         private GUIClickHandler clickHandler;
 
         public Builder itemStack(ItemStack stack) {
@@ -212,8 +216,21 @@ public class BukkitGUIItem implements GUIItem {
             return this;
         }
 
+        public Builder hideAttributes() {
+            this.flags.add(ItemFlag.HIDE_ATTRIBUTES);
+            return this;
+        }
+
         public Builder skullOwner(String owner) {
             this.skullOwner = owner;
+            return this;
+        }
+
+        public Builder headTexture(String base64) {
+            this.texture = base64;
+            if (base64 != null && material != Material.PLAYER_HEAD && material != Material.PLAYER_WALL_HEAD) {
+                this.material = Material.PLAYER_HEAD;
+            }
             return this;
         }
 
@@ -272,8 +289,22 @@ public class BukkitGUIItem implements GUIItem {
                 if (!flags.isEmpty()) {
                     meta.addItemFlags(flags.toArray(new ItemFlag[0]));
                 }
-                if (skullOwner != null && meta instanceof SkullMeta) {
-                    ((SkullMeta) meta).setOwner(skullOwner);
+                if (meta instanceof SkullMeta) {
+                    SkullMeta skullMeta = (SkullMeta) meta;
+                    if (texture != null && !texture.isEmpty()) {
+                        try {
+                            Method setProfile = skullMeta.getClass().getDeclaredMethod("setProfile", Class.forName("com.mojang.authlib.GameProfile"));
+                            setProfile.setAccessible(true);
+                            Object profile = createGameProfile(texture);
+                            setProfile.invoke(skullMeta, profile);
+                        } catch (Exception ignored) {
+                            if (skullOwner != null) {
+                                skullMeta.setOwner(skullOwner);
+                            }
+                        }
+                    } else if (skullOwner != null) {
+                        skullMeta.setOwner(skullOwner);
+                    }
                 }
                 stack.setItemMeta(meta);
             }
@@ -283,6 +314,25 @@ public class BukkitGUIItem implements GUIItem {
                 result.enchantmentsBeforeGlow = preGlowEnchants;
             }
             return result;
+        }
+    }
+
+    private static Object createGameProfile(String base64Texture) {
+        try {
+            Class<?> gameProfileClass = Class.forName("com.mojang.authlib.GameProfile");
+            java.lang.reflect.Constructor<?> constructor = gameProfileClass.getConstructor(UUID.class, String.class);
+            Object profile = constructor.newInstance(UUID.randomUUID(), "OkasoHead");
+            Class<?> propertyMapClass = Class.forName("com.mojang.authlib.properties.PropertyMap");
+            Method getProperties = gameProfileClass.getMethod("getProperties");
+            Object propertyMap = getProperties.invoke(profile);
+            Class<?> propertyClass = Class.forName("com.mojang.authlib.properties.Property");
+            java.lang.reflect.Constructor<?> propConstructor = propertyClass.getConstructor(String.class, String.class, String.class);
+            Object property = propConstructor.newInstance("textures", base64Texture, "");
+            Method put = propertyMapClass.getMethod("put", Object.class, Object.class);
+            put.invoke(propertyMap, "textures", property);
+            return profile;
+        } catch (Exception e) {
+            return null;
         }
     }
 
