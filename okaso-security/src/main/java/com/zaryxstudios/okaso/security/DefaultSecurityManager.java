@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.security;
 
-import com.zaryxstudios.okaso.common.security.SecurityManager;
+import com.zaryxstudios.okaso.common.security.OkasoSecurityManager;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,7 +13,7 @@ import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-public class OkasoSecurityManager implements SecurityManager {
+public class DefaultSecurityManager implements OkasoSecurityManager {
 
     private static final String HASH_ALGORITHM = "SHA-256";
     private static final String ENCRYPT_ALGORITHM = "AES";
@@ -22,13 +22,13 @@ public class OkasoSecurityManager implements SecurityManager {
     private final long rateLimitWindowMs;
     private final int rateLimitMaxAttempts;
 
-    public OkasoSecurityManager(long rateLimitWindowMs, int rateLimitMaxAttempts) {
-        this.rateLimits = new ConcurrentHashMap<String, RateLimitEntry>();
+    public DefaultSecurityManager(long rateLimitWindowMs, int rateLimitMaxAttempts) {
+        this.rateLimits = new ConcurrentHashMap<>();
         this.rateLimitWindowMs = rateLimitWindowMs;
         this.rateLimitMaxAttempts = rateLimitMaxAttempts;
     }
 
-    public OkasoSecurityManager() {
+    public DefaultSecurityManager() {
         this(60000L, 10);
     }
 

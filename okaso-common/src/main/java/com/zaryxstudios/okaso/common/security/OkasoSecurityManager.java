@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.common.security;
 
-public interface SecurityManager {
+public interface OkasoSecurityManager {
     String hashPassword(String password);
     boolean verifyPassword(String password, String hash);
     String encrypt(String plainText, String key);

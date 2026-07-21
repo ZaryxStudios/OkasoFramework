@@ -17,7 +17,7 @@ import org.bukkit.Material;
 import com.zaryxstudios.okaso.common.placeholder.PlaceholderRegistry;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
 import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardManager;
-import com.zaryxstudios.okaso.common.security.SecurityManager;
+import com.zaryxstudios.okaso.common.security.OkasoSecurityManager;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
 import com.zaryxstudios.okaso.common.storage.StorageProvider;
 import com.zaryxstudios.okaso.common.tablist.TabListManager;
@@ -41,7 +41,7 @@ import com.zaryxstudios.okaso.particle.BukkitParticleManager;
 import com.zaryxstudios.okaso.permission.BukkitPermissionManager;
 import com.zaryxstudios.okaso.placeholder.SimplePlaceholderRegistry;
 import com.zaryxstudios.okaso.scoreboard.BukkitScoreboardManager;
-import com.zaryxstudios.okaso.security.OkasoSecurityManager;
+import com.zaryxstudios.okaso.security.DefaultSecurityManager;
 import com.zaryxstudios.okaso.storage.JsonFileStorageProvider;
 import com.zaryxstudios.okaso.storage.MemoryStorageProvider;
 import com.zaryxstudios.okaso.tablist.BukkitTabListManager;
@@ -128,7 +128,7 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
 
         reg.register(PacketInterceptor.class, new ReflectionPacketInterceptor());
 
-        reg.register(SecurityManager.class, new OkasoSecurityManager(30_000L, 20));
+        reg.register(OkasoSecurityManager.class, new DefaultSecurityManager(30_000L, 20));
 
         String currentVersion = getDescription().getVersion();
         String updateUrl = "https://raw.githubusercontent.com/ZaryxStudios/OkasoFramework/refs/heads/main/version.txt";
