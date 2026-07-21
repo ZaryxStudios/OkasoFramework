@@ -26,7 +26,12 @@ import java.util.UUID;
 
 import lombok.Getter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class CommandRegistryImpl {
+
+    private static final Logger LOGGER = Logger.getLogger(CommandRegistryImpl.class.getName());
 
     private final Map<String, CommandEntry> commands;
     private final Map<String, Map<String, Long>> cooldowns;
@@ -443,7 +448,7 @@ public class CommandRegistryImpl {
                     }
                 } catch (Exception e) {
                     context.getSender().sendMessage(provider().get(Messages.COMMAND_ERROR));
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Error executing command handler for " + context.getLabel(), e);
                 }
             }
         };

@@ -5,6 +5,7 @@ import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

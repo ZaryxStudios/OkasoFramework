@@ -12,8 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class OkasoWebhookClient implements WebhookClient {
+
+    private static final Logger LOGGER = Logger.getLogger(OkasoWebhookClient.class.getName());
 
     private final ObjectMapper mapper;
     private final AtomicLong lastRequestTime;
@@ -36,7 +40,7 @@ public class OkasoWebhookClient implements WebhookClient {
             payload.put("content", message);
             executePost(url, payload);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to send webhook message", e);
         }
     }
 
@@ -55,7 +59,7 @@ public class OkasoWebhookClient implements WebhookClient {
             payload.put("embeds", new Object[]{ embedMap });
             executePost(url, payload);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to send webhook embed", e);
         }
     }
 

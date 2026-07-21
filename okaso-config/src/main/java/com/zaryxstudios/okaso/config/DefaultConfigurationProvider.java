@@ -17,8 +17,12 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DefaultConfigurationProvider implements OkasoConfigurationProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(DefaultConfigurationProvider.class.getName());
 
     private final Yaml yaml;
     private final ObjectMapper mapper;
@@ -82,7 +86,7 @@ public class DefaultConfigurationProvider implements OkasoConfigurationProvider 
                 yaml.dump(data, writer);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to save configuration to " + file.getAbsolutePath(), e);
         }
     }
 }

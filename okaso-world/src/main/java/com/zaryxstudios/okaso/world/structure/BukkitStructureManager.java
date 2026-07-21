@@ -79,7 +79,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public boolean placeStructure(String name, Object location) {
-        Optional<Structure> opt = loadStructure(name);
+        Optional<OkasoStructure> opt = loadStructure(name);
         if (opt.isPresent()) {
             return placeStructure(opt.get(), location);
         }
@@ -118,7 +118,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
     }
 
     @Override
-    public Structure createStructure(String name, int width, int height, int length) {
+    public OkasoStructure createStructure(String name, int width, int height, int length) {
         return new BukkitStructure(name, width, height, length);
     }
 
