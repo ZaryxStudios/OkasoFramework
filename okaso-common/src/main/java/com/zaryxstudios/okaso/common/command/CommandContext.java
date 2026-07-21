@@ -13,9 +13,9 @@ public class CommandContext {
 
     private final String label;
     private final List<String> args;
-    private final CommandSender sender;
+    private final OkasoCommandSender sender;
 
-    public CommandContext(CommandSender sender, String label, List<String> args) {
+    public CommandContext(OkasoCommandSender sender, String label, List<String> args) {
         this.sender = sender;
         this.label = label;
         this.args = args != null ? Collections.unmodifiableList(new ArrayList<>(args)) : Collections.emptyList();
@@ -77,7 +77,7 @@ public class CommandContext {
         return label;
     }
 
-    public CommandSender getSender() {
+    public OkasoCommandSender getSender() {
         return sender;
     }
 }

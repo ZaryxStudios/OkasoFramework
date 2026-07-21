@@ -4,6 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 @FunctionalInterface
-public interface TabCompleter {
+public interface OkasoTabCompleter {
     List<String> onTabComplete(CommandContext context);
 }
