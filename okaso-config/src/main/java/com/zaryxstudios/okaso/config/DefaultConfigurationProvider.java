@@ -23,7 +23,7 @@ public class DefaultConfigurationProvider implements OkasoConfigurationProvider 
     private final Yaml yaml;
     private final ObjectMapper mapper;
 
-    public OkasoConfigurationProvider() {
+    public DefaultConfigurationProvider() {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setIndent(2);

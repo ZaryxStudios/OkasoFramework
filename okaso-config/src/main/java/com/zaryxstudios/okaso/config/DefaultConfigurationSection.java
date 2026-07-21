@@ -14,11 +14,11 @@ public class DefaultConfigurationSection implements OkasoConfigurationSection {
 
     private final Map<String, Object> data;
 
-    public OkasoConfigurationSection() {
+    public DefaultConfigurationSection() {
         this.data = new LinkedHashMap<String, Object>();
     }
 
-    public OkasoConfigurationSection(Map<String, Object> data) {
+    public DefaultConfigurationSection(Map<String, Object> data) {
         this.data = data != null ? data : new LinkedHashMap<String, Object>();
     }
 
