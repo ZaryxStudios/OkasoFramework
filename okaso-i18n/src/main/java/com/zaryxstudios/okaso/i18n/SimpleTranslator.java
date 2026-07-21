@@ -11,11 +11,11 @@ public class SimpleTranslator implements Translator {
     private final Map<String, String> messages;
 
     public SimpleTranslator() {
-        this.messages = new ConcurrentHashMap<String, String>();
+        this.messages = new ConcurrentHashMap<>();
     }
 
     public SimpleTranslator(Map<String, String> messages) {
-        this.messages = new ConcurrentHashMap<String, String>(messages);
+        this.messages = new ConcurrentHashMap<>(messages);
     }
 
     public void set(String key, String message) {

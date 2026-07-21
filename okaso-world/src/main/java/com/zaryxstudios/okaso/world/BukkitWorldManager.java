@@ -21,7 +21,7 @@ public class BukkitWorldManager implements WorldManager {
 
     @Override
     public Collection<Object> getWorlds() {
-        return new ArrayList<Object>(Bukkit.getWorlds());
+        return new ArrayList<>(Bukkit.getWorlds());
     }
 
     @Override
@@ -99,9 +99,9 @@ public class BukkitWorldManager implements WorldManager {
     public Collection<Object> getWorldPlayers(String name) {
         World world = Bukkit.getWorld(name);
         if (world != null) {
-            return new ArrayList<Object>(world.getPlayers());
+            return new ArrayList<>(world.getPlayers());
         }
-        return new ArrayList<Object>();
+        return new ArrayList<>();
     }
 
     @Override

@@ -12,7 +12,7 @@ public class BukkitParticleManager implements ParticleManager {
     private final Map<String, BukkitParticleEffect> effects;
 
     public BukkitParticleManager() {
-        this.effects = new ConcurrentHashMap<String, BukkitParticleEffect>();
+        this.effects = new ConcurrentHashMap<>();
     }
 
     @Override

@@ -34,7 +34,7 @@ public class BukkitEntityService implements EntityService {
     @SuppressWarnings("unchecked")
     public <T> Collection<T> getEntitiesInWorld(Object world, Class<T> type) {
         if (world instanceof World) {
-            java.util.List<T> result = new ArrayList<T>();
+            java.util.List<T> result = new ArrayList<>();
             for (Entity entity : ((World) world).getEntities()) {
                 if (type.isInstance(entity)) {
                     result.add((T) entity);
@@ -42,14 +42,14 @@ public class BukkitEntityService implements EntityService {
             }
             return result;
         }
-        return new ArrayList<T>();
+        return new ArrayList<>();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> Collection<T> getNearbyEntities(Object location, double radius, Class<T> type) {
         if (location instanceof Location) {
-            java.util.List<T> result = new ArrayList<T>();
+            java.util.List<T> result = new ArrayList<>();
             for (Entity entity : ((Location) location).getWorld().getEntities()) {
                 if (type.isInstance(entity)) {
                     Location loc = entity.getLocation();
@@ -60,7 +60,7 @@ public class BukkitEntityService implements EntityService {
             }
             return result;
         }
-        return new ArrayList<T>();
+        return new ArrayList<>();
     }
 
     @Override
@@ -155,6 +155,6 @@ public class BukkitEntityService implements EntityService {
         if (entity instanceof Entity) {
             return (Collection<Object>) (Collection<?>) ((Entity) entity).getPassengers();
         }
-        return new ArrayList<Object>();
+        return new ArrayList<>();
     }
 }

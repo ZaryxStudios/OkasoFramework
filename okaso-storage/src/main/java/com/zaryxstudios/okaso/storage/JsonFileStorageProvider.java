@@ -27,7 +27,7 @@ public class JsonFileStorageProvider implements StorageProvider {
         this.mapper = new ObjectMapper();
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
         this.lock = new ReentrantReadWriteLock();
-        this.data = new ConcurrentHashMap<String, Object>();
+        this.data = new ConcurrentHashMap<>();
         loadFromFile();
     }
 
@@ -84,7 +84,7 @@ public class JsonFileStorageProvider implements StorageProvider {
     public Map<String, Object> getAll() {
         lock.readLock().lock();
         try {
-            return Collections.unmodifiableMap(new LinkedHashMap<String, Object>(data));
+            return Collections.unmodifiableMap(new LinkedHashMap<>(data));
         } finally {
             lock.readLock().unlock();
         }

@@ -15,11 +15,11 @@ public class DefaultConfigurationSection implements OkasoConfigurationSection {
     private final Map<String, Object> data;
 
     public DefaultConfigurationSection() {
-        this.data = new LinkedHashMap<String, Object>();
+        this.data = new LinkedHashMap<>();
     }
 
     public DefaultConfigurationSection(Map<String, Object> data) {
-        this.data = data != null ? data : new LinkedHashMap<String, Object>();
+        this.data = data != null ? data : new LinkedHashMap<>();
     }
 
     public Map<String, Object> getRaw() {
@@ -102,7 +102,7 @@ public class DefaultConfigurationSection implements OkasoConfigurationSection {
         Object value = resolve(path);
         if (value instanceof List) {
             List<?> raw = (List<?>) value;
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
             for (Object item : raw) {
                 if (item != null) result.add(item.toString());
             }
@@ -117,7 +117,7 @@ public class DefaultConfigurationSection implements OkasoConfigurationSection {
         Object value = resolve(path);
         if (value instanceof List) {
             List<?> raw = (List<?>) value;
-            List<Integer> result = new ArrayList<Integer>();
+            List<Integer> result = new ArrayList<>();
             for (Object item : raw) {
                 if (item instanceof Number) result.add(((Number) item).intValue());
             }
@@ -140,7 +140,7 @@ public class DefaultConfigurationSection implements OkasoConfigurationSection {
     @SuppressWarnings("unchecked")
     public Set<String> getKeys(boolean deep) {
         if (!deep) return data.keySet();
-        Set<String> keys = new LinkedHashSet<String>();
+        Set<String> keys = new LinkedHashSet<>();
         collectKeys(data, "", keys);
         return keys;
     }
@@ -157,7 +157,7 @@ public class DefaultConfigurationSection implements OkasoConfigurationSection {
             if (next instanceof Map) {
                 current = (Map<String, Object>) next;
             } else {
-                Map<String, Object> nested = new LinkedHashMap<String, Object>();
+                Map<String, Object> nested = new LinkedHashMap<>();
                 current.put(part, nested);
                 current = nested;
             }

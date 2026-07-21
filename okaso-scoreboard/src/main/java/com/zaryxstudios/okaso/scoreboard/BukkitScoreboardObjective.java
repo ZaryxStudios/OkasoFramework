@@ -52,12 +52,12 @@ public class BukkitScoreboardObjective implements ScoreboardObjective {
 
     public BukkitScoreboardObjective(String title) {
         this.title = title;
-        this.lines = new ArrayList<String>();
+        this.lines = new ArrayList<>();
     }
 
     @Override
     public List<String> getLines() {
-        return new ArrayList<String>(lines);
+        return new ArrayList<>(lines);
     }
 
     @Override

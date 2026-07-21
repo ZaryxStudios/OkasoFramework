@@ -20,8 +20,8 @@ public class BukkitNetworkManager implements NetworkManager, PluginMessageListen
     public BukkitNetworkManager(Plugin plugin) {
         this.plugin = plugin;
         this.messenger = plugin.getServer().getMessenger();
-        this.incomingChannels = new HashSet<String>();
-        this.outgoingChannels = new HashSet<String>();
+        this.incomingChannels = new HashSet<>();
+        this.outgoingChannels = new HashSet<>();
     }
 
     @Override

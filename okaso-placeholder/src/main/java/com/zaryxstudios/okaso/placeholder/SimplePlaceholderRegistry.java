@@ -13,7 +13,7 @@ public class SimplePlaceholderRegistry implements PlaceholderRegistry {
     private final Map<String, Function<Object, String>> resolvers;
 
     public SimplePlaceholderRegistry() {
-        this.resolvers = new LinkedHashMap<String, Function<Object, String>>();
+        this.resolvers = new LinkedHashMap<>();
     }
 
     @Override

@@ -32,7 +32,7 @@ public class OkasoWebhookClient implements WebhookClient {
         if (isRateLimited()) return;
 
         try {
-            Map<String, Object> payload = new LinkedHashMap<String, Object>();
+            Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("content", message);
             executePost(url, payload);
         } catch (Exception e) {
@@ -46,12 +46,12 @@ public class OkasoWebhookClient implements WebhookClient {
         if (isRateLimited()) return;
 
         try {
-            Map<String, Object> embedMap = new LinkedHashMap<String, Object>();
+            Map<String, Object> embedMap = new LinkedHashMap<>();
             embedMap.put("title", embed.getTitle());
             embedMap.put("description", embed.getDescription());
             embedMap.put("color", embed.getColor());
 
-            Map<String, Object> payload = new LinkedHashMap<String, Object>();
+            Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("embeds", new Object[]{ embedMap });
             executePost(url, payload);
         } catch (Exception e) {

@@ -23,7 +23,7 @@ public final class MockFactory {
 
     public static final class MockPlayer {
         @Getter private final String name;
-        private final Map<String, String> metadata = new ConcurrentHashMap<String, String>();
+        private final Map<String, String> metadata = new ConcurrentHashMap<>();
         @Getter private int health = 20;
         @Getter private int food = 20;
         @Getter private int level = 0;
@@ -73,7 +73,7 @@ public final class MockFactory {
     }
 
     public static final class MockServer {
-        private final List<MockPlayer> players = new ArrayList<MockPlayer>();
+        private final List<MockPlayer> players = new ArrayList<>();
         @Getter @Setter private String version = "1.21";
         @Getter @Setter private int port = 25565;
         @Getter @Setter private String motd = "A Minecraft Server";
@@ -93,7 +93,7 @@ public final class MockFactory {
         }
 
         public List<MockPlayer> getOnlinePlayers() {
-            List<MockPlayer> online = new ArrayList<MockPlayer>();
+            List<MockPlayer> online = new ArrayList<>();
             for (MockPlayer p : players) {
                 if (p.isOnline()) {
                     online.add(p);

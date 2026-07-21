@@ -17,7 +17,7 @@ public class BukkitPermissionManager implements PermissionManager {
 
     public BukkitPermissionManager(Plugin plugin) {
         this.plugin = plugin;
-        this.registeredNodes = new HashSet<String>();
+        this.registeredNodes = new HashSet<>();
     }
 
     @Override

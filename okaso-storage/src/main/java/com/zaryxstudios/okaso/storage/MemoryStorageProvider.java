@@ -12,7 +12,7 @@ public class MemoryStorageProvider implements StorageProvider {
     private final Map<String, Object> storage;
 
     public MemoryStorageProvider() {
-        this.storage = new ConcurrentHashMap<String, Object>();
+        this.storage = new ConcurrentHashMap<>();
     }
 
     @Override

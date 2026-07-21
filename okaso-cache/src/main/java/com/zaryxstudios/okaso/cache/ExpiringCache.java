@@ -17,7 +17,7 @@ public class ExpiringCache<K, V> implements Cache<K, V> {
 
     public ExpiringCache(long ttl, TimeUnit unit) {
         this.ttlMillis = unit.toMillis(ttl);
-        this.cache = new ConcurrentHashMap<K, ExpiringEntry<V>>();
+        this.cache = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ExpiringCache<K, V> implements Cache<K, V> {
 
     private void evictExpired() {
         long now = System.currentTimeMillis();
-        Set<K> expired = new HashSet<K>();
+        Set<K> expired = new HashSet<>();
         for (Map.Entry<K, ExpiringEntry<V>> e : cache.entrySet()) {
             if (now > e.getValue().expiry) {
                 expired.add(e.getKey());

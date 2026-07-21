@@ -25,7 +25,7 @@ public class BukkitHologramManager implements HologramManager {
 
     @Override
     public Hologram createHologram(String id) {
-        return createHologram(id, new ArrayList<HologramLine>());
+        return createHologram(id, new ArrayList<>());
     }
 
     @Override
@@ -58,7 +58,7 @@ public class BukkitHologramManager implements HologramManager {
 
     @Override
     public Collection<Hologram> getHolograms() {
-        return Collections.unmodifiableCollection(new ArrayList<Hologram>(holograms.values()));
+        return Collections.unmodifiableCollection(new ArrayList<>(holograms.values()));
     }
 
     @Override

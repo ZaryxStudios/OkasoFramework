@@ -42,7 +42,7 @@ public class BukkitScoreboardManager implements OkasoScoreboardManager {
     private final Map<UUID, BukkitScoreboardObjective> objectives;
 
     public BukkitScoreboardManager() {
-        this.objectives = new ConcurrentHashMap<UUID, BukkitScoreboardObjective>();
+        this.objectives = new ConcurrentHashMap<>();
     }
 
     @Override
