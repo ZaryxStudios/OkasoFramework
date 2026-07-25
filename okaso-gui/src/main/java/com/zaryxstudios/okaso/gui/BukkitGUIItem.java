@@ -14,13 +14,19 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.bukkit.Color;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -118,6 +124,11 @@ public class BukkitGUIItem implements GUIItem {
         private Collection<ItemFlag> flags = new ArrayList<>();
         private String skullOwner;
         private String texture;
+        private Color potionColor;
+        private PotionType potionType;
+        private boolean potionUpgraded;
+        private boolean potionExtended;
+        private Color leatherColor;
         private GUIClickHandler clickHandler;
 
         public Builder itemStack(ItemStack stack) {
@@ -234,6 +245,31 @@ public class BukkitGUIItem implements GUIItem {
             return this;
         }
 
+        public Builder potionType(PotionType type) {
+            this.potionType = type;
+            return this;
+        }
+
+        public Builder potionColor(Color color) {
+            this.potionColor = color;
+            return this;
+        }
+
+        public Builder potionUpgraded() {
+            this.potionUpgraded = true;
+            return this;
+        }
+
+        public Builder potionExtended() {
+            this.potionExtended = true;
+            return this;
+        }
+
+        public Builder leatherColor(Color color) {
+            this.leatherColor = color;
+            return this;
+        }
+
         public Builder clickHandler(GUIClickHandler handler) {
             this.clickHandler = handler;
             return this;
@@ -288,6 +324,21 @@ public class BukkitGUIItem implements GUIItem {
                 }
                 if (!flags.isEmpty()) {
                     meta.addItemFlags(flags.toArray(new ItemFlag[0]));
+                }
+                if (meta instanceof PotionMeta) {
+                    PotionMeta potionMeta = (PotionMeta) meta;
+                    if (potionColor != null) {
+                        potionMeta.setColor(potionColor);
+                    }
+                    if (potionType != null) {
+                        potionMeta.setBasePotionData(new PotionData(potionType, potionExtended, potionUpgraded));
+                    }
+                }
+                if (meta instanceof LeatherArmorMeta) {
+                    LeatherArmorMeta leatherMeta = (LeatherArmorMeta) meta;
+                    if (leatherColor != null) {
+                        leatherMeta.setColor(leatherColor);
+                    }
                 }
                 if (meta instanceof SkullMeta) {
                     SkullMeta skullMeta = (SkullMeta) meta;
@@ -590,5 +641,78 @@ public class BukkitGUIItem implements GUIItem {
             copy.enchantmentsBeforeGlow = new HashMap<>(this.enchantmentsBeforeGlow);
         }
         return copy;
+    }
+
+    public Material getType() {
+        return itemStack == null ? Material.AIR : itemStack.getType();
+    }
+
+    public boolean isType(Material material) {
+        return itemStack != null && itemStack.getType() == material;
+    }
+
+    public boolean matches(ItemStack other) {
+        return itemStack != null && itemStack.isSimilar(other);
+    }
+
+    public boolean isSimilar(GUIItem other) {
+        return other != null
+            && other.getItemStack() instanceof ItemStack
+            && itemStack != null
+            && itemStack.isSimilar((ItemStack) other.getItemStack());
+    }
+
+    public BukkitGUIItem withType(Material type) {
+        if (itemStack == null) return this;
+        BukkitGUIItem copy = copy();
+        ItemStack newStack = new ItemStack(type, itemStack.getAmount());
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta != null) {
+            newStack.setItemMeta(meta);
+        }
+        copy.setItemStack(newStack);
+        return copy;
+    }
+
+    public static BukkitGUIItem closeButton(GUIClickHandler handler) {
+        return builder(Material.BARRIER)
+            .name("&cCerrar")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static BukkitGUIItem backButton(GUIClickHandler handler) {
+        return builder(Material.ARROW)
+            .name("&7Atrás")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static BukkitGUIItem nextPageButton(GUIClickHandler handler) {
+        return builder(Material.ARROW)
+            .name("&aSiguiente página")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static BukkitGUIItem previousPageButton(GUIClickHandler handler) {
+        return builder(Material.ARROW)
+            .name("&aPágina anterior")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static BukkitGUIItem confirmButton(GUIClickHandler handler) {
+        return builder(Material.LIME_WOOL)
+            .name("&a&lConfirmar")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static BukkitGUIItem cancelButton(GUIClickHandler handler) {
+        return builder(Material.RED_WOOL)
+            .name("&c&lCancelar")
+            .clickHandler(handler)
+            .build();
     }
 }

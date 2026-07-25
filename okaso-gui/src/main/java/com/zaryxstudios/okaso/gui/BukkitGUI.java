@@ -199,6 +199,16 @@ public class BukkitGUI implements GUI, Listener {
         }
     }
 
+    public void refresh() {
+        for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
+            int slot = entry.getKey();
+            Object bukkitItem = entry.getValue().getItemStack();
+            if (bukkitItem instanceof ItemStack) {
+                inventory.setItem(slot, (ItemStack) bukkitItem);
+            }
+        }
+    }
+
     @Override
     public boolean isEmpty() {
         return items.isEmpty();
@@ -460,6 +470,15 @@ public class BukkitGUI implements GUI, Listener {
         }
     }
 
+    public void setItems(int startSlot, List<GUIItem> items) {
+        if (items == null) return;
+        for (int i = 0; i < items.size(); i++) {
+            int slot = startSlot + i;
+            if (slot >= size) break;
+            setItem(slot, items.get(i));
+        }
+    }
+
     @Override
     public int findSlot(Predicate<GUIItem> predicate) {
         for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
@@ -548,14 +567,21 @@ public class BukkitGUI implements GUI, Listener {
         setPageableItems(items, size);
     }
 
+    public List<GUIItem> getPageableItems() {
+        return pageableItems == null ? null : new ArrayList<>(pageableItems);
+    }
+
     private void renderPage() {
         items.clear();
         inventory.clear();
         if (pageableItems == null) return;
         int start = page * pageSize;
         int end = Math.min(start + pageSize, pageableItems.size());
-        for (int i = start; i < end; i++) {
-            int slot = i - start;
+        int slot = 0;
+        for (int i = start; i < end && slot < size; i++) {
+            while (slot < size && freeSlots.contains(slot)) {
+                slot++;
+            }
             if (slot >= size) break;
             GUIItem item = pageableItems.get(i);
             items.put(slot, item);
@@ -563,6 +589,7 @@ public class BukkitGUI implements GUI, Listener {
             if (bukkitItem instanceof ItemStack) {
                 inventory.setItem(slot, (ItemStack) bukkitItem);
             }
+            slot++;
         }
     }
 
@@ -830,6 +857,8 @@ public class BukkitGUI implements GUI, Listener {
         private Consumer<Object> openHandler;
         private Consumer<Object> closeHandler;
         private Consumer<Integer> dragHandler;
+        private List<GUIItem> pageableItems;
+        private int pageSize;
 
         private Builder(Plugin plugin) {
             this.plugin = plugin;
@@ -901,6 +930,16 @@ public class BukkitGUI implements GUI, Listener {
             return this;
         }
 
+        public Builder pageableItems(List<GUIItem> items) {
+            this.pageableItems = items;
+            return this;
+        }
+
+        public Builder pageSize(int pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
         public BukkitGUI build() {
             if (title == null) {
                 throw new IllegalStateException("Title is required");
@@ -926,6 +965,9 @@ public class BukkitGUI implements GUI, Listener {
             }
             if (dragHandler != null) {
                 gui.setDragHandler(dragHandler);
+            }
+            if (pageableItems != null) {
+                gui.setPageableItems(pageableItems, pageSize > 0 ? pageSize : gui.getSize());
             }
             return gui;
         }
