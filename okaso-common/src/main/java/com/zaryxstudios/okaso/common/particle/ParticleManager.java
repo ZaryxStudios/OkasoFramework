@@ -9,4 +9,7 @@ public interface ParticleManager {
     void removeEffect(String name);
     Collection<ParticleEffect> getAllEffects();
     void clearEffects();
+    boolean hasEffect(String name);
+    int getEffectCount();
+    ParticleEffect getOrCreateEffect(String name, String particleType);
 }
