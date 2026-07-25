@@ -67,39 +67,7 @@ public class GUIItemAnimator {
     }
 
     public void glowToggle(GUI gui, int slot, long intervalTicks) {
-        GUIItem original = gui.getItem(slot);
-        if (original == null) return;
-        stop(gui, slot);
-        boolean[] state = {false};
-        BukkitRunnable task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                Object bukkitItem = original.getItemStack();
-                if (!(bukkitItem instanceof ItemStack)) {
-                    cancel();
-                    return;
-                }
-                ItemStack stack = ((ItemStack) bukkitItem).clone();
-                ItemMeta meta = stack.getItemMeta();
-                if (meta == null) {
-                    cancel();
-                    return;
-                }
-                state[0] = !state[0];
-                if (state[0]) {
-                    meta.addEnchant(org.bukkit.enchantments.Enchantment.DURABILITY, 1, true);
-                    meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-                } else {
-                    meta.removeEnchant(org.bukkit.enchantments.Enchantment.DURABILITY);
-                    meta.removeItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-                }
-                stack.setItemMeta(meta);
-                gui.updateSlot(slot);
-            }
-        };
-        BukkitTask bukkitTask = task.runTaskTimer(plugin, 0L, intervalTicks);
-        slotTasks.put(slot, bukkitTask);
-        slotRunnables.put(slot, task);
+        pulse(gui, slot, intervalTicks);
     }
 
     public void cycleItems(GUI gui, int slot, long intervalTicks, GUIItem... items) {

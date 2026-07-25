@@ -1,13 +1,13 @@
 package com.zaryxstudios.okaso.gui;
 
 import com.zaryxstudios.okaso.common.gui.GUI;
-import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.HumanEntity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -189,9 +189,6 @@ public class GUIMultiPageView {
         }
     }
 
-    public void setContentSlots(int startSlot, int endSlot) {
-    }
-
     public void addItem(GUIItem item) {
         if (item != null) {
             allItems.add(item);
@@ -247,6 +244,21 @@ public class GUIMultiPageView {
     }
 
     private void updateTitle() {
+        if (titleFormatter == null) return;
+        try {
+            Collection<Object> viewers = gui.getViewers();
+            String newTitle = titleFormatter.apply(currentPage);
+            if (newTitle == null) return;
+            String currentTitle = gui.getTitle();
+            if (newTitle.equals(currentTitle)) return;
+            for (Object viewer : viewers) {
+                if (viewer instanceof HumanEntity) {
+                    HumanEntity human = (HumanEntity) viewer;
+                    human.closeInventory();
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     public static GUIMultiPageView create(BukkitGUI gui, List<GUIItem> items,
