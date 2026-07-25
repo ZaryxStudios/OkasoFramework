@@ -164,7 +164,7 @@ public class GUIPlaceholderResolver {
         });
         resolver.register("online_count", p -> String.valueOf(p.getServer().getOnlinePlayers().size()));
         resolver.register("max_players", p -> String.valueOf(p.getServer().getMaxPlayers()));
-        resolver.register("server_name", p -> p.getServer().getServerName());
+        resolver.register("server_name", p -> p.getServer().getClass().getSimpleName());
         resolver.register("server_version", p -> p.getServer().getBukkitVersion());
         return resolver;
     }
