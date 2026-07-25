@@ -41,4 +41,23 @@ public class BukkitParticleManager implements ParticleManager {
     public void clearEffects() {
         effects.clear();
     }
+
+    @Override
+    public boolean hasEffect(String name) {
+        return effects.containsKey(name);
+    }
+
+    @Override
+    public int getEffectCount() {
+        return effects.size();
+    }
+
+    @Override
+    public ParticleEffect getOrCreateEffect(String name, String particleType) {
+        BukkitParticleEffect existing = effects.get(name);
+        if (existing != null) {
+            return existing;
+        }
+        return createEffect(name, particleType);
+    }
 }
