@@ -1,7 +1,7 @@
 package com.zaryxstudios.okaso.particle;
 
 import com.zaryxstudios.okaso.common.OkasoAPI;
-import com.zaryxstudios.okaso.common.particle.ParticleEffect;
+import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 import com.zaryxstudios.okaso.common.particle.ParticleManager;
 
 public class ParticleBuilder {
@@ -53,7 +53,7 @@ public class ParticleBuilder {
     public void play() {
         ParticleManager manager = OkasoAPI.service(ParticleManager.class);
         if (manager == null) return;
-        ParticleEffect effect = manager.getOrCreateEffect(effectName, particleType);
+        OkasoParticleEffect effect = manager.getOrCreateEffect(effectName, particleType);
         if (player != null) {
             effect.playForPlayer(player, location, count, offsetX, offsetY, offsetZ, speed);
         } else {

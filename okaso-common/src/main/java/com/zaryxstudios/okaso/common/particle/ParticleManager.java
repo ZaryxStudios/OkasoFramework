@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface ParticleManager {
-    ParticleEffect createEffect(String name, String particleType);
-    Optional<ParticleEffect> getEffect(String name);
+    OkasoParticleEffect createEffect(String name, String particleType);
+    Optional<OkasoParticleEffect> getEffect(String name);
     void removeEffect(String name);
-    Collection<ParticleEffect> getAllEffects();
+    Collection<OkasoParticleEffect> getAllEffects();
     void clearEffects();
     boolean hasEffect(String name);
     int getEffectCount();
-    ParticleEffect getOrCreateEffect(String name, String particleType);
+    OkasoParticleEffect getOrCreateEffect(String name, String particleType);
 }

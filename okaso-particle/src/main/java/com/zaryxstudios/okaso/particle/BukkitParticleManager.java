@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.particle;
 
-import com.zaryxstudios.okaso.common.particle.ParticleEffect;
+import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 import com.zaryxstudios.okaso.common.particle.ParticleManager;
 
 import java.util.Map;
@@ -16,14 +16,14 @@ public class BukkitParticleManager implements ParticleManager {
     }
 
     @Override
-    public ParticleEffect createEffect(String name, String particleType) {
+    public OkasoParticleEffect createEffect(String name, String particleType) {
         BukkitParticleEffect effect = new BukkitParticleEffect(name, particleType);
         effects.put(name, effect);
         return effect;
     }
 
     @Override
-    public Optional<ParticleEffect> getEffect(String name) {
+    public Optional<OkasoParticleEffect> getEffect(String name) {
         return Optional.ofNullable(effects.get(name));
     }
 
@@ -33,8 +33,8 @@ public class BukkitParticleManager implements ParticleManager {
     }
 
     @Override
-    public java.util.Collection<ParticleEffect> getAllEffects() {
-        return java.util.Collections.<ParticleEffect>unmodifiableCollection(effects.values());
+    public java.util.Collection<OkasoParticleEffect> getAllEffects() {
+        return java.util.Collections.<OkasoParticleEffect>unmodifiableCollection(effects.values());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class BukkitParticleManager implements ParticleManager {
     }
 
     @Override
-    public ParticleEffect getOrCreateEffect(String name, String particleType) {
+    public OkasoParticleEffect getOrCreateEffect(String name, String particleType) {
         BukkitParticleEffect existing = effects.get(name);
         if (existing != null) {
             return existing;

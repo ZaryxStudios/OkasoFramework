@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.particle;
 
-import com.zaryxstudios.okaso.common.particle.ParticleEffect;
+import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 
 import lombok.Getter;
 
-public class BukkitParticleEffect implements ParticleEffect {
+public class BukkitParticleEffect implements OkasoParticleEffect {
 
     private static final boolean HAS_BUKKIT_API;
     private static final Constructor<?> PACKET_CTOR_ENUM;

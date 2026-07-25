@@ -6,12 +6,12 @@ import java.util.Optional;
 
 public interface HologramManager {
 
-    Hologram createHologram(String id);
-    Hologram createHologram(String id, HologramLine... lines);
-    Hologram createHologram(String id, List<HologramLine> lines);
+    OkasoHologram createHologram(String id);
+    OkasoHologram createHologram(String id, HologramLine... lines);
+    OkasoHologram createHologram(String id, List<HologramLine> lines);
 
-    Optional<Hologram> getHologram(String id);
-    Collection<Hologram> getHolograms();
+    Optional<OkasoHologram> getHologram(String id);
+    Collection<OkasoHologram> getHolograms();
     void removeHologram(String id);
     void removeAll();
     boolean exists(String id);

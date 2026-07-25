@@ -3,7 +3,7 @@ package com.zaryxstudios.okaso.common.hologram;
 import com.zaryxstudios.okaso.common.Lifecycle;
 import java.util.List;
 
-public interface Hologram extends Lifecycle {
+public interface OkasoHologram extends Lifecycle {
 
     String getId();
 

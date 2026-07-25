@@ -2,7 +2,7 @@ package com.zaryxstudios.okaso.common.scoreboard;
 
 import java.util.List;
 
-public interface ScoreboardObjective {
+public interface OkasoScoreboardObjective {
     String getTitle();
     void setTitle(String title);
     List<String> getLines();
