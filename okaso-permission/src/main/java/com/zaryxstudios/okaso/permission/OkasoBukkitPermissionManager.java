@@ -10,12 +10,12 @@ import org.bukkit.plugin.Plugin;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BukkitPermissionManager implements PermissionManager {
+public class OkasoBukkitPermissionManager implements PermissionManager {
 
     private final Plugin plugin;
     private final Set<String> registeredNodes;
 
-    public BukkitPermissionManager(Plugin plugin) {
+    public OkasoBukkitPermissionManager(Plugin plugin) {
         this.plugin = plugin;
         this.registeredNodes = new HashSet<>();
     }

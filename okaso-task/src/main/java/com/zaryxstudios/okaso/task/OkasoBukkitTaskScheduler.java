@@ -8,37 +8,37 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.concurrent.TimeUnit;
 
-public class BukkitTaskScheduler implements TaskScheduler {
+public class OkasoBukkitTaskScheduler implements TaskScheduler {
 
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
 
-    public BukkitTaskScheduler(Plugin plugin) {
+    public OkasoBukkitTaskScheduler(Plugin plugin) {
         this.plugin = plugin;
         this.scheduler = plugin.getServer().getScheduler();
     }
 
     @Override
     public TaskHandle runAsync(Runnable task) {
-        return new BukkitTaskHandle(scheduler.runTaskAsynchronously(plugin, task));
+        return new OkasoBukkitTaskHandle(scheduler.runTaskAsynchronously(plugin, task));
     }
 
     @Override
     public TaskHandle runLater(Runnable task, long delay, TimeUnit unit) {
         long ticks = toTicks(delay, unit);
-        return new BukkitTaskHandle(scheduler.runTaskLater(plugin, task, ticks));
+        return new OkasoBukkitTaskHandle(scheduler.runTaskLater(plugin, task, ticks));
     }
 
     @Override
     public TaskHandle runTimer(Runnable task, long delay, long interval, TimeUnit unit) {
         long delayTicks = toTicks(delay, unit);
         long intervalTicks = toTicks(interval, unit);
-        return new BukkitTaskHandle(scheduler.runTaskTimer(plugin, task, delayTicks, intervalTicks));
+        return new OkasoBukkitTaskHandle(scheduler.runTaskTimer(plugin, task, delayTicks, intervalTicks));
     }
 
     @Override
     public TaskHandle runSync(Runnable task) {
-        return new BukkitTaskHandle(scheduler.runTask(plugin, task));
+        return new OkasoBukkitTaskHandle(scheduler.runTask(plugin, task));
     }
 
     @Override

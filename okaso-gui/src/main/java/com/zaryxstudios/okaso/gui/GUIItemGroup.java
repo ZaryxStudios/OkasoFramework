@@ -92,7 +92,7 @@ public class GUIItemGroup {
     public void hide(String groupId) {
         if (!groups.containsKey(groupId)) return;
         groupVisibility.put(groupId, false);
-        GUIItem filler = BukkitGUIItem.of(Material.AIR);
+        GUIItem filler = OkasoBukkitGUIItem.of(Material.AIR);
         for (int slot : groups.get(groupId)) {
             gui.setItem(slot, filler);
         }

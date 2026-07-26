@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 
 import lombok.Getter;
 
-public class BukkitParticleEffect implements OkasoParticleEffect {
+public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
 
     private static final boolean HAS_BUKKIT_API;
     private static final Constructor<?> PACKET_CTOR_ENUM;
@@ -81,7 +81,7 @@ public class BukkitParticleEffect implements OkasoParticleEffect {
     private final String name;
     private final String particleType;
 
-    public BukkitParticleEffect(String name, String particleType) {
+    public OkasoBukkitParticleEffect(String name, String particleType) {
         this.name = name;
         this.particleType = (particleType != null) ? particleType.toUpperCase() : "FLAME";
     }

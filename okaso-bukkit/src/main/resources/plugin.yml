@@ -1,6 +1,6 @@
 name: Okaso
 version: ${project.version}
-main: com.zaryxstudios.okaso.bukkit.BukkitOkasoPlugin
+main: com.zaryxstudios.okaso.bukkit.OkasoBukkitPlugin
 load: STARTUP
 authors: [ZaryxStudios]
 description: Okaso Framework — Modular Minecraft plugin development framework

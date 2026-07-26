@@ -6,13 +6,13 @@ import org.bukkit.scheduler.BukkitTask;
 
 import lombok.Getter;
 
-public class BukkitTaskHandle implements TaskHandle {
+public class OkasoBukkitTaskHandle implements TaskHandle {
 
     private final BukkitTask task;
     @Getter
     private final int taskId;
 
-    public BukkitTaskHandle(BukkitTask task) {
+    public OkasoBukkitTaskHandle(BukkitTask task) {
         this.task = task;
         this.taskId = task.getTaskId();
     }

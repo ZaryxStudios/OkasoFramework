@@ -168,11 +168,11 @@ public class GUINavigator {
 
     public GUIItem createBackButton(Player player) {
         if (!canGoBack(player)) {
-            return BukkitGUIItem.builder(org.bukkit.Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
                 .name("&7Sin historial")
                 .build();
         }
-        return BukkitGUIItem.builder(org.bukkit.Material.ARROW)
+        return OkasoBukkitGUIItem.builder(org.bukkit.Material.ARROW)
             .name("&eAtrás")
             .clickHandler(event -> goBack(player))
             .build();
@@ -180,11 +180,11 @@ public class GUINavigator {
 
     public GUIItem createForwardButton(Player player) {
         if (!canGoForward(player)) {
-            return BukkitGUIItem.builder(org.bukkit.Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
                 .name("&7Sin adelante")
                 .build();
         }
-        return BukkitGUIItem.builder(org.bukkit.Material.ARROW)
+        return OkasoBukkitGUIItem.builder(org.bukkit.Material.ARROW)
             .name("&eAdelante")
             .clickHandler(event -> goForward(player))
             .build();
@@ -193,11 +193,11 @@ public class GUINavigator {
     public GUIItem createNavButton(Player player, String targetId, String displayName, org.bukkit.Material material) {
         GUI target = guiRegistry.get(targetId);
         if (target == null) {
-            return BukkitGUIItem.builder(org.bukkit.Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
                 .name("&cNo disponible")
                 .build();
         }
-        return BukkitGUIItem.builder(material)
+        return OkasoBukkitGUIItem.builder(material)
             .name(displayName)
             .clickHandler(event -> navigate(player, targetId))
             .build();

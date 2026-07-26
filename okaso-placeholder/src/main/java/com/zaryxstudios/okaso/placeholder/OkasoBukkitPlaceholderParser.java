@@ -10,13 +10,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BukkitPlaceholderParser implements PlaceholderParser {
+public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%([^%]+)%");
 
     private final PlaceholderRegistry registry;
 
-    public BukkitPlaceholderParser(PlaceholderRegistry registry) {
+    public OkasoBukkitPlaceholderParser(PlaceholderRegistry registry) {
         this.registry = registry;
     }
 

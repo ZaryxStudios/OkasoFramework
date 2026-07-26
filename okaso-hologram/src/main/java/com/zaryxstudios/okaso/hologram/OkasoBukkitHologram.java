@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 
-public class BukkitHologram implements OkasoHologram {
+public class OkasoBukkitHologram implements OkasoHologram {
 
     private static final boolean HAS_ARMOR_STAND;
     private static final Class<?> ARMOR_STAND_CLASS;
@@ -128,7 +128,7 @@ public class BukkitHologram implements OkasoHologram {
     private Location location;
     private boolean active;
 
-    public BukkitHologram(String id, Location location, List<HologramLine> lines) {
+    public OkasoBukkitHologram(String id, Location location, List<HologramLine> lines) {
         this.id = id;
         this.location = location.clone();
         this.lines = new ArrayList<>(lines);

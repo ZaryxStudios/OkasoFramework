@@ -10,14 +10,14 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BukkitNetworkManager implements NetworkManager, PluginMessageListener {
+public class OkasoBukkitNetworkManager implements NetworkManager, PluginMessageListener {
 
     private final Plugin plugin;
     private final Messenger messenger;
     private final Set<String> incomingChannels;
     private final Set<String> outgoingChannels;
 
-    public BukkitNetworkManager(Plugin plugin) {
+    public OkasoBukkitNetworkManager(Plugin plugin) {
         this.plugin = plugin;
         this.messenger = plugin.getServer().getMessenger();
         this.incomingChannels = new HashSet<>();

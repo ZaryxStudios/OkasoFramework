@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public class GUIMultiPageView {
 
-    private final BukkitGUI gui;
+    private final OkasoBukkitGUI gui;
     private final List<GUIItem> allItems;
     private final int contentSlots;
     private final int[] navigationSlots;
@@ -22,7 +22,7 @@ public class GUIMultiPageView {
     private Function<Integer, String> titleFormatter;
     private BiConsumer<GUI, Integer> onPageChange;
 
-    public GUIMultiPageView(BukkitGUI gui, List<GUIItem> items, int contentStartSlot, int contentEndSlot,
+    public GUIMultiPageView(OkasoBukkitGUI gui, List<GUIItem> items, int contentStartSlot, int contentEndSlot,
                             int... navigationSlots) {
         this.gui = gui;
         this.allItems = items != null ? new ArrayList<>(items) : new ArrayList<>();
@@ -33,7 +33,7 @@ public class GUIMultiPageView {
         this.onPageChange = null;
     }
 
-    public GUIMultiPageView(BukkitGUI gui, List<GUIItem> items, int contentSlots, int... navigationSlots) {
+    public GUIMultiPageView(OkasoBukkitGUI gui, List<GUIItem> items, int contentSlots, int... navigationSlots) {
         this(gui, items, 0, contentSlots - 1, navigationSlots);
     }
 
@@ -62,7 +62,7 @@ public class GUIMultiPageView {
     }
 
     private GUIItem createNavPlaceholder() {
-        return BukkitGUIItem.of(Material.AIR);
+        return OkasoBukkitGUIItem.of(Material.AIR);
     }
 
     public void setPage(int page) {
@@ -121,11 +121,11 @@ public class GUIMultiPageView {
 
     public GUIItem createNextButton() {
         if (!hasNextPage()) {
-            return BukkitGUIItem.builder(Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
                 .name("&7Sin más páginas")
                 .build();
         }
-        return BukkitGUIItem.builder(Material.ARROW)
+        return OkasoBukkitGUIItem.builder(Material.ARROW)
             .name("&aSiguiente →")
             .clickHandler(event -> nextPage())
             .build();
@@ -133,11 +133,11 @@ public class GUIMultiPageView {
 
     public GUIItem createPreviousButton() {
         if (!hasPreviousPage()) {
-            return BukkitGUIItem.builder(Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
                 .name("&7Sin páginas previas")
                 .build();
         }
-        return BukkitGUIItem.builder(Material.ARROW)
+        return OkasoBukkitGUIItem.builder(Material.ARROW)
             .name("&a← Anterior")
             .clickHandler(event -> previousPage())
             .build();
@@ -146,10 +146,10 @@ public class GUIMultiPageView {
     public GUIItem createPageIndicator() {
         int total = getTotalPages();
         if (total == 0) {
-            return BukkitGUIItem.of(Material.PAPER);
+            return OkasoBukkitGUIItem.of(Material.PAPER);
         }
         String display = "&ePágina " + (currentPage + 1) + " / " + total;
-        return BukkitGUIItem.builder(Material.PAPER)
+        return OkasoBukkitGUIItem.builder(Material.PAPER)
             .name(display)
             .build();
     }
@@ -157,26 +157,26 @@ public class GUIMultiPageView {
     public GUIItem createPageIndicator(String format) {
         int total = getTotalPages();
         if (total == 0) {
-            return BukkitGUIItem.of(Material.PAPER);
+            return OkasoBukkitGUIItem.of(Material.PAPER);
         }
         String display = format
             .replace("{current}", String.valueOf(currentPage + 1))
             .replace("{total}", String.valueOf(total))
             .replace("{percent}", total == 0 ? "0" : String.valueOf((currentPage + 1) * 100 / total));
-        return BukkitGUIItem.builder(Material.PAPER)
+        return OkasoBukkitGUIItem.builder(Material.PAPER)
             .name(display)
             .build();
     }
 
     public GUIItem createFirstPageButton() {
-            return BukkitGUIItem.builder(Material.CLOCK)
+            return OkasoBukkitGUIItem.builder(Material.CLOCK)
             .name("&ePrimera página")
             .clickHandler(event -> firstPage())
             .build();
     }
 
     public GUIItem createLastPageButton() {
-        return BukkitGUIItem.builder(Material.CLOCK)
+        return OkasoBukkitGUIItem.builder(Material.CLOCK)
             .name("&eÚltima página")
             .clickHandler(event -> lastPage())
             .build();
@@ -231,7 +231,7 @@ public class GUIMultiPageView {
         return result;
     }
 
-    public BukkitGUI getGUI() {
+    public OkasoBukkitGUI getGUI() {
         return gui;
     }
 
@@ -261,7 +261,7 @@ public class GUIMultiPageView {
         }
     }
 
-    public static GUIMultiPageView create(BukkitGUI gui, List<GUIItem> items,
+    public static GUIMultiPageView create(OkasoBukkitGUI gui, List<GUIItem> items,
                                           int contentSlots, int... navSlots) {
         return new GUIMultiPageView(gui, items, contentSlots, navSlots);
     }

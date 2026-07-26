@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-public class BukkitWorldManager implements WorldManager {
+public class OkasoBukkitWorldManager implements WorldManager {
 
     @Override
     public Optional<Object> getWorld(String name) {

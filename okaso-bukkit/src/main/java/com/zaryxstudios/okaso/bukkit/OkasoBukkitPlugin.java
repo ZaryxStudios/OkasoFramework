@@ -28,36 +28,36 @@ import com.zaryxstudios.okaso.common.world.WorldManager;
 import com.zaryxstudios.okaso.common.world.OkasoStructureManager;
 import com.zaryxstudios.okaso.common.module.ModuleManager;
 import com.zaryxstudios.okaso.config.DefaultConfigurationProvider;
-import com.zaryxstudios.okaso.entity.BukkitEntityService;
+import com.zaryxstudios.okaso.entity.OkasoBukkitEntityService;
 import com.zaryxstudios.okaso.event.AnnotationEventRegistry;
-import com.zaryxstudios.okaso.hologram.BukkitHologramManager;
+import com.zaryxstudios.okaso.hologram.OkasoBukkitHologramManager;
 import com.zaryxstudios.okaso.i18n.SimpleTranslationManager;
-import com.zaryxstudios.okaso.item.BukkitItemBuilder;
+import com.zaryxstudios.okaso.item.OkasoBukkitItemBuilder;
 import com.zaryxstudios.okaso.metrics.SimpleMetricsRegistry;
 import com.zaryxstudios.okaso.module.DefaultModuleManager;
-import com.zaryxstudios.okaso.network.BukkitNetworkManager;
+import com.zaryxstudios.okaso.network.OkasoBukkitNetworkManager;
 import com.zaryxstudios.okaso.packet.ReflectionPacketInterceptor;
-import com.zaryxstudios.okaso.particle.BukkitParticleManager;
-import com.zaryxstudios.okaso.permission.BukkitPermissionManager;
+import com.zaryxstudios.okaso.particle.OkasoBukkitParticleManager;
+import com.zaryxstudios.okaso.permission.OkasoBukkitPermissionManager;
 import com.zaryxstudios.okaso.placeholder.SimplePlaceholderRegistry;
-import com.zaryxstudios.okaso.scoreboard.BukkitScoreboardManager;
+import com.zaryxstudios.okaso.scoreboard.OkasoBukkitScoreboardManager;
 import com.zaryxstudios.okaso.security.DefaultSecurityManager;
 import com.zaryxstudios.okaso.storage.JsonFileStorageProvider;
 import com.zaryxstudios.okaso.storage.MemoryStorageProvider;
-import com.zaryxstudios.okaso.tablist.BukkitTabListManager;
-import com.zaryxstudios.okaso.task.BukkitTaskScheduler;
+import com.zaryxstudios.okaso.tablist.OkasoBukkitTabListManager;
+import com.zaryxstudios.okaso.task.OkasoBukkitTaskScheduler;
 import com.zaryxstudios.okaso.updater.OkasoUpdateChecker;
 import com.zaryxstudios.okaso.webhook.OkasoWebhookClient;
-import com.zaryxstudios.okaso.world.BukkitWorldManager;
-import com.zaryxstudios.okaso.world.structure.BukkitStructureManager;
-import com.zaryxstudios.okaso.bukkit.event.BukkitEventBusAdapter;
+import com.zaryxstudios.okaso.world.OkasoBukkitWorldManager;
+import com.zaryxstudios.okaso.world.structure.OkasoBukkitStructureManager;
+import com.zaryxstudios.okaso.bukkit.event.OkasoBukkitEventBusAdapter;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.logging.Logger;
 
-public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
+public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
 
     private OkasoAPI api;
     private EventBus eventBus;
@@ -91,32 +91,32 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
     private void registerServices() {
         ServiceRegistry reg = api.getServiceRegistry();
 
-        reg.register(TaskScheduler.class, new BukkitTaskScheduler(this));
+        reg.register(TaskScheduler.class, new OkasoBukkitTaskScheduler(this));
 
         eventBus = new EventBus();
         reg.register(EventBus.class, eventBus);
 
         reg.register(OkasoConfigurationProvider.class, new DefaultConfigurationProvider());
 
-        reg.register(EntityService.class, new BukkitEntityService());
+        reg.register(EntityService.class, new OkasoBukkitEntityService());
 
-        reg.register(WorldManager.class, new BukkitWorldManager());
+        reg.register(WorldManager.class, new OkasoBukkitWorldManager());
 
-        reg.register(OkasoStructureManager.class, new BukkitStructureManager(this));
+        reg.register(OkasoStructureManager.class, new OkasoBukkitStructureManager(this));
 
-        reg.register(ItemBuilder.class, new BukkitItemBuilder(Material.STONE, 1));
+        reg.register(ItemBuilder.class, new OkasoBukkitItemBuilder(Material.STONE, 1));
 
-        reg.register(PermissionManager.class, new BukkitPermissionManager(this));
+        reg.register(PermissionManager.class, new OkasoBukkitPermissionManager(this));
 
         reg.register(PlaceholderRegistry.class, new SimplePlaceholderRegistry());
 
-        reg.register(OkasoScoreboardManager.class, new BukkitScoreboardManager());
+        reg.register(OkasoScoreboardManager.class, new OkasoBukkitScoreboardManager());
 
-        reg.register(TabListManager.class, new BukkitTabListManager());
+        reg.register(TabListManager.class, new OkasoBukkitTabListManager());
 
-        reg.register(HologramManager.class, new BukkitHologramManager());
+        reg.register(HologramManager.class, new OkasoBukkitHologramManager());
 
-        reg.register(ParticleManager.class, new BukkitParticleManager());
+        reg.register(ParticleManager.class, new OkasoBukkitParticleManager());
 
         reg.register(MetricsRegistry.class, new SimpleMetricsRegistry());
 
@@ -124,7 +124,7 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
 
         reg.register(WebhookClient.class, new OkasoWebhookClient());
 
-        reg.register(NetworkManager.class, new BukkitNetworkManager(this));
+        reg.register(NetworkManager.class, new OkasoBukkitNetworkManager(this));
 
         reg.register(PacketInterceptor.class, new ReflectionPacketInterceptor());
 
@@ -148,7 +148,7 @@ public class BukkitOkasoPlugin extends JavaPlugin implements OkasoPlugin {
     }
 
     private void registerEventListeners() {
-        BukkitEventBusAdapter adapter = new BukkitEventBusAdapter(eventBus, this);
+        OkasoBukkitEventBusAdapter adapter = new OkasoBukkitEventBusAdapter(eventBus, this);
         adapter.register();
     }
 

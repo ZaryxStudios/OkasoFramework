@@ -31,7 +31,7 @@ import org.bukkit.potion.PotionType;
 import lombok.Getter;
 import lombok.Setter;
 
-public class BukkitGUIItem implements GUIItem {
+public class OkasoBukkitGUIItem implements GUIItem {
 
     private ItemStack itemStack;
 
@@ -55,12 +55,12 @@ public class BukkitGUIItem implements GUIItem {
         void onClick(GUIClickEvent event);
     }
 
-    public BukkitGUIItem(ItemStack itemStack, GUIClickHandler clickHandler) {
+    public OkasoBukkitGUIItem(ItemStack itemStack, GUIClickHandler clickHandler) {
         this.itemStack = itemStack;
         this.clickHandler = clickHandler;
     }
 
-    public BukkitGUIItem(ItemStack itemStack) {
+    public OkasoBukkitGUIItem(ItemStack itemStack) {
         this(itemStack, null);
     }
 
@@ -71,28 +71,28 @@ public class BukkitGUIItem implements GUIItem {
         }
     }
 
-    public static BukkitGUIItem of(ItemStack itemStack, GUIClickHandler clickHandler) {
-        return new BukkitGUIItem(itemStack, clickHandler);
+    public static OkasoBukkitGUIItem of(ItemStack itemStack, GUIClickHandler clickHandler) {
+        return new OkasoBukkitGUIItem(itemStack, clickHandler);
     }
 
-    public static BukkitGUIItem of(ItemStack itemStack) {
-        return new BukkitGUIItem(itemStack);
+    public static OkasoBukkitGUIItem of(ItemStack itemStack) {
+        return new OkasoBukkitGUIItem(itemStack);
     }
 
-    public static BukkitGUIItem of(Material material) {
-        return new BukkitGUIItem(new ItemStack(material));
+    public static OkasoBukkitGUIItem of(Material material) {
+        return new OkasoBukkitGUIItem(new ItemStack(material));
     }
 
-    public static BukkitGUIItem of(Material material, int amount) {
-        return new BukkitGUIItem(new ItemStack(material, amount));
+    public static OkasoBukkitGUIItem of(Material material, int amount) {
+        return new OkasoBukkitGUIItem(new ItemStack(material, amount));
     }
 
-    public static BukkitGUIItem of(Material material, String displayName) {
+    public static OkasoBukkitGUIItem of(Material material, String displayName) {
         return builder(material).name(displayName).build();
     }
 
-    public static BukkitGUIItem empty() {
-        return new BukkitGUIItem(new ItemStack(Material.AIR));
+    public static OkasoBukkitGUIItem empty() {
+        return new OkasoBukkitGUIItem(new ItemStack(Material.AIR));
     }
 
     public static Builder builder() {
@@ -279,7 +279,7 @@ public class BukkitGUIItem implements GUIItem {
             meta.addEnchant(Enchantment.DURABILITY, 1, true);
         }
 
-        public BukkitGUIItem build() {
+        public OkasoBukkitGUIItem build() {
             ItemStack stack = new ItemStack(material, amount);
 
             if (durability >= 0) {
@@ -360,7 +360,7 @@ public class BukkitGUIItem implements GUIItem {
                 stack.setItemMeta(meta);
             }
 
-            BukkitGUIItem result = new BukkitGUIItem(stack, clickHandler);
+            OkasoBukkitGUIItem result = new OkasoBukkitGUIItem(stack, clickHandler);
             if (preGlowEnchants != null) {
                 result.enchantmentsBeforeGlow = preGlowEnchants;
             }
@@ -590,53 +590,53 @@ public class BukkitGUIItem implements GUIItem {
         }
     }
 
-    public BukkitGUIItem withName(String name) {
-        BukkitGUIItem copy = copy();
+    public OkasoBukkitGUIItem withName(String name) {
+        OkasoBukkitGUIItem copy = copy();
         copy.setDisplayName(name);
         return copy;
     }
 
-    public BukkitGUIItem withLore(List<String> lore) {
-        BukkitGUIItem copy = copy();
+    public OkasoBukkitGUIItem withLore(List<String> lore) {
+        OkasoBukkitGUIItem copy = copy();
         copy.setLore(lore);
         return copy;
     }
 
-    public BukkitGUIItem withLore(String... lore) {
+    public OkasoBukkitGUIItem withLore(String... lore) {
         return withLore(Arrays.asList(lore));
     }
 
-    public BukkitGUIItem withAmount(int amount) {
-        BukkitGUIItem copy = copy();
+    public OkasoBukkitGUIItem withAmount(int amount) {
+        OkasoBukkitGUIItem copy = copy();
         copy.setAmount(amount);
         return copy;
     }
 
-    public BukkitGUIItem withGlow() {
-        BukkitGUIItem copy = copy();
+    public OkasoBukkitGUIItem withGlow() {
+        OkasoBukkitGUIItem copy = copy();
         copy.setGlow(true);
         return copy;
     }
 
-    public BukkitGUIItem withUnbreakable() {
-        BukkitGUIItem copy = copy();
+    public OkasoBukkitGUIItem withUnbreakable() {
+        OkasoBukkitGUIItem copy = copy();
         copy.setUnbreakable(true);
         return copy;
     }
 
-    public BukkitGUIItem withCustomModelData(int data) {
-        BukkitGUIItem copy = copy();
+    public OkasoBukkitGUIItem withCustomModelData(int data) {
+        OkasoBukkitGUIItem copy = copy();
         copy.setCustomModelData(data);
         return copy;
     }
 
-    public BukkitGUIItem clickHandler(GUIClickHandler handler) {
+    public OkasoBukkitGUIItem clickHandler(GUIClickHandler handler) {
         this.clickHandler = handler;
         return this;
     }
 
-    public BukkitGUIItem copy() {
-        BukkitGUIItem copy = new BukkitGUIItem(itemStack != null ? itemStack.clone() : null, clickHandler);
+    public OkasoBukkitGUIItem copy() {
+        OkasoBukkitGUIItem copy = new OkasoBukkitGUIItem(itemStack != null ? itemStack.clone() : null, clickHandler);
         if (this.enchantmentsBeforeGlow != null) {
             copy.enchantmentsBeforeGlow = new HashMap<>(this.enchantmentsBeforeGlow);
         }
@@ -662,9 +662,9 @@ public class BukkitGUIItem implements GUIItem {
             && itemStack.isSimilar((ItemStack) other.getItemStack());
     }
 
-    public BukkitGUIItem withType(Material type) {
+    public OkasoBukkitGUIItem withType(Material type) {
         if (itemStack == null) return this;
-        BukkitGUIItem copy = copy();
+        OkasoBukkitGUIItem copy = copy();
         ItemStack newStack = new ItemStack(type, itemStack.getAmount());
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
@@ -674,42 +674,42 @@ public class BukkitGUIItem implements GUIItem {
         return copy;
     }
 
-    public static BukkitGUIItem closeButton(GUIClickHandler handler) {
+    public static OkasoBukkitGUIItem closeButton(GUIClickHandler handler) {
         return builder(Material.BARRIER)
             .name("&cCerrar")
             .clickHandler(handler)
             .build();
     }
 
-    public static BukkitGUIItem backButton(GUIClickHandler handler) {
+    public static OkasoBukkitGUIItem backButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
             .name("&7Atrás")
             .clickHandler(handler)
             .build();
     }
 
-    public static BukkitGUIItem nextPageButton(GUIClickHandler handler) {
+    public static OkasoBukkitGUIItem nextPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
             .name("&aSiguiente página")
             .clickHandler(handler)
             .build();
     }
 
-    public static BukkitGUIItem previousPageButton(GUIClickHandler handler) {
+    public static OkasoBukkitGUIItem previousPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
             .name("&aPágina anterior")
             .clickHandler(handler)
             .build();
     }
 
-    public static BukkitGUIItem confirmButton(GUIClickHandler handler) {
+    public static OkasoBukkitGUIItem confirmButton(GUIClickHandler handler) {
         return builder(Material.LIME_WOOL)
             .name("&a&lConfirmar")
             .clickHandler(handler)
             .build();
     }
 
-    public static BukkitGUIItem cancelButton(GUIClickHandler handler) {
+    public static OkasoBukkitGUIItem cancelButton(GUIClickHandler handler) {
         return builder(Material.RED_WOOL)
             .name("&c&lCancelar")
             .clickHandler(handler)

@@ -14,7 +14,7 @@ import java.util.Optional;
 import lombok.Getter;
 
 @Getter
-public class BukkitStructure implements OkasoStructure {
+public class OkasoBukkitStructure implements OkasoStructure {
 
     private final String name;
     private int width;
@@ -23,7 +23,7 @@ public class BukkitStructure implements OkasoStructure {
     private Material[][][] blocks;
     private byte[][][] blockData;
 
-    public BukkitStructure(String name, int width, int height, int length) {
+    public OkasoBukkitStructure(String name, int width, int height, int length) {
         this.name = name;
         this.width = width;
         this.height = height;
@@ -32,7 +32,7 @@ public class BukkitStructure implements OkasoStructure {
         this.blockData = new byte[width][height][length];
     }
 
-    private BukkitStructure(BukkitStructure original) {
+    private OkasoBukkitStructure(OkasoBukkitStructure original) {
         this.name = original.name;
         this.width = original.width;
         this.height = original.height;
@@ -142,7 +142,7 @@ public class BukkitStructure implements OkasoStructure {
 
     @Override
     public OkasoStructure copy() {
-        return new BukkitStructure(this);
+        return new OkasoBukkitStructure(this);
     }
 
     @Override

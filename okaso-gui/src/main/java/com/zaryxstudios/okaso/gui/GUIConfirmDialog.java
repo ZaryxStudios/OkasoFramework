@@ -111,23 +111,23 @@ public class GUIConfirmDialog {
     }
 
     public void open(Player player) {
-        BukkitGUI gui = new BukkitGUI(plugin, TextColorizer.translate(title), 27);
-        gui.fillBorder(BukkitGUIItem.of(Material.GRAY_STAINED_GLASS_PANE));
+        OkasoBukkitGUI gui = new OkasoBukkitGUI(plugin, TextColorizer.translate(title), 27);
+        gui.fillBorder(OkasoBukkitGUIItem.of(Material.GRAY_STAINED_GLASS_PANE));
         if (messageItem != null) {
             gui.setItem(messageSlot, messageItem);
         } else if (message != null) {
-            gui.setItem(messageSlot, BukkitGUIItem.builder(Material.PAPER)
+            gui.setItem(messageSlot, OkasoBukkitGUIItem.builder(Material.PAPER)
                 .name(message)
                 .build());
         }
         GUIItem confirm = confirmItem;
         if (confirm == null) {
-            confirm = BukkitGUIItem.builder(confirmMaterial)
+            confirm = OkasoBukkitGUIItem.builder(confirmMaterial)
                 .name(confirmName)
                 .build();
         }
         GUIItem confirmFinal = confirm;
-        gui.setItem(confirmSlot, BukkitGUIItem.of(
+        gui.setItem(confirmSlot, OkasoBukkitGUIItem.of(
             confirmFinal.getItemStack() instanceof org.bukkit.inventory.ItemStack
                 ? (org.bukkit.inventory.ItemStack) confirmFinal.getItemStack()
                 : new org.bukkit.inventory.ItemStack(confirmMaterial),
@@ -142,12 +142,12 @@ public class GUIConfirmDialog {
             }));
         GUIItem cancel = cancelItem;
         if (cancel == null) {
-            cancel = BukkitGUIItem.builder(cancelMaterial)
+            cancel = OkasoBukkitGUIItem.builder(cancelMaterial)
                 .name(cancelName)
                 .build();
         }
         GUIItem cancelFinal = cancel;
-        gui.setItem(cancelSlot, BukkitGUIItem.of(
+        gui.setItem(cancelSlot, OkasoBukkitGUIItem.of(
             cancelFinal.getItemStack() instanceof org.bukkit.inventory.ItemStack
                 ? (org.bukkit.inventory.ItemStack) cancelFinal.getItemStack()
                 : new org.bukkit.inventory.ItemStack(cancelMaterial),

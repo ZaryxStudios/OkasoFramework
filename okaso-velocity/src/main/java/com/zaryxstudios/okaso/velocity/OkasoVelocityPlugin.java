@@ -26,7 +26,7 @@ import lombok.Getter;
     description = "Okaso Framework — Velocity Adapter",
     authors = {"ZaryxStudios"}
 )
-public final class VelocityOkasoPlugin implements OkasoPlugin {
+public final class OkasoVelocityPlugin implements OkasoPlugin {
 
     @Getter
     private final ProxyServer server;
@@ -38,7 +38,7 @@ public final class VelocityOkasoPlugin implements OkasoPlugin {
     private java.util.logging.Logger julLogger;
 
     @Inject
-    public VelocityOkasoPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public OkasoVelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
         this.slf4jLogger = logger;
         this.dataDirectory = dataDirectory;

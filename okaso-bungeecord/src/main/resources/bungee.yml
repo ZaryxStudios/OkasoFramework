@@ -1,6 +1,6 @@
 name: Okaso
 version: ${project.version}
-main: com.zaryxstudios.okaso.bungeecord.BungeeOkasoPlugin
+main: com.zaryxstudios.okaso.bungeecord.OkasoBungeePlugin
 author: ZaryxStudios
 description: Okaso Framework — BungeeCord Platform Adapter
 website: https://github.com/ZaryxStudios/OkasoFramework

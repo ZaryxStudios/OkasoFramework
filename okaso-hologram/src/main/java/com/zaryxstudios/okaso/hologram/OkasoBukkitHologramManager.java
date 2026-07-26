@@ -15,11 +15,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BukkitHologramManager implements HologramManager {
+public class OkasoBukkitHologramManager implements HologramManager {
 
-    private final Map<String, BukkitHologram> holograms;
+    private final Map<String, OkasoBukkitHologram> holograms;
 
-    public BukkitHologramManager() {
+    public OkasoBukkitHologramManager() {
         this.holograms = new ConcurrentHashMap<>();
     }
 
@@ -36,13 +36,13 @@ public class BukkitHologramManager implements HologramManager {
     @Override
     public OkasoHologram createHologram(String id, List<HologramLine> lines) {
         Location fallback = new Location(null, 0, 0, 0);
-        BukkitHologram hologram = new BukkitHologram(id, fallback, new ArrayList<>(lines));
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, fallback, new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
     }
 
     public OkasoHologram createHologram(String id, Location location, List<HologramLine> lines) {
-        BukkitHologram hologram = new BukkitHologram(id, location.clone(), new ArrayList<>(lines));
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, location.clone(), new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
     }
@@ -63,7 +63,7 @@ public class BukkitHologramManager implements HologramManager {
 
     @Override
     public void removeHologram(String id) {
-        BukkitHologram h = holograms.remove(id);
+        OkasoBukkitHologram h = holograms.remove(id);
         if (h != null) {
             h.stop();
         }
@@ -81,14 +81,14 @@ public class BukkitHologramManager implements HologramManager {
 
     @Override
     public void removeAll() {
-        for (BukkitHologram h : holograms.values()) {
+        for (OkasoBukkitHologram h : holograms.values()) {
             h.stop();
         }
         holograms.clear();
     }
 
     public void stopAll() {
-        for (BukkitHologram h : holograms.values()) {
+        for (OkasoBukkitHologram h : holograms.values()) {
             if (h.isRunning()) {
                 h.stop();
             }

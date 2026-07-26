@@ -6,14 +6,14 @@ import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import lombok.Getter;
 
-public class BungeeTaskHandle implements TaskHandle {
+public class OkasoBungeeTaskHandle implements TaskHandle {
 
     private final ScheduledTask task;
     @Getter
     private final int taskId;
     private volatile boolean cancelled;
 
-    public BungeeTaskHandle(ScheduledTask task) {
+    public OkasoBungeeTaskHandle(ScheduledTask task) {
         this.task = task;
         this.taskId = task.getId();
         this.cancelled = false;

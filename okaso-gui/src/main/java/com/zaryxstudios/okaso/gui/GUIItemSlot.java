@@ -50,12 +50,12 @@ public class GUIItemSlot implements GUIItem {
         ItemStack stack = itemSupplier.get();
         if (stack != null) {
             if (clickHandler != null) {
-                currentDelegate = BukkitGUIItem.of(stack, this::onClickInternal);
+                currentDelegate = OkasoBukkitGUIItem.of(stack, this::onClickInternal);
             } else {
-                currentDelegate = BukkitGUIItem.of(stack);
+                currentDelegate = OkasoBukkitGUIItem.of(stack);
             }
         } else {
-            currentDelegate = BukkitGUIItem.empty();
+            currentDelegate = OkasoBukkitGUIItem.empty();
         }
         gui.setItem(slot, currentDelegate);
     }

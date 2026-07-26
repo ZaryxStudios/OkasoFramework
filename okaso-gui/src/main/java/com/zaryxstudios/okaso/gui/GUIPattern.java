@@ -210,23 +210,23 @@ public final class GUIPattern {
     }
 
     public static GUIItem createGlassPane(Material material) {
-        return BukkitGUIItem.of(material);
+        return OkasoBukkitGUIItem.of(material);
     }
 
     public static GUIItem createGlassPane(Material material, String name) {
-        return BukkitGUIItem.builder(material).name(name).build();
+        return OkasoBukkitGUIItem.builder(material).name(name).build();
     }
 
     public static GUIItem fillerPane() {
-        return BukkitGUIItem.of(Material.BLACK_STAINED_GLASS_PANE);
+        return OkasoBukkitGUIItem.of(Material.BLACK_STAINED_GLASS_PANE);
     }
 
     public static GUIItem transparentPane() {
-        return BukkitGUIItem.of(Material.GRAY_STAINED_GLASS_PANE);
+        return OkasoBukkitGUIItem.of(Material.GRAY_STAINED_GLASS_PANE);
     }
 
     public static GUIItem glassPane(Material material, String displayName, String... lore) {
-        return BukkitGUIItem.builder(material).name(displayName).lore(lore).build();
+        return OkasoBukkitGUIItem.builder(material).name(displayName).lore(lore).build();
     }
 
 }

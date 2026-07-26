@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 import lombok.Getter;
 
-public class BukkitStructureManager implements OkasoStructureManager {
+public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
     private static final String FORMAT_HEADER = "OKASO_STRUCTURE_V1";
     private static final String FILE_EXTENSION = ".okstr";
@@ -28,7 +28,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
     @Getter
     private File structureDirectory;
 
-    public BukkitStructureManager(Plugin plugin) {
+    public OkasoBukkitStructureManager(Plugin plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.structureDirectory = new File(plugin.getDataFolder(), "structures");
@@ -54,7 +54,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
         int height = maxY - minY + 1;
         int length = maxZ - minZ + 1;
 
-        BukkitStructure structure = new BukkitStructure(name, width, height, length);
+        OkasoBukkitStructure structure = new OkasoBukkitStructure(name, width, height, length);
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -73,7 +73,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public Optional<OkasoStructure> loadStructure(String name) {
-        BukkitStructure structure = loadStructureFromFile(name);
+        OkasoBukkitStructure structure = loadStructureFromFile(name);
         return Optional.ofNullable(structure);
     }
 
@@ -119,7 +119,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public OkasoStructure createStructure(String name, int width, int height, int length) {
-        return new BukkitStructure(name, width, height, length);
+        return new OkasoBukkitStructure(name, width, height, length);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public boolean exportStructure(String name, String filePath) {
-        BukkitStructure structure = loadStructureFromFile(name);
+        OkasoBukkitStructure structure = loadStructureFromFile(name);
         if (structure == null) {
             return false;
         }
@@ -171,20 +171,20 @@ public class BukkitStructureManager implements OkasoStructureManager {
         String lower = filePath.toLowerCase();
         try {
             if (lower.endsWith(".nbt")) {
-                BukkitStructure structure = NbtStructureReader.readStructure(name, filePath);
+                OkasoBukkitStructure structure = NbtStructureReader.readStructure(name, filePath);
                 return saveStructureToFile(structure);
             } else if (lower.endsWith(FILE_EXTENSION)) {
-                BukkitStructure structure = parseOkstrFile(file, name);
+                OkasoBukkitStructure structure = parseOkstrFile(file, name);
                 if (structure != null) {
                     return saveStructureToFile(structure);
                 }
                 return false;
             } else {
                 try {
-                    BukkitStructure structure = NbtStructureReader.readStructure(name, filePath);
+                    OkasoBukkitStructure structure = NbtStructureReader.readStructure(name, filePath);
                     return saveStructureToFile(structure);
                 } catch (Exception nbtErr) {
-                    BukkitStructure structure = parseOkstrFile(file, name);
+                    OkasoBukkitStructure structure = parseOkstrFile(file, name);
                     if (structure != null) {
                         return saveStructureToFile(structure);
                     }
@@ -197,7 +197,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
             return false;
         }
     }
-    private BukkitStructure parseOkstrFile(File file, String expectedName) {
+    private OkasoBukkitStructure parseOkstrFile(File file, String expectedName) {
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             String header = reader.readLine();
             if (!FORMAT_HEADER.equals(header)) {
@@ -221,7 +221,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
             int l = Integer.parseInt(lengthLine.substring(lengthLine.indexOf('=') + 1));
             int expectedBlocks = Integer.parseInt(blocksLine.substring(blocksLine.indexOf('=') + 1));
 
-            BukkitStructure structure = new BukkitStructure(structName, w, h, l);
+            OkasoBukkitStructure structure = new OkasoBukkitStructure(structName, w, h, l);
 
             String line;
             int blockCount = 0;
@@ -266,7 +266,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
         return new File(structureDirectory, sanitized + FILE_EXTENSION);
     }
 
-    private boolean saveStructureToFile(BukkitStructure structure) {
+    private boolean saveStructureToFile(OkasoBukkitStructure structure) {
         File file = getStructureFile(structure.getName());
         ensureDirectoryExists(file.getParentFile());
 
@@ -319,7 +319,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
         }
     }
 
-    private BukkitStructure loadStructureFromFile(String name) {
+    private OkasoBukkitStructure loadStructureFromFile(String name) {
         File file = getStructureFile(name);
         if (!file.exists()) {
             return null;
@@ -350,7 +350,7 @@ public class BukkitStructureManager implements OkasoStructureManager {
             int l = Integer.parseInt(lengthLine.substring(lengthLine.indexOf('=') + 1));
             int expectedBlocks = Integer.parseInt(blocksLine.substring(blocksLine.indexOf('=') + 1));
 
-            BukkitStructure structure = new BukkitStructure(structName, w, h, l);
+            OkasoBukkitStructure structure = new OkasoBukkitStructure(structName, w, h, l);
 
             String line;
             int blockCount = 0;

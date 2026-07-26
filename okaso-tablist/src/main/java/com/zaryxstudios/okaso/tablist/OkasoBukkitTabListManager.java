@@ -10,7 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class BukkitTabListManager implements TabListManager {
+public class OkasoBukkitTabListManager implements TabListManager {
 
     private static final boolean HAS_API_METHOD;
 

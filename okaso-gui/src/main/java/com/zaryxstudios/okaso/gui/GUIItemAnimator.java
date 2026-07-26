@@ -107,8 +107,8 @@ public class GUIItemAnimator {
                 }
                 meta.setDisplayName(TextColorizer.translate(names[index[0] % names.length]));
                 stack.setItemMeta(meta);
-                if (baseItem instanceof BukkitGUIItem) {
-                    BukkitGUIItem copy = ((BukkitGUIItem) baseItem).copy();
+                if (baseItem instanceof OkasoBukkitGUIItem) {
+                    OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) baseItem).copy();
                     copy.setItemStack(stack);
                     gui.setItem(slot, copy);
                 }
@@ -154,8 +154,8 @@ public class GUIItemAnimator {
                     .replace("{seconds}", String.valueOf(remaining[0]));
                 meta.setDisplayName(TextColorizer.translate(display));
                 stack.setItemMeta(meta);
-                if (baseItem instanceof BukkitGUIItem) {
-                    BukkitGUIItem copy = ((BukkitGUIItem) baseItem).copy();
+                if (baseItem instanceof OkasoBukkitGUIItem) {
+                    OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) baseItem).copy();
                     copy.setItemStack(stack);
                     gui.setItem(slot, copy);
                 }
@@ -190,8 +190,8 @@ public class GUIItemAnimator {
                     String base = meta.getDisplayName().replaceAll("§[0-9a-fk-or]", "");
                     meta.setDisplayName(TextColorizer.translate(colors[index[0] % colors.length] + base));
                     stack.setItemMeta(meta);
-                    if (baseItem instanceof BukkitGUIItem) {
-                        BukkitGUIItem copy = ((BukkitGUIItem) baseItem).copy();
+                    if (baseItem instanceof OkasoBukkitGUIItem) {
+                        OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) baseItem).copy();
                         copy.setItemStack(stack);
                         gui.setItem(slot, copy);
                     }

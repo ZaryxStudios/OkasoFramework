@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BukkitScoreboardManager implements OkasoScoreboardManager {
+public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager {
 
     private static final Method GET_NEW_SCOREBOARD;
 
@@ -39,9 +39,9 @@ public class BukkitScoreboardManager implements OkasoScoreboardManager {
         return mgr.getMainScoreboard();
     }
 
-    private final Map<UUID, BukkitScoreboardObjective> objectives;
+    private final Map<UUID, OkasoBukkitScoreboardObjective> objectives;
 
-    public BukkitScoreboardManager() {
+    public OkasoBukkitScoreboardManager() {
         this.objectives = new ConcurrentHashMap<>();
     }
 
@@ -50,8 +50,8 @@ public class BukkitScoreboardManager implements OkasoScoreboardManager {
         if (!(player instanceof Player)) return;
 
         Player p = (Player) player;
-        if (objective instanceof BukkitScoreboardObjective) {
-            BukkitScoreboardObjective bukkitObj = (BukkitScoreboardObjective) objective;
+        if (objective instanceof OkasoBukkitScoreboardObjective) {
+            OkasoBukkitScoreboardObjective bukkitObj = (OkasoBukkitScoreboardObjective) objective;
             Scoreboard board = bukkitObj.getOrCreateScoreboard();
             p.setScoreboard(board);
             objectives.put(p.getUniqueId(), bukkitObj);
@@ -70,7 +70,7 @@ public class BukkitScoreboardManager implements OkasoScoreboardManager {
     @Override
     public Optional<OkasoScoreboardObjective> getCurrentObjective(Object player) {
         if (player instanceof Player) {
-            BukkitScoreboardObjective obj = objectives.get(((Player) player).getUniqueId());
+            OkasoBukkitScoreboardObjective obj = objectives.get(((Player) player).getUniqueId());
             return Optional.ofNullable((OkasoScoreboardObjective) obj);
         }
         return Optional.empty();

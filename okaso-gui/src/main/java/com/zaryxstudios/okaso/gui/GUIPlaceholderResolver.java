@@ -100,8 +100,8 @@ public class GUIPlaceholderResolver {
         }
         if (changed) {
             stack.setItemMeta(meta);
-            if (item instanceof BukkitGUIItem) {
-                BukkitGUIItem copy = ((BukkitGUIItem) item).copy();
+            if (item instanceof OkasoBukkitGUIItem) {
+                OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) item).copy();
                 copy.setItemStack(stack);
                 return copy;
             }

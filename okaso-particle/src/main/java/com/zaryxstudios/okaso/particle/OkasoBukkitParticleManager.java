@@ -7,17 +7,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BukkitParticleManager implements ParticleManager {
+public class OkasoBukkitParticleManager implements ParticleManager {
 
-    private final Map<String, BukkitParticleEffect> effects;
+    private final Map<String, OkasoBukkitParticleEffect> effects;
 
-    public BukkitParticleManager() {
+    public OkasoBukkitParticleManager() {
         this.effects = new ConcurrentHashMap<>();
     }
 
     @Override
     public OkasoParticleEffect createEffect(String name, String particleType) {
-        BukkitParticleEffect effect = new BukkitParticleEffect(name, particleType);
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect(name, particleType);
         effects.put(name, effect);
         return effect;
     }
@@ -54,7 +54,7 @@ public class BukkitParticleManager implements ParticleManager {
 
     @Override
     public OkasoParticleEffect getOrCreateEffect(String name, String particleType) {
-        BukkitParticleEffect existing = effects.get(name);
+        OkasoBukkitParticleEffect existing = effects.get(name);
         if (existing != null) {
             return existing;
         }

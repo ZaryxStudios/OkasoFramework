@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public class BukkitEntityService implements EntityService {
+public class OkasoBukkitEntityService implements EntityService {
 
     private static final boolean HAS_GET_ENTITY_UUID;
     private static final Method GET_ENTITY_UUID_METHOD;

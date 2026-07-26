@@ -16,7 +16,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-public class BukkitScoreboardObjective implements OkasoScoreboardObjective {
+public class OkasoBukkitScoreboardObjective implements OkasoScoreboardObjective {
 
     private static final Method GET_NEW_SCOREBOARD;
     private static final Method REGISTER_OBJ_3ARG;
@@ -50,7 +50,7 @@ public class BukkitScoreboardObjective implements OkasoScoreboardObjective {
     private String title;
     private final List<String> lines;
 
-    public BukkitScoreboardObjective(String title) {
+    public OkasoBukkitScoreboardObjective(String title) {
         this.title = title;
         this.lines = new ArrayList<>();
     }

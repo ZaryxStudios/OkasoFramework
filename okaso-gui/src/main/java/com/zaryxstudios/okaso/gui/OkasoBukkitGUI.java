@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 
-public class BukkitGUI implements GUI, Listener {
+public class OkasoBukkitGUI implements GUI, Listener {
 
     private final Plugin plugin;
     private final String title;
@@ -62,7 +62,7 @@ public class BukkitGUI implements GUI, Listener {
 
     private Consumer<Boolean> confirmCallback;
 
-    public BukkitGUI(Plugin plugin, String title, int size) {
+    public OkasoBukkitGUI(Plugin plugin, String title, int size) {
         if (size % 9 != 0 || size < 9 || size > 54) {
             throw new IllegalArgumentException("Inventory size must be a multiple of 9 between 9 and 54");
         }
@@ -79,7 +79,7 @@ public class BukkitGUI implements GUI, Listener {
         this.pageSize = size;
     }
 
-    public BukkitGUI(Plugin plugin, String title, InventoryType type) {
+    public OkasoBukkitGUI(Plugin plugin, String title, InventoryType type) {
         if (type == null) {
             throw new IllegalArgumentException("InventoryType cannot be null");
         }
@@ -660,7 +660,7 @@ public class BukkitGUI implements GUI, Listener {
                     }
                 }
             }
-            BukkitGUIItem confirmBtn = new BukkitGUIItem(stack, event -> handleConfirm(true));
+            OkasoBukkitGUIItem confirmBtn = new OkasoBukkitGUIItem(stack, event -> handleConfirm(true));
             setItem(confirmSlot, confirmBtn);
         }
         if (cancelItem != null) {
@@ -675,7 +675,7 @@ public class BukkitGUI implements GUI, Listener {
                     }
                 }
             }
-            BukkitGUIItem cancelBtn = new BukkitGUIItem(stack, event -> handleConfirm(false));
+            OkasoBukkitGUIItem cancelBtn = new OkasoBukkitGUIItem(stack, event -> handleConfirm(false));
             setItem(cancelSlot, cancelBtn);
         }
     }
@@ -887,12 +887,12 @@ public class BukkitGUI implements GUI, Listener {
         }
 
         public Builder item(int slot, Material material) {
-            this.items.put(slot, BukkitGUIItem.of(material));
+            this.items.put(slot, OkasoBukkitGUIItem.of(material));
             return this;
         }
 
         public Builder item(int slot, Material material, String name) {
-            this.items.put(slot, BukkitGUIItem.of(material, name));
+            this.items.put(slot, OkasoBukkitGUIItem.of(material, name));
             return this;
         }
 
@@ -940,16 +940,16 @@ public class BukkitGUI implements GUI, Listener {
             return this;
         }
 
-        public BukkitGUI build() {
+        public OkasoBukkitGUI build() {
             if (title == null) {
                 throw new IllegalStateException("Title is required");
             }
-            BukkitGUI gui;
+            OkasoBukkitGUI gui;
             if (type != null) {
-                gui = new BukkitGUI(plugin, title, type);
+                gui = new OkasoBukkitGUI(plugin, title, type);
             } else {
                 if (size <= 0) size = 9;
-                gui = new BukkitGUI(plugin, title, size);
+                gui = new OkasoBukkitGUI(plugin, title, size);
             }
             for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
                 gui.setItem(entry.getKey(), entry.getValue());
@@ -984,7 +984,7 @@ public class BukkitGUI implements GUI, Listener {
             int slot = rawSlot;
             GUIItem item = items.get(slot);
             if (item != null) {
-                BukkitGUIClickEvent clickEvent = new BukkitGUIClickEvent(
+                OkasoBukkitGUIClickEvent clickEvent = new OkasoBukkitGUIClickEvent(
                     event.getWhoClicked(), slot, rawSlot,
                     event.isLeftClick(), event.isRightClick(), event.isShiftClick(),
                     event.getClick() == ClickType.MIDDLE,

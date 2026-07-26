@@ -4,13 +4,13 @@ import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
 import com.zaryxstudios.okaso.common.task.TaskScheduler;
-import com.zaryxstudios.okaso.bungeecord.task.BungeeTaskScheduler;
+import com.zaryxstudios.okaso.bungeecord.task.OkasoBungeeTaskScheduler;
 
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.util.logging.Logger;
 
-public class BungeeOkasoPlugin extends Plugin implements OkasoPlugin {
+public class OkasoBungeePlugin extends Plugin implements OkasoPlugin {
 
     private OkasoAPI api;
 
@@ -24,7 +24,7 @@ public class BungeeOkasoPlugin extends Plugin implements OkasoPlugin {
 
     private void registerServices() {
         ServiceRegistry reg = api.getServiceRegistry();
-        reg.register(TaskScheduler.class, new BungeeTaskScheduler(this));
+        reg.register(TaskScheduler.class, new OkasoBungeeTaskScheduler(this));
     }
 
     @Override

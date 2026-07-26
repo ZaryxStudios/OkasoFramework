@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class BukkitGUIClickEvent implements GUIClickEvent {
+public class OkasoBukkitGUIClickEvent implements GUIClickEvent {
 
     private final Object whoClicked;
     private final int slot;
@@ -30,7 +30,7 @@ public class BukkitGUIClickEvent implements GUIClickEvent {
     @Setter
     private boolean cancelled;
 
-    public BukkitGUIClickEvent(Object whoClicked, int slot, int rawSlot,
+    public OkasoBukkitGUIClickEvent(Object whoClicked, int slot, int rawSlot,
                                boolean leftClick, boolean rightClick, boolean shiftClick,
                                boolean middleClick, boolean doubleClick, boolean topInventory,
                                Object clickItem, Object cursorItem,

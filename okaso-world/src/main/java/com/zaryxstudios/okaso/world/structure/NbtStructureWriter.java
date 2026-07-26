@@ -11,7 +11,7 @@ public class NbtStructureWriter {
 
     private NbtStructureWriter() {}
 
-    public static void write(BukkitStructure structure, String filePath) throws IOException {
+    public static void write(OkasoBukkitStructure structure, String filePath) throws IOException {
         try (DataOutputStream out = new DataOutputStream(
                 new BufferedOutputStream(
                 new GZIPOutputStream(
@@ -86,7 +86,7 @@ public class NbtStructureWriter {
         }
     }
 
-    public static void writeSimple(BukkitStructure structure, String filePath) throws IOException {
+    public static void writeSimple(OkasoBukkitStructure structure, String filePath) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(
                 new FileOutputStream(filePath), StandardCharsets.UTF_8))) {

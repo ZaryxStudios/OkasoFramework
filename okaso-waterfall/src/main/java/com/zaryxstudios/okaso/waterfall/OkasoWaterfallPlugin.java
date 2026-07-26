@@ -1,8 +1,8 @@
 package com.zaryxstudios.okaso.waterfall;
 
-import com.zaryxstudios.okaso.bungeecord.BungeeOkasoPlugin;
+import com.zaryxstudios.okaso.bungeecord.OkasoBungeePlugin;
 
-public final class WaterfallOkasoPlugin extends BungeeOkasoPlugin {
+public final class OkasoWaterfallPlugin extends OkasoBungeePlugin {
 
     @Override
     public void onOkasoEnable() {
