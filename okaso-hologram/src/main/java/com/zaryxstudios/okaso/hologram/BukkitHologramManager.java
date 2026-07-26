@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.hologram;
 
-import com.zaryxstudios.okaso.common.hologram.Hologram;
+import com.zaryxstudios.okaso.common.hologram.OkasoHologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
 
@@ -24,40 +24,40 @@ public class BukkitHologramManager implements HologramManager {
     }
 
     @Override
-    public Hologram createHologram(String id) {
+    public OkasoHologram createHologram(String id) {
         return createHologram(id, new ArrayList<>());
     }
 
     @Override
-    public Hologram createHologram(String id, HologramLine... lines) {
+    public OkasoHologram createHologram(String id, HologramLine... lines) {
         return createHologram(id, Arrays.asList(lines));
     }
 
     @Override
-    public Hologram createHologram(String id, List<HologramLine> lines) {
+    public OkasoHologram createHologram(String id, List<HologramLine> lines) {
         Location fallback = new Location(null, 0, 0, 0);
         BukkitHologram hologram = new BukkitHologram(id, fallback, new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
     }
 
-    public Hologram createHologram(String id, Location location, List<HologramLine> lines) {
+    public OkasoHologram createHologram(String id, Location location, List<HologramLine> lines) {
         BukkitHologram hologram = new BukkitHologram(id, location.clone(), new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
     }
 
-    public Hologram createHologram(String id, Location location, HologramLine... lines) {
+    public OkasoHologram createHologram(String id, Location location, HologramLine... lines) {
         return createHologram(id, location, Arrays.asList(lines));
     }
 
     @Override
-    public Optional<Hologram> getHologram(String id) {
+    public Optional<OkasoHologram> getHologram(String id) {
         return Optional.ofNullable(holograms.get(id));
     }
 
     @Override
-    public Collection<Hologram> getHolograms() {
+    public Collection<OkasoHologram> getHolograms() {
         return Collections.unmodifiableCollection(new ArrayList<>(holograms.values()));
     }
 

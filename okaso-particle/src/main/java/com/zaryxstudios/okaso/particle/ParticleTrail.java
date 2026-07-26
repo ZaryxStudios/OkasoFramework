@@ -1,7 +1,7 @@
 package com.zaryxstudios.okaso.particle;
 
 import com.zaryxstudios.okaso.common.OkasoAPI;
-import com.zaryxstudios.okaso.common.particle.ParticleEffect;
+import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 import com.zaryxstudios.okaso.common.particle.ParticleManager;
 
 import org.bukkit.Bukkit;

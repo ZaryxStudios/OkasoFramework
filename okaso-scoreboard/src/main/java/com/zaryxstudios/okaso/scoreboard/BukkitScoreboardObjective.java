@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.scoreboard;
 
-import com.zaryxstudios.okaso.common.scoreboard.ScoreboardObjective;
+import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardObjective;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,7 +16,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-public class BukkitScoreboardObjective implements ScoreboardObjective {
+public class BukkitScoreboardObjective implements OkasoScoreboardObjective {
 
     private static final Method GET_NEW_SCOREBOARD;
     private static final Method REGISTER_OBJ_3ARG;

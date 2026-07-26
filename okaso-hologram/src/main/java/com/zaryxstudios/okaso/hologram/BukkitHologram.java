@@ -1,6 +1,6 @@
 package com.zaryxstudios.okaso.hologram;
 
-import com.zaryxstudios.okaso.common.hologram.Hologram;
+import com.zaryxstudios.okaso.common.hologram.OkasoHologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 
-public class BukkitHologram implements Hologram {
+public class BukkitHologram implements OkasoHologram {
 
     private static final boolean HAS_ARMOR_STAND;
     private static final Class<?> ARMOR_STAND_CLASS;

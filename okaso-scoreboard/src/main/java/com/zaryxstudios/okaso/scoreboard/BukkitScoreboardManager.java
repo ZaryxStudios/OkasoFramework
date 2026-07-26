@@ -1,7 +1,7 @@
 package com.zaryxstudios.okaso.scoreboard;
 
 import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardManager;
-import com.zaryxstudios.okaso.common.scoreboard.ScoreboardObjective;
+import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardObjective;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -46,7 +46,7 @@ public class BukkitScoreboardManager implements OkasoScoreboardManager {
     }
 
     @Override
-    public void setScoreboard(Object player, ScoreboardObjective objective) {
+    public void setScoreboard(Object player, OkasoScoreboardObjective objective) {
         if (!(player instanceof Player)) return;
 
         Player p = (Player) player;
@@ -68,10 +68,10 @@ public class BukkitScoreboardManager implements OkasoScoreboardManager {
     }
 
     @Override
-    public Optional<ScoreboardObjective> getCurrentObjective(Object player) {
+    public Optional<OkasoScoreboardObjective> getCurrentObjective(Object player) {
         if (player instanceof Player) {
             BukkitScoreboardObjective obj = objectives.get(((Player) player).getUniqueId());
-            return Optional.ofNullable((ScoreboardObjective) obj);
+            return Optional.ofNullable((OkasoScoreboardObjective) obj);
         }
         return Optional.empty();
     }
