@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import lombok.Getter;
 
@@ -441,9 +440,8 @@ public class CommandRegistryImpl {
         cooldowns.clear();
     }
 
-    public void clearCooldowns(UUID playerId) {
-        cooldowns.keySet().removeIf(name ->
-            UUID.nameUUIDFromBytes(name.getBytes()).equals(playerId));
+    public void clearCooldowns(String playerName) {
+        cooldowns.remove(playerName);
     }
 
     private CommandHandler createReflectiveHandler(final Object instance, final Method method) {
