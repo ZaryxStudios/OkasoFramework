@@ -374,7 +374,7 @@ public class CommandRegistryImpl {
             commands.put(alias.toLowerCase(), entry);
         }
 
-        ScanResult scan = scanSubCommands(handler);
+        ScanResult scan = scanSubCommands(handler, entry.name);
         for (Map.Entry<String, SubCommandEntry> subEntry : scan.orphanSubCommands.entrySet()) {
             SubCommandEntry sub = subEntry.getValue();
             CommandEntry parent = commands.get(sub.parentCommand);
@@ -389,7 +389,7 @@ public class CommandRegistryImpl {
         }
     }
 
-    private ScanResult scanSubCommands(Object handler) {
+    private ScanResult scanSubCommands(Object handler, String parentCommandName) {
         ScanResult result = new ScanResult();
         Class<?> clazz = handler.getClass();
         for (Method method : findAllMethods(clazz)) {
@@ -410,6 +410,7 @@ public class CommandRegistryImpl {
                 sub.parentCommand = parentCmd.name().toLowerCase();
                 result.subCommands.put(sub.name, sub);
             } else {
+                sub.parentCommand = parentCommandName;
                 result.orphanSubCommands.put(sub.name, sub);
             }
         }
