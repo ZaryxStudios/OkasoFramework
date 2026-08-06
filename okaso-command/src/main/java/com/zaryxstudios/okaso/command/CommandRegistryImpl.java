@@ -264,10 +264,10 @@ public class CommandRegistryImpl {
         }
 
         if (args != null) {
-            if (args.length == 1) {
+            if (args.length <= 1) {
                 if (!entry.subCommands.isEmpty()) {
                     List<String> suggestions = new ArrayList<>();
-                    String prefix = args[0].toLowerCase();
+                    String prefix = args.length == 1 ? args[0].toLowerCase() : "";
                     for (SubCommandEntry sub : entry.subCommands.values()) {
                         if (sub.permission == null || sub.permission.isEmpty() || sender.hasPermission(sub.permission)) {
                             if (sub.name.startsWith(prefix) && !suggestions.contains(sub.name)) {
