@@ -194,24 +194,16 @@ public class CommandRegistryImpl {
             return true;
         }
 
-        if (entry.cooldown > 0 && sender.isPlayer()) {
-            String name = sender.getName();
-            long now = System.currentTimeMillis();
-            Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(name, k -> new HashMap<>());
-            Long lastUse = playerCooldowns.get(entry.name);
-            if (lastUse != null && (now - lastUse) < entry.cooldown * 50L) {
-                long remaining = (entry.cooldown * 50L - (now - lastUse)) / 50;
-                sender.sendMessage(provider().format(Messages.COMMAND_COOLDOWN, remaining));
-                return true;
-            }
-            playerCooldowns.put(entry.name, now);
+        if (entry.cooldown > 0 && sender.isPlayer() && isOnCooldown(sender, entry)) {
+            sender.sendMessage(provider().format(Messages.COMMAND_COOLDOWN, remainingCooldown(sender, entry)));
+            return true;
         }
 
         if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
             String subName = args[0].toLowerCase();
             SubCommandEntry sub = entry.subCommands.get(subName);
             if (sub != null) {
-                return dispatchSubCommand(sender, args, sub);
+                return dispatchSubCommand(sender, args, sub, entry);
             }
         }
 
@@ -224,11 +216,30 @@ public class CommandRegistryImpl {
             ? Arrays.asList(args)
             : Collections.emptyList();
         CommandContext ctx = new CommandContext(sender, entry.name, cmdArgs);
+        recordCooldown(sender, entry);
         invokeHandler(entry, ctx);
         return true;
     }
 
-    private boolean dispatchSubCommand(OkasoCommandSender sender, String[] args, SubCommandEntry sub) {
+    private boolean isOnCooldown(OkasoCommandSender sender, CommandEntry entry) {
+        Map<String, Long> playerCooldowns = cooldowns.get(sender.getName());
+        if (playerCooldowns == null) return false;
+        Long lastUse = playerCooldowns.get(entry.name);
+        return lastUse != null && (System.currentTimeMillis() - lastUse) < entry.cooldown * 50L;
+    }
+
+    private long remainingCooldown(OkasoCommandSender sender, CommandEntry entry) {
+        Long lastUse = cooldowns.get(sender.getName()).get(entry.name);
+        return (entry.cooldown * 50L - (System.currentTimeMillis() - lastUse)) / 50;
+    }
+
+    private void recordCooldown(OkasoCommandSender sender, CommandEntry entry) {
+        if (entry.cooldown > 0 && sender.isPlayer()) {
+            cooldowns.computeIfAbsent(sender.getName(), k -> new HashMap<>()).put(entry.name, System.currentTimeMillis());
+        }
+    }
+
+    private boolean dispatchSubCommand(OkasoCommandSender sender, String[] args, SubCommandEntry sub, CommandEntry parent) {
         if (sub.permission != null && !sub.permission.isEmpty()) {
             if (!sender.hasPermission(sub.permission)) {
                 sender.sendMessage(provider().get(Messages.COMMAND_SUB_NO_PERMISSION));
@@ -246,6 +257,7 @@ public class CommandRegistryImpl {
             subArgs.add(args[i]);
         }
         CommandContext ctx = new CommandContext(sender, sub.name, subArgs);
+        recordCooldown(sender, parent);
         invokeSubHandler(sub, ctx);
         return true;
     }
