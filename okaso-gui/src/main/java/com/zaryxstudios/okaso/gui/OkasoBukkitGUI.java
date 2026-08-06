@@ -637,18 +637,23 @@ public class OkasoBukkitGUI implements GUI, Listener {
     public void animateSlots(Map<Integer, List<ItemStack>> slotAnimations, long intervalTicks) {
         if (slotAnimations == null || slotAnimations.isEmpty()) return;
         if (intervalTicks <= 0) intervalTicks = 1;
-        for (int slot : slotAnimations.keySet()) {
-            if (slot < 0 || slot >= size) return;
+        Map<Integer, List<ItemStack>> validAnimations = new HashMap<>();
+        for (Map.Entry<Integer, List<ItemStack>> entry : slotAnimations.entrySet()) {
+            int slot = entry.getKey();
+            if (slot >= 0 && slot < size) {
+                validAnimations.put(slot, entry.getValue());
+            }
         }
+        if (validAnimations.isEmpty()) return;
         stopAnimation();
-        int maxFrames = slotAnimations.values().stream()
+        int maxFrames = validAnimations.values().stream()
             .mapToInt(List::size)
             .max().orElse(0);
         if (maxFrames == 0) return;
         this.animTick = 0;
         this.animTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             int frame = animTick % maxFrames;
-            for (Map.Entry<Integer, List<ItemStack>> entry : slotAnimations.entrySet()) {
+            for (Map.Entry<Integer, List<ItemStack>> entry : validAnimations.entrySet()) {
                 int slot = entry.getKey();
                 List<ItemStack> frames = entry.getValue();
                 if (frame < frames.size()) {
