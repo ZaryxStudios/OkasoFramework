@@ -8,7 +8,9 @@ import org.bukkit.entity.HumanEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -21,6 +23,7 @@ public class GUIMultiPageView {
     private int currentPage;
     private Function<Integer, String> titleFormatter;
     private BiConsumer<GUI, Integer> onPageChange;
+    private final Map<Integer, Function<GUIMultiPageView, GUIItem>> navigationButtons = new LinkedHashMap<>();
 
     public GUIMultiPageView(OkasoBukkitGUI gui, List<GUIItem> items, int contentStartSlot, int contentEndSlot,
                             int... navigationSlots) {
@@ -46,9 +49,6 @@ public class GUIMultiPageView {
             gui.setItem(slot, allItems.get(i));
             slot++;
         }
-        for (int navSlot : navigationSlots) {
-            gui.setItem(navSlot, createNavPlaceholder());
-        }
         updateNavButtons();
         if (titleFormatter != null) {
             updateTitle();
@@ -58,6 +58,12 @@ public class GUIMultiPageView {
     public void updateNavButtons() {
         for (int navSlot : navigationSlots) {
             gui.setItem(navSlot, createNavPlaceholder());
+        }
+        for (Map.Entry<Integer, Function<GUIMultiPageView, GUIItem>> entry : navigationButtons.entrySet()) {
+            GUIItem button = entry.getValue().apply(this);
+            if (button != null) {
+                gui.setItem(entry.getKey(), button);
+            }
         }
     }
 
@@ -169,7 +175,7 @@ public class GUIMultiPageView {
     }
 
     public GUIItem createFirstPageButton() {
-            return OkasoBukkitGUIItem.builder(Material.CLOCK)
+        return OkasoBukkitGUIItem.builder(Material.CLOCK)
             .name("&ePrimera página")
             .clickHandler(event -> firstPage())
             .build();
@@ -183,10 +189,16 @@ public class GUIMultiPageView {
     }
 
     public void addNavigation(int slot, Function<GUIMultiPageView, GUIItem> buttonFactory) {
+        if (buttonFactory == null) return;
+        navigationButtons.put(slot, buttonFactory);
         GUIItem button = buttonFactory.apply(this);
         if (button != null) {
             gui.setItem(slot, button);
         }
+    }
+
+    public void removeNavigation(int slot) {
+        navigationButtons.remove(slot);
     }
 
     public void addItem(GUIItem item) {
