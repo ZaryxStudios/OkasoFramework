@@ -18,6 +18,7 @@ public class GUIItemGroup {
     private final Map<String, Set<Integer>> groups;
     private final Map<String, GUIItem> groupDefaults;
     private final Map<String, Boolean> groupVisibility;
+    private final Map<Integer, GUIItem> hiddenItems;
     private final GUI gui;
 
     public GUIItemGroup(GUI gui) {
@@ -25,6 +26,7 @@ public class GUIItemGroup {
         this.groups = new HashMap<>();
         this.groupDefaults = new HashMap<>();
         this.groupVisibility = new HashMap<>();
+        this.hiddenItems = new HashMap<>();
     }
 
     public void createGroup(String groupId) {
@@ -65,7 +67,12 @@ public class GUIItemGroup {
     }
 
     public void removeFromGroup(String groupId) {
-        groups.remove(groupId);
+        Set<Integer> removed = groups.remove(groupId);
+        if (removed != null) {
+            for (int slot : removed) {
+                hiddenItems.remove(slot);
+            }
+        }
         groupDefaults.remove(groupId);
         groupVisibility.remove(groupId);
     }
@@ -78,12 +85,17 @@ public class GUIItemGroup {
         if (!groups.containsKey(groupId)) return;
         groupVisibility.put(groupId, true);
         GUIItem defaultItem = groupDefaults.get(groupId);
-        if (defaultItem != null) {
-            for (int slot : groups.get(groupId)) {
-                gui.setItem(slot, defaultItem);
+        for (int slot : groups.get(groupId)) {
+            if (hiddenItems.containsKey(slot)) {
+                GUIItem original = hiddenItems.remove(slot);
+                if (original != null) {
+                    gui.setItem(slot, original);
+                    continue;
+                }
             }
-        } else {
-            for (int slot : groups.get(groupId)) {
+            if (defaultItem != null) {
+                gui.setItem(slot, defaultItem);
+            } else {
                 gui.updateSlot(slot);
             }
         }
@@ -92,9 +104,11 @@ public class GUIItemGroup {
     public void hide(String groupId) {
         if (!groups.containsKey(groupId)) return;
         groupVisibility.put(groupId, false);
-        GUIItem filler = OkasoBukkitGUIItem.of(Material.AIR);
         for (int slot : groups.get(groupId)) {
-            gui.setItem(slot, filler);
+            if (!hiddenItems.containsKey(slot)) {
+                hiddenItems.put(slot, gui.getItem(slot));
+            }
+            gui.setItem(slot, OkasoBukkitGUIItem.of(Material.AIR));
         }
     }
 
@@ -102,6 +116,9 @@ public class GUIItemGroup {
         if (!groups.containsKey(groupId) || replacement == null) return;
         groupVisibility.put(groupId, false);
         for (int slot : groups.get(groupId)) {
+            if (!hiddenItems.containsKey(slot)) {
+                hiddenItems.put(slot, gui.getItem(slot));
+            }
             gui.setItem(slot, replacement);
         }
     }
