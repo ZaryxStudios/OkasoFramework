@@ -38,10 +38,10 @@ import lombok.Getter;
 public class OkasoBukkitGUI implements GUI, Listener {
 
     private final Plugin plugin;
-    private final String title;
+    private String title;
     private final int size;
     @Getter
-    private final Inventory inventory;
+    private Inventory inventory;
     @Getter
     private final InventoryType inventoryType;
     private final Map<Integer, GUIItem> items;
@@ -106,6 +106,33 @@ public class OkasoBukkitGUI implements GUI, Listener {
     @Override
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String newTitle) {
+        if (newTitle == null) {
+            newTitle = "";
+        }
+        if (newTitle.equals(title)) {
+            return;
+        }
+        List<HumanEntity> viewers = new ArrayList<>(inventory.getViewers());
+        Inventory newInventory;
+        if (inventoryType == InventoryType.CHEST) {
+            newInventory = Bukkit.createInventory(null, size, newTitle);
+        } else {
+            newInventory = Bukkit.createInventory(null, inventoryType, newTitle);
+        }
+        for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
+            Object stack = entry.getValue().getItemStack();
+            if (stack instanceof ItemStack) {
+                newInventory.setItem(entry.getKey(), (ItemStack) stack);
+            }
+        }
+        this.inventory = newInventory;
+        this.title = newTitle;
+        for (HumanEntity viewer : viewers) {
+            viewer.openInventory(newInventory);
+        }
     }
 
     @Override

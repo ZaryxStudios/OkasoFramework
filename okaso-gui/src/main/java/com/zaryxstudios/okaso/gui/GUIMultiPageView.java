@@ -4,7 +4,6 @@ import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -257,20 +256,11 @@ public class GUIMultiPageView {
 
     private void updateTitle() {
         if (titleFormatter == null) return;
-        try {
-            Collection<Object> viewers = gui.getViewers();
-            String newTitle = titleFormatter.apply(currentPage);
-            if (newTitle == null) return;
-            String currentTitle = gui.getTitle();
-            if (newTitle.equals(currentTitle)) return;
-            for (Object viewer : viewers) {
-                if (viewer instanceof HumanEntity) {
-                    HumanEntity human = (HumanEntity) viewer;
-                    human.closeInventory();
-                }
-            }
-        } catch (Exception ignored) {
-        }
+        String newTitle = titleFormatter.apply(currentPage);
+        if (newTitle == null) return;
+        String currentTitle = gui.getTitle();
+        if (newTitle.equals(currentTitle)) return;
+        gui.setTitle(newTitle);
     }
 
     public static GUIMultiPageView create(OkasoBukkitGUI gui, List<GUIItem> items,
