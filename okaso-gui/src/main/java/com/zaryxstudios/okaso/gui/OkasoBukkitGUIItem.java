@@ -151,7 +151,9 @@ public class OkasoBukkitGUIItem implements GUIItem {
                     this.unbreakable = meta.isUnbreakable();
                 } catch (NoSuchMethodError ignored) {}
                 try {
-                    this.customModelData = meta.getCustomModelData();
+                    if (meta.hasCustomModelData()) {
+                        this.customModelData = meta.getCustomModelData();
+                    }
                 } catch (NoSuchMethodError ignored) {}
             }
             return this;
