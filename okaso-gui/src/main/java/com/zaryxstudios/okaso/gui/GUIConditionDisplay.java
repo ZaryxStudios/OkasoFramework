@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class GUIConditionDisplay {
@@ -30,8 +31,12 @@ public class GUIConditionDisplay {
         list.add(new ConditionalSlot(condition, trueItem, falseItem));
     }
 
+    public void addEqualityCondition(int slot, Function<Player, String> playerValue, String expected, GUIItem trueItem) {
+        addCondition(slot, p -> expected.equals(playerValue.apply(p)), trueItem);
+    }
+
     public void addEqualityCondition(int slot, String playerValue, String expected, GUIItem trueItem) {
-        addCondition(slot, p -> expected.equals(playerValue), trueItem);
+        addEqualityCondition(slot, p -> playerValue, expected, trueItem);
     }
 
     public void addPermissionCondition(int slot, String permission, GUIItem granted, GUIItem denied) {
