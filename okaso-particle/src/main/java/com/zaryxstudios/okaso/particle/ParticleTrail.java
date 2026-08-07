@@ -28,7 +28,7 @@ public class ParticleTrail {
         ParticleManager manager = OkasoAPI.service(ParticleManager.class);
         if (manager == null) return;
         manager.getOrCreateEffect(effectName, particleType);
-        activeTrails.put(player.getUniqueId(), new TrailData(effectName, particleType, interval));
+        activeTrails.put(player.getUniqueId(), new TrailData(effectName, particleType, Math.max(interval, 1)));
         if (taskId == -1) {
             taskId = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 1L, 1L).getTaskId();
         }
@@ -59,14 +59,13 @@ public class ParticleTrail {
                 continue;
             }
             TrailData data = entry.getValue();
-            data.tickCounter++;
-            if (data.tickCounter >= (int) data.interval) {
-                data.tickCounter = 0;
+            data.tickCounter += 1;
+            if (data.tickCounter >= data.interval) {
+                data.tickCounter -= data.interval;
                 ParticleManager manager = OkasoAPI.service(ParticleManager.class);
                 if (manager == null) continue;
-                manager.getEffect(data.effectName).ifPresent(effect ->
-                    effect.play(player.getLocation(), 1, 0, 0, 0, 0)
-                );
+                manager.getOrCreateEffect(data.effectName, data.particleType)
+                    .play(player.getLocation(), 1, 0, 0, 0, 0);
             }
         }
     }
@@ -75,7 +74,7 @@ public class ParticleTrail {
         final String effectName;
         final String particleType;
         final double interval;
-        int tickCounter = 0;
+        double tickCounter = 0;
 
         TrailData(String effectName, String particleType, double interval) {
             this.effectName = effectName;
