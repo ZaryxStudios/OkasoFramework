@@ -205,15 +205,7 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
 
     @Override
     public void playRing(Object center, double radius, int count, double speed) {
-        if (!(center instanceof Location)) return;
-        Location centerLoc = (Location) center;
-        for (int i = 0; i < count; i++) {
-            double angle = 2 * Math.PI * i / count;
-            double x = centerLoc.getX() + radius * Math.cos(angle);
-            double z = centerLoc.getZ() + radius * Math.sin(angle);
-            Location point = new Location(centerLoc.getWorld(), x, centerLoc.getY(), z);
-            play(point, 1, 0, 0, 0, speed);
-        }
+        playInCircle(center, radius, count, speed);
     }
 
     @Override
