@@ -15,21 +15,25 @@ import lombok.Getter;
 public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
 
     private static final boolean HAS_BUKKIT_API;
+    private static final Method SPAWN_PARTICLE;
+    private static final Method PLAYER_SPAWN_PARTICLE;
     private static final Constructor<?> PACKET_CTOR_ENUM;
     private static final Constructor<?> PACKET_CTOR_STRING;
     private static final Object   ENUM_PARTICLE_FLAME;
 
     static {
         boolean hasApi = false;
+        Method spawnParticle = null;
+        Method playerSpawnParticle = null;
         Constructor<?> ctorEnum = null;
         Constructor<?> ctorString = null;
         Object flameEnum = null;
 
         try {
-            Class.forName("org.bukkit.Particle");
-            World.class.getMethod("spawnParticle",
-                Class.forName("org.bukkit.Particle"),
-                Location.class, int.class, double.class, double.class, double.class, double.class);
+            Class<?> particleClass = Class.forName("org.bukkit.Particle");
+            Class<?>[] params = {particleClass, Location.class, int.class, double.class, double.class, double.class, double.class};
+            spawnParticle = World.class.getMethod("spawnParticle", params);
+            playerSpawnParticle = Player.class.getMethod("spawnParticle", params);
             hasApi = true;
         } catch (Exception ignored) {
         }
@@ -72,6 +76,8 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
             }
         }
 
+        SPAWN_PARTICLE          = spawnParticle;
+        PLAYER_SPAWN_PARTICLE   = playerSpawnParticle;
         PACKET_CTOR_ENUM   = ctorEnum;
         PACKET_CTOR_STRING = ctorString;
         ENUM_PARTICLE_FLAME = flameEnum;
@@ -80,10 +86,12 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
     @Getter
     private final String name;
     private final String particleType;
+    private final Object particleEnum;
 
     public OkasoBukkitParticleEffect(String name, String particleType) {
         this.name = name;
         this.particleType = (particleType != null) ? particleType.toUpperCase() : "FLAME";
+        this.particleEnum = HAS_BUKKIT_API ? resolveBukkitParticle() : resolveEnumParticle();
     }
 
     @Override
@@ -261,12 +269,8 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
 
     private void playBukkit(Location loc, int count, double ox, double oy, double oz, double speed) {
         try {
-            Method spawn = World.class.getMethod("spawnParticle",
-                Class.forName("org.bukkit.Particle"),
-                Location.class, int.class, double.class, double.class, double.class, double.class);
-            Object particleEnum = resolveBukkitParticle();
             if (particleEnum != null) {
-                spawn.invoke(loc.getWorld(), particleEnum, loc, count, ox, oy, oz, speed);
+                SPAWN_PARTICLE.invoke(loc.getWorld(), particleEnum, loc, count, ox, oy, oz, speed);
             }
         } catch (Exception ignored) {
         }
@@ -275,12 +279,8 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
     private void playBukkitForPlayer(Player player, Location loc, int count,
                                      double ox, double oy, double oz, double speed) {
         try {
-            Method spawn = Player.class.getMethod("spawnParticle",
-                Class.forName("org.bukkit.Particle"),
-                Location.class, int.class, double.class, double.class, double.class, double.class);
-            Object particleEnum = resolveBukkitParticle();
             if (particleEnum != null) {
-                spawn.invoke(player, particleEnum, loc, count, ox, oy, oz, speed);
+                PLAYER_SPAWN_PARTICLE.invoke(player, particleEnum, loc, count, ox, oy, oz, speed);
             }
         } catch (Exception ignored) {
             playBukkit(loc, count, ox, oy, oz, speed);
@@ -341,9 +341,8 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
 
         if (PACKET_CTOR_ENUM != null) {
             try {
-                Object enumValue = resolveEnumParticle();
                 int[] empty = new int[0];
-                return PACKET_CTOR_ENUM.newInstance(enumValue, true, x, y, z, fOx, fOy, fOz, fSpeed, count, empty);
+                return PACKET_CTOR_ENUM.newInstance(particleEnum, true, x, y, z, fOx, fOy, fOz, fSpeed, count, empty);
             } catch (Exception ignored) {
             }
         }
