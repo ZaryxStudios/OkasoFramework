@@ -343,6 +343,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
     @Override
     public void fillRow(int row, GUIItem item) {
         if (item == null) return;
+        if (row < 0 || row >= getRows()) return;
         int start = row * 9;
         int end = Math.min(start + 9, size);
         for (int slot = start; slot < end; slot++) {
