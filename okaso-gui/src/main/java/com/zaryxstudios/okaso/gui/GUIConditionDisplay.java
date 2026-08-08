@@ -76,14 +76,16 @@ public class GUIConditionDisplay {
     public GUIItem resolve(int slot, Player player) {
         List<ConditionalSlot> list = conditions.get(slot);
         if (list == null || list.isEmpty()) return null;
+        GUIItem fallback = null;
         for (ConditionalSlot cs : list) {
             if (cs.condition.test(player)) {
                 return cs.trueItem;
-            } else if (cs.falseItem != null) {
-                return cs.falseItem;
+            }
+            if (cs.falseItem != null) {
+                fallback = cs.falseItem;
             }
         }
-        return null;
+        return fallback;
     }
 
     public void clear(int slot) {
