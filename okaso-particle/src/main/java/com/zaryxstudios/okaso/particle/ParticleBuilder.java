@@ -51,6 +51,7 @@ public class ParticleBuilder {
     }
 
     public void play() {
+        if (effectName == null || location == null) return;
         ParticleManager manager = OkasoAPI.service(ParticleManager.class);
         if (manager == null) return;
         OkasoParticleEffect effect = manager.getOrCreateEffect(effectName, particleType);
