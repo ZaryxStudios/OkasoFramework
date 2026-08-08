@@ -105,6 +105,7 @@ public class GUIPlaceholderResolver {
                 copy.setItemStack(stack);
                 return copy;
             }
+            return new OkasoBukkitGUIItem(stack, item::onClick);
         }
         return item;
     }
