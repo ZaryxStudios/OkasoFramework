@@ -1,0 +1,12 @@
+package com.zaryxstudios.okaso.common.scoreboard;
+
+import java.util.Optional;
+
+public interface OkasoScoreboardManager {
+    void setScoreboard(Object player, OkasoScoreboardObjective objective);
+    void clearScoreboard(Object player);
+    Optional<OkasoScoreboardObjective> getCurrentObjective(Object player);
+    void setScore(Object player, String objectiveName, int score);
+    int getScore(Object player, String objectiveName);
+    void resetScore(Object player, String objectiveName);
+}

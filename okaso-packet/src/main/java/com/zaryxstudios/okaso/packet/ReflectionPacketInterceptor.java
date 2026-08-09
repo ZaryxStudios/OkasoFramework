@@ -12,7 +12,7 @@ public class ReflectionPacketInterceptor implements PacketInterceptor {
     private final Map<String, PacketHandler> handlers;
 
     public ReflectionPacketInterceptor() {
-        this.handlers = new ConcurrentHashMap<String, PacketHandler>();
+        this.handlers = new ConcurrentHashMap<>();
     }
 
     @Override

@@ -17,7 +17,7 @@ public class SimpleTranslationManager implements TranslationManager {
     private Locale defaultLocale;
 
     public SimpleTranslationManager() {
-        this.translators = new ConcurrentHashMap<Locale, Translator>();
+        this.translators = new ConcurrentHashMap<>();
         this.defaultLocale = Locale.US;
     }
 

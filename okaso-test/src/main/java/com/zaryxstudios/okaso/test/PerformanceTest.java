@@ -15,7 +15,7 @@ public final class PerformanceTest {
             runnable.run();
         }
 
-        List<Long> samples = new ArrayList<Long>(iterations);
+        List<Long> samples = new ArrayList<>(iterations);
         for (int i = 0; i < iterations; i++) {
             long start = System.nanoTime();
             runnable.run();
@@ -39,7 +39,7 @@ public final class PerformanceTest {
         @Getter private final double opsPerSecond;
 
         BenchmarkResult(List<Long> samples) {
-            this.samples = new ArrayList<Long>(samples);
+            this.samples = new ArrayList<>(samples);
 
             long sum = 0;
             long minVal = Long.MAX_VALUE;
@@ -55,7 +55,7 @@ public final class PerformanceTest {
             this.max = maxVal;
             this.avg = samples.isEmpty() ? 0.0 : (double) sum / samples.size();
 
-            List<Long> sorted = new ArrayList<Long>(samples);
+            List<Long> sorted = new ArrayList<>(samples);
             java.util.Collections.sort(sorted);
             if (sorted.isEmpty()) {
                 this.median = 0.0;
@@ -70,7 +70,7 @@ public final class PerformanceTest {
         }
 
         public List<Long> getSamples() {
-            return new ArrayList<Long>(samples);
+            return new ArrayList<>(samples);
         }
 
         public String report() {

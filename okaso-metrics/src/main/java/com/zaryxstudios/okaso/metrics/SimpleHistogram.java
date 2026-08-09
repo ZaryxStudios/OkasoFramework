@@ -18,7 +18,7 @@ public class SimpleHistogram implements Histogram {
 
     public SimpleHistogram(String name) {
         this.name = name;
-        this.values = new ArrayList<Long>();
+        this.values = new ArrayList<>();
         this.lock = new ReentrantReadWriteLock();
     }
 
@@ -92,7 +92,7 @@ public class SimpleHistogram implements Histogram {
         lock.readLock().lock();
         try {
             if (values.isEmpty()) return 0.0D;
-            List<Long> sorted = new ArrayList<Long>(values);
+            List<Long> sorted = new ArrayList<>(values);
             Collections.sort(sorted);
             int index = (int) Math.ceil(percentile / 100.0D * sorted.size()) - 1;
             if (index < 0) index = 0;

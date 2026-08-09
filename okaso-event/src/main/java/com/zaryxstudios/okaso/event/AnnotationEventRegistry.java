@@ -8,9 +8,13 @@ import com.zaryxstudios.okaso.common.event.OkasoEventPriority;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.function.Consumer;
 
 public class AnnotationEventRegistry {
+
+    private static final Logger LOGGER = Logger.getLogger(AnnotationEventRegistry.class.getName());
 
     private final EventBus eventBus;
 
@@ -42,7 +46,7 @@ public class AnnotationEventRegistry {
                 try {
                     method.invoke(listener, event);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Error invoking event handler " + method.getName() + " in " + listener.getClass().getName(), e);
                 }
             });
         }

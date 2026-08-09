@@ -8,7 +8,7 @@ import lombok.Getter;
 
 public class SimpleTestFramework {
 
-    private final List<TestResult> results = new ArrayList<TestResult>();
+    private final List<TestResult> results = new ArrayList<>();
     private final AtomicInteger passed = new AtomicInteger(0);
     private final AtomicInteger failed = new AtomicInteger(0);
 
@@ -105,7 +105,7 @@ public class SimpleTestFramework {
     }
 
     public List<TestResult> getResults() {
-        return new ArrayList<TestResult>(results);
+        return new ArrayList<>(results);
     }
 
     public void printSummary() {

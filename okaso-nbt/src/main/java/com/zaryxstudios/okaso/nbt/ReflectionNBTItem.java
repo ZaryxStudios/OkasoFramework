@@ -6,8 +6,12 @@ import com.zaryxstudios.okaso.common.nbt.NBTItem;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ReflectionNBTItem implements NBTItem {
+
+    private static final Logger LOGGER = Logger.getLogger(ReflectionNBTItem.class.getName());
 
     private static final String CRAFT_BUKKIT = "org.bukkit.craftbukkit.";
     private static final String CRAFT_ITEM_STACK = "inventory.CraftItemStack";
@@ -64,7 +68,7 @@ public class ReflectionNBTItem implements NBTItem {
                     getNmsClass("ItemStack"),
                     org.bukkit.inventory.meta.ItemMeta.class);
             } catch (Exception e2) {
-                e2.printStackTrace();
+                LOGGER.log(Level.WARNING, "Failed to apply NBT changes via reflection", e2);
             }
         }
     }

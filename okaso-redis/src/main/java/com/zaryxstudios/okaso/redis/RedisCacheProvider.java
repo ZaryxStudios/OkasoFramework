@@ -86,7 +86,7 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
     public Set<K> keys() {
         try (Jedis jedis = pool.getResource()) {
             Set<String> rawKeys = jedis.keys(prefix + "*");
-            Set<K> result = new HashSet<K>();
+            Set<K> result = new HashSet<>();
             for (String raw : rawKeys) {
                 String stripped = raw.substring(prefix.length());
                 @SuppressWarnings("unchecked")

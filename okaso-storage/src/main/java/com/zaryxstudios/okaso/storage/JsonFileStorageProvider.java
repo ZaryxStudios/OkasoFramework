@@ -14,8 +14,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JsonFileStorageProvider implements StorageProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(JsonFileStorageProvider.class.getName());
 
     private final File file;
     private final ObjectMapper mapper;
@@ -27,7 +31,7 @@ public class JsonFileStorageProvider implements StorageProvider {
         this.mapper = new ObjectMapper();
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
         this.lock = new ReentrantReadWriteLock();
-        this.data = new ConcurrentHashMap<String, Object>();
+        this.data = new ConcurrentHashMap<>();
         loadFromFile();
     }
 
@@ -84,7 +88,7 @@ public class JsonFileStorageProvider implements StorageProvider {
     public Map<String, Object> getAll() {
         lock.readLock().lock();
         try {
-            return Collections.unmodifiableMap(new LinkedHashMap<String, Object>(data));
+            return Collections.unmodifiableMap(new LinkedHashMap<>(data));
         } finally {
             lock.readLock().unlock();
         }
@@ -156,7 +160,7 @@ public class JsonFileStorageProvider implements StorageProvider {
         try {
             mapper.writeValue(file, data);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to save data to " + file.getAbsolutePath(), e);
         }
     }
 }

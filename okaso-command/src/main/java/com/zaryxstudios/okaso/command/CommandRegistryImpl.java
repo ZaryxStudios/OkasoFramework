@@ -3,9 +3,9 @@ package com.zaryxstudios.okaso.command;
 import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.command.CommandContext;
 import com.zaryxstudios.okaso.common.command.CommandHandler;
-import com.zaryxstudios.okaso.common.command.CommandSender;
-import com.zaryxstudios.okaso.common.command.TabCompleter;
-import com.zaryxstudios.okaso.common.command.annotation.Command;
+import com.zaryxstudios.okaso.common.command.OkasoCommandSender;
+import com.zaryxstudios.okaso.common.command.OkasoTabCompleter;
+import com.zaryxstudios.okaso.common.command.annotation.OkasoCommand;
 import com.zaryxstudios.okaso.common.command.annotation.SubCommand;
 import com.zaryxstudios.okaso.common.message.DefaultMessageProvider;
 import com.zaryxstudios.okaso.common.message.MessageProvider;
@@ -22,11 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import lombok.Getter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class CommandRegistryImpl {
+
+    private static final Logger LOGGER = Logger.getLogger(CommandRegistryImpl.class.getName());
 
     private final Map<String, CommandEntry> commands;
     private final Map<String, Map<String, Long>> cooldowns;
@@ -56,21 +60,21 @@ public class CommandRegistryImpl {
     public void registerCommand(Object handler) {
         Class<?> clazz = handler.getClass();
 
-        Command classCmd = clazz.getAnnotation(Command.class);
+        OkasoCommand classCmd = clazz.getAnnotation(OkasoCommand.class);
         if (classCmd != null) {
             registerCommandFromClass(handler, clazz, classCmd);
             return;
         }
 
         for (Method method : findAllMethods(clazz)) {
-            Command cmdAnn = method.getAnnotation(Command.class);
+            OkasoCommand cmdAnn = method.getAnnotation(OkasoCommand.class);
             if (cmdAnn != null) {
                 registerCommandMethod(handler, method, cmdAnn);
             }
         }
     }
 
-    private void registerCommandFromClass(Object handler, Class<?> clazz, Command cmdAnn) {
+    private void registerCommandFromClass(Object handler, Class<?> clazz, OkasoCommand cmdAnn) {
         CommandEntry entry = new CommandEntry();
         entry.name = cmdAnn.name().toLowerCase();
         entry.permission = cmdAnn.permission();
@@ -85,7 +89,7 @@ public class CommandRegistryImpl {
             entry.handler = (CommandHandler) handler;
         } else {
             System.err.println("[Okaso] Class '" + clazz.getSimpleName()
-                + "' has @Command but does not implement CommandHandler. "
+                + "' has @OkasoCommand but does not implement CommandHandler. "
                 + "The command '" + entry.name + "' will not be executable.");
         }
 
@@ -100,7 +104,7 @@ public class CommandRegistryImpl {
                 registerSubCommandFromMethod(entry, handler, method, subAnn);
                 continue;
             }
-            Command mCmdAnn = method.getAnnotation(Command.class);
+            OkasoCommand mCmdAnn = method.getAnnotation(OkasoCommand.class);
             if (mCmdAnn != null) {
                 registerCommandMethod(handler, method, mCmdAnn);
             }
@@ -134,7 +138,7 @@ public class CommandRegistryImpl {
         registerCommand(name, null, "", "", "", handler);
     }
 
-    public void registerCommand(String name, CommandHandler handler, TabCompleter tabCompleter) {
+    public void registerCommand(String name, CommandHandler handler, OkasoTabCompleter tabCompleter) {
         registerCommand(name, null, "", "", "", handler);
         CommandEntry entry = commands.get(name.toLowerCase());
         if (entry != null) {
@@ -161,7 +165,7 @@ public class CommandRegistryImpl {
         }
     }
 
-    public boolean dispatch(CommandSender sender, String label, String[] args) {
+    public boolean dispatch(OkasoCommandSender sender, String label, String[] args) {
         if (label == null) return false;
 
         String cmdName = label.toLowerCase();
@@ -171,7 +175,7 @@ public class CommandRegistryImpl {
         return dispatchToEntry(sender, label, args, entry);
     }
 
-    private boolean dispatchToEntry(CommandSender sender, String label, String[] args, CommandEntry entry) {
+    private boolean dispatchToEntry(OkasoCommandSender sender, String label, String[] args, CommandEntry entry) {
         if (entry.permission != null && !entry.permission.isEmpty()) {
             if (!sender.hasPermission(entry.permission)) {
                 sender.sendMessage(provider().get(Messages.COMMAND_NO_PERMISSION));
@@ -189,24 +193,16 @@ public class CommandRegistryImpl {
             return true;
         }
 
-        if (entry.cooldown > 0 && sender.isPlayer()) {
-            String name = sender.getName();
-            long now = System.currentTimeMillis();
-            Map<String, Long> playerCooldowns = cooldowns.computeIfAbsent(name, k -> new HashMap<>());
-            Long lastUse = playerCooldowns.get(entry.name);
-            if (lastUse != null && (now - lastUse) < entry.cooldown * 50L) {
-                long remaining = (entry.cooldown * 50L - (now - lastUse)) / 50;
-                sender.sendMessage(provider().format(Messages.COMMAND_COOLDOWN, remaining));
-                return true;
-            }
-            playerCooldowns.put(entry.name, now);
+        if (entry.cooldown > 0 && sender.isPlayer() && isOnCooldown(sender, entry)) {
+            sender.sendMessage(provider().format(Messages.COMMAND_COOLDOWN, remainingCooldown(sender, entry)));
+            return true;
         }
 
         if (args != null && args.length > 0 && !entry.subCommands.isEmpty()) {
             String subName = args[0].toLowerCase();
             SubCommandEntry sub = entry.subCommands.get(subName);
             if (sub != null) {
-                return dispatchSubCommand(sender, args, sub);
+                return dispatchSubCommand(sender, args, sub, entry);
             }
         }
 
@@ -219,11 +215,30 @@ public class CommandRegistryImpl {
             ? Arrays.asList(args)
             : Collections.emptyList();
         CommandContext ctx = new CommandContext(sender, entry.name, cmdArgs);
+        recordCooldown(sender, entry);
         invokeHandler(entry, ctx);
         return true;
     }
 
-    private boolean dispatchSubCommand(CommandSender sender, String[] args, SubCommandEntry sub) {
+    private boolean isOnCooldown(OkasoCommandSender sender, CommandEntry entry) {
+        Map<String, Long> playerCooldowns = cooldowns.get(sender.getName());
+        if (playerCooldowns == null) return false;
+        Long lastUse = playerCooldowns.get(entry.name);
+        return lastUse != null && (System.currentTimeMillis() - lastUse) < entry.cooldown * 50L;
+    }
+
+    private long remainingCooldown(OkasoCommandSender sender, CommandEntry entry) {
+        Long lastUse = cooldowns.get(sender.getName()).get(entry.name);
+        return (entry.cooldown * 50L - (System.currentTimeMillis() - lastUse)) / 50;
+    }
+
+    private void recordCooldown(OkasoCommandSender sender, CommandEntry entry) {
+        if (entry.cooldown > 0 && sender.isPlayer()) {
+            cooldowns.computeIfAbsent(sender.getName(), k -> new HashMap<>()).put(entry.name, System.currentTimeMillis());
+        }
+    }
+
+    private boolean dispatchSubCommand(OkasoCommandSender sender, String[] args, SubCommandEntry sub, CommandEntry parent) {
         if (sub.permission != null && !sub.permission.isEmpty()) {
             if (!sender.hasPermission(sub.permission)) {
                 sender.sendMessage(provider().get(Messages.COMMAND_SUB_NO_PERMISSION));
@@ -241,11 +256,12 @@ public class CommandRegistryImpl {
             subArgs.add(args[i]);
         }
         CommandContext ctx = new CommandContext(sender, sub.name, subArgs);
+        recordCooldown(sender, parent);
         invokeSubHandler(sub, ctx);
         return true;
     }
 
-    public List<String> tabComplete(CommandSender sender, String label, String[] args) {
+    public List<String> tabComplete(OkasoCommandSender sender, String label, String[] args) {
         if (label == null) return Collections.emptyList();
 
         String cmdName = label.toLowerCase();
@@ -259,10 +275,10 @@ public class CommandRegistryImpl {
         }
 
         if (args != null) {
-            if (args.length == 1) {
+            if (args.length <= 1) {
                 if (!entry.subCommands.isEmpty()) {
                     List<String> suggestions = new ArrayList<>();
-                    String prefix = args[0].toLowerCase();
+                    String prefix = args.length == 1 ? args[0].toLowerCase() : "";
                     for (SubCommandEntry sub : entry.subCommands.values()) {
                         if (sub.permission == null || sub.permission.isEmpty() || sender.hasPermission(sub.permission)) {
                             if (sub.name.startsWith(prefix) && !suggestions.contains(sub.name)) {
@@ -335,7 +351,7 @@ public class CommandRegistryImpl {
         return commands.containsKey(name.toLowerCase());
     }
 
-    private void registerCommandMethod(Object handler, Method method, Command cmdAnn) {
+    private void registerCommandMethod(Object handler, Method method, OkasoCommand cmdAnn) {
         CommandEntry entry = new CommandEntry();
         entry.name = cmdAnn.name().toLowerCase();
         entry.permission = cmdAnn.permission();
@@ -358,7 +374,7 @@ public class CommandRegistryImpl {
             commands.put(alias.toLowerCase(), entry);
         }
 
-        ScanResult scan = scanSubCommands(handler);
+        ScanResult scan = scanSubCommands(handler, entry.name);
         for (Map.Entry<String, SubCommandEntry> subEntry : scan.orphanSubCommands.entrySet()) {
             SubCommandEntry sub = subEntry.getValue();
             CommandEntry parent = commands.get(sub.parentCommand);
@@ -373,7 +389,7 @@ public class CommandRegistryImpl {
         }
     }
 
-    private ScanResult scanSubCommands(Object handler) {
+    private ScanResult scanSubCommands(Object handler, String parentCommandName) {
         ScanResult result = new ScanResult();
         Class<?> clazz = handler.getClass();
         for (Method method : findAllMethods(clazz)) {
@@ -389,18 +405,19 @@ public class CommandRegistryImpl {
             sub.method = method;
             sub.instance = handler;
 
-            Command parentCmd = method.getDeclaringClass().getAnnotation(Command.class);
+            OkasoCommand parentCmd = method.getDeclaringClass().getAnnotation(OkasoCommand.class);
             if (parentCmd != null) {
                 sub.parentCommand = parentCmd.name().toLowerCase();
                 result.subCommands.put(sub.name, sub);
             } else {
+                sub.parentCommand = parentCommandName;
                 result.orphanSubCommands.put(sub.name, sub);
             }
         }
         return result;
     }
 
-    public void showHelp(CommandSender sender, CommandEntry entry) {
+    public void showHelp(OkasoCommandSender sender, CommandEntry entry) {
         MessageProvider p = provider();
         sender.sendMessage(p.format(Messages.COMMAND_HELP_HEADER, entry.name, entry.description));
         if (!entry.subCommands.isEmpty()) {
@@ -416,7 +433,7 @@ public class CommandRegistryImpl {
         }
     }
 
-    public void showHelp(CommandSender sender, String commandName) {
+    public void showHelp(OkasoCommandSender sender, String commandName) {
         getCommand(commandName).ifPresent(entry -> showHelp(sender, entry));
     }
 
@@ -424,9 +441,8 @@ public class CommandRegistryImpl {
         cooldowns.clear();
     }
 
-    public void clearCooldowns(UUID playerId) {
-        cooldowns.keySet().removeIf(name ->
-            UUID.nameUUIDFromBytes(name.getBytes()).equals(playerId));
+    public void clearCooldowns(String playerName) {
+        cooldowns.remove(playerName);
     }
 
     private CommandHandler createReflectiveHandler(final Object instance, final Method method) {
@@ -443,7 +459,7 @@ public class CommandRegistryImpl {
                     }
                 } catch (Exception e) {
                     context.getSender().sendMessage(provider().get(Messages.COMMAND_ERROR));
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Error executing command handler for " + context.getLabel(), e);
                 }
             }
         };
@@ -472,12 +488,12 @@ public class CommandRegistryImpl {
         boolean consoleOnly;
         int cooldown;
         CommandHandler handler;
-        TabCompleter tabCompleter;
+        OkasoTabCompleter tabCompleter;
         @Getter Map<String, SubCommandEntry> subCommands = new LinkedHashMap<>();
         Object instance;
         Method method;
 
-        public void setTabCompleter(TabCompleter tabCompleter) {
+        public void setTabCompleter(OkasoTabCompleter tabCompleter) {
             this.tabCompleter = tabCompleter;
         }
 
@@ -499,9 +515,9 @@ public class CommandRegistryImpl {
         String parentCommand;
         Method method;
         Object instance;
-        TabCompleter tabCompleter;
+        OkasoTabCompleter tabCompleter;
 
-        public void setTabCompleter(TabCompleter tabCompleter) {
+        public void setTabCompleter(OkasoTabCompleter tabCompleter) {
             this.tabCompleter = tabCompleter;
         }
     }

@@ -44,13 +44,13 @@ public class HikariDatabaseProvider {
     }
 
     public java.util.List<Map<String, Object>> query(String sql, Object... params) {
-        java.util.List<Map<String, Object>> rows = new java.util.ArrayList<Map<String, Object>>();
+        java.util.List<Map<String, Object>> rows = new java.util.ArrayList<>();
         try (Connection conn = getConnection();
              PreparedStatement stmt = prepare(conn, sql, params);
              ResultSet rs = stmt.executeQuery()) {
             int colCount = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                Map<String, Object> row = new LinkedHashMap<String, Object>();
+                Map<String, Object> row = new LinkedHashMap<>();
                 for (int i = 1; i <= colCount; i++) {
                     row.put(rs.getMetaData().getColumnLabel(i), rs.getObject(i));
                 }

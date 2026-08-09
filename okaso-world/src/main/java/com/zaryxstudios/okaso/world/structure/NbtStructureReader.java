@@ -14,7 +14,7 @@ public class NbtStructureReader {
 
     private NbtStructureReader() {}
 
-    public static BukkitStructure readStructure(String name, String filePath) throws IOException {
+    public static OkasoBukkitStructure readStructure(String name, String filePath) throws IOException {
         try (DataInputStream in = new DataInputStream(
                 new BufferedInputStream(
                 new GZIPInputStream(
@@ -34,7 +34,7 @@ public class NbtStructureReader {
     }
 
     @SuppressWarnings("unchecked")
-    private static BukkitStructure parseStructure(String name, Map<String, Object> root) {
+    private static OkasoBukkitStructure parseStructure(String name, Map<String, Object> root) {
         List<Object> sizeList = (List<Object>) root.get("size");
         if (sizeList == null || sizeList.size() < 3) {
             throw new IllegalArgumentException("Structure file missing 'size' tag");
@@ -43,7 +43,7 @@ public class NbtStructureReader {
         int height = ((Number) sizeList.get(1)).intValue();
         int length = ((Number) sizeList.get(2)).intValue();
 
-        BukkitStructure structure = new BukkitStructure(name, width, height, length);
+        OkasoBukkitStructure structure = new OkasoBukkitStructure(name, width, height, length);
 
         List<Object> paletteList = (List<Object>) root.get("palette");
         if (paletteList == null) {

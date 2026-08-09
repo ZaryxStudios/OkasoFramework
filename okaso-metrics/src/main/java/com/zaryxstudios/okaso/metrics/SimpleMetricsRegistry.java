@@ -23,10 +23,10 @@ public class SimpleMetricsRegistry implements MetricsRegistry {
     private final Map<String, Histogram> histograms;
 
     public SimpleMetricsRegistry() {
-        this.counters = new ConcurrentHashMap<String, Counter>();
-        this.gauges = new ConcurrentHashMap<String, Gauge>();
-        this.timers = new ConcurrentHashMap<String, Timer>();
-        this.histograms = new ConcurrentHashMap<String, Histogram>();
+        this.counters = new ConcurrentHashMap<>();
+        this.gauges = new ConcurrentHashMap<>();
+        this.timers = new ConcurrentHashMap<>();
+        this.histograms = new ConcurrentHashMap<>();
     }
 
     @Override

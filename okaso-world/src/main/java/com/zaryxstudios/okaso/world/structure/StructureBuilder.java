@@ -4,10 +4,10 @@ import org.bukkit.Material;
 
 public class StructureBuilder {
 
-    private final BukkitStructure structure;
+    private final OkasoBukkitStructure structure;
 
     public StructureBuilder(String name, int width, int height, int length) {
-        this.structure = new BukkitStructure(name, width, height, length);
+        this.structure = new OkasoBukkitStructure(name, width, height, length);
     }
 
     public StructureBuilder setBlock(int x, int y, int z, Material material) {
@@ -59,7 +59,7 @@ public class StructureBuilder {
         return this;
     }
 
-    public BukkitStructure build() {
+    public OkasoBukkitStructure build() {
         return structure;
     }
 }
