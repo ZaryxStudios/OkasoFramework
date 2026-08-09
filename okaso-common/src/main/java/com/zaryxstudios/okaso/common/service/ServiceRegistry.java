@@ -31,6 +31,10 @@ public class ServiceRegistry {
         services.remove(type);
     }
 
+    public void clear() {
+        services.clear();
+    }
+
     public Map<Class<?>, Object> getAll() {
         return Collections.unmodifiableMap(services);
     }

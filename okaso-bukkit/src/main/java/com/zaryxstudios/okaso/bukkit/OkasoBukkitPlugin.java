@@ -82,7 +82,8 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
         onOkasoDisable();
 
         if (api != null) {
-            api.getServiceRegistry().getAll().clear();
+            eventBus.shutdown();
+            api.getServiceRegistry().clear();
         }
 
         getLogger().info("Okaso Bukkit adapter disabled.");
