@@ -22,7 +22,7 @@ import lombok.Getter;
 @Plugin(
     id = "okaso-velocity",
     name = "Okaso",
-    version = "2.0.0",
+    version = "1.5.0",
     description = "Okaso Framework — Velocity Adapter",
     authors = {"ZaryxStudios"}
 )
@@ -68,7 +68,7 @@ public final class OkasoVelocityPlugin implements OkasoPlugin {
 
     @Override
     public String getVersion() {
-        return "2.0.0";
+        return "1.5.0";
     }
 
     @Override
