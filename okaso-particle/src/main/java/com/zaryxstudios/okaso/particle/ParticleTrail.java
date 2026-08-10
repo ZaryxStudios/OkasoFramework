@@ -52,6 +52,7 @@ public class ParticleTrail {
             taskId = -1;
             return;
         }
+        ParticleManager manager = OkasoAPI.service(ParticleManager.class);
         for (Map.Entry<UUID, TrailData> entry : activeTrails.entrySet()) {
             Player player = Bukkit.getPlayer(entry.getKey());
             if (player == null || !player.isOnline()) {
@@ -62,7 +63,6 @@ public class ParticleTrail {
             data.tickCounter += 1;
             if (data.tickCounter >= data.interval) {
                 data.tickCounter -= data.interval;
-                ParticleManager manager = OkasoAPI.service(ParticleManager.class);
                 if (manager == null) continue;
                 manager.getOrCreateEffect(data.effectName, data.particleType)
                     .play(player.getLocation(), 1, 0, 0, 0, 0);
