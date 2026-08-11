@@ -37,13 +37,14 @@ public class OkasoBukkitHologramManager implements HologramManager {
 
     @Override
     public OkasoHologram createHologram(String id, List<HologramLine> lines) {
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, defaultLocation(), new ArrayList<>(lines));
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, defaultLocation(), copyLines(lines));
         holograms.put(id, hologram);
         return hologram;
     }
 
     public OkasoHologram createHologram(String id, Location location, List<HologramLine> lines) {
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, location.clone(), new ArrayList<>(lines));
+        Location loc = location != null ? location.clone() : defaultLocation();
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, loc, copyLines(lines));
         holograms.put(id, hologram);
         return hologram;
     }
@@ -102,5 +103,9 @@ public class OkasoBukkitHologramManager implements HologramManager {
             return worlds.get(0).getSpawnLocation();
         }
         return new Location(null, 0, 0, 0);
+    }
+
+    private List<HologramLine> copyLines(List<HologramLine> lines) {
+        return lines != null ? new ArrayList<>(lines) : new ArrayList<>();
     }
 }
