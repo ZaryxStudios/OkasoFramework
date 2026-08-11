@@ -148,7 +148,13 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void teleport(double x, double y, double z, float yaw, float pitch) {
-        this.location = new Location(location.getWorld(), x, y, z, yaw, pitch);
+        setLocation(new Location(location.getWorld(), x, y, z, yaw, pitch));
+    }
+
+    @Override
+    public void setLocation(Object location) {
+        if (!(location instanceof Location)) return;
+        this.location = ((Location) location).clone();
         if (active) {
             for (int i = 0; i < entities.size(); i++) {
                 Entity e = entities.get(i);

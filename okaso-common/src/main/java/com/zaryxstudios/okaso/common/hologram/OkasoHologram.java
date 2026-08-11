@@ -28,4 +28,5 @@ public interface OkasoHologram extends Lifecycle {
     void addMob(String entityType);
 
     void teleport(double x, double y, double z, float yaw, float pitch);
+    void setLocation(Object location);
 }
