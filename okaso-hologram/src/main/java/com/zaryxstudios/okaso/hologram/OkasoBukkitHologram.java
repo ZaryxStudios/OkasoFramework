@@ -33,8 +33,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
     private static final Method SET_NAME_VISIBLE;
     private static final Method SET_CUSTOM_NAME;
     private static final Method SET_MARKER;
-    private static final Method ENTITY_REMOVE;
-    private static final Method ENTITY_TELEPORT;
     private static final Method SET_BASE_PLATE;
     private static final Method SET_SMALL;
 
@@ -43,8 +41,8 @@ public class OkasoBukkitHologram implements OkasoHologram {
     static {
         Class<?> asClass = null;
         Method spawn = null, vis = null, grav = null, pickup = null,
-               nameVis = null, cname = null, marker = null, remove = null,
-               teleport = null, basePlate = null, small = null;
+               nameVis = null, cname = null, marker = null,
+               basePlate = null, small = null;
 
         boolean hasItemEntity = false;
 
@@ -58,8 +56,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
             nameVis   = asClass.getMethod("setCustomNameVisible", boolean.class);
             cname     = asClass.getMethod("setCustomName", String.class);
             marker    = asClass.getMethod("setMarker", boolean.class);
-            remove    = asClass.getMethod("remove");
-            teleport  = asClass.getMethod("teleport", Location.class);
             basePlate = asClass.getMethod("setBasePlate", boolean.class);
             small     = asClass.getMethod("setSmall", boolean.class);
         } catch (Exception ignored) {
@@ -79,8 +75,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
         SET_NAME_VISIBLE  = nameVis;
         SET_CUSTOM_NAME   = cname;
         SET_MARKER        = marker;
-        ENTITY_REMOVE     = remove;
-        ENTITY_TELEPORT   = teleport;
         SET_BASE_PLATE    = basePlate;
         SET_SMALL         = small;
 
