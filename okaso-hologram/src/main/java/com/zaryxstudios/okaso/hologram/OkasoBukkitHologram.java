@@ -348,13 +348,8 @@ public class OkasoBukkitHologram implements OkasoHologram {
                 }
             }
 
-            if (SET_CUSTOM_NAME != null && SET_NAME_VISIBLE != null) {
-                try {
-                    SET_CUSTOM_NAME.invoke(entity, "");
-                    SET_NAME_VISIBLE.invoke(entity, false);
-                } catch (Exception ignored) {
-                }
-            }
+            entity.setCustomName("");
+            entity.setCustomNameVisible(false);
         } catch (Exception ignored) {
             spawnTextLine(loc, "[Mob: " + type.name() + "]");
         }
