@@ -45,10 +45,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
     private static final Method SET_UNLIMITED_LIFETIME;
     private static final Method ITEM_TELEPORT;
 
-    private static final boolean HAS_AI_METHOD;
-    private static final Method SET_AI;
-    private static final Method SET_REMOVE_WHEN_FAR_AWAY;
-
     static {
         Class<?> asClass = null;
         Method spawn = null, vis = null, grav = null, pickup = null,
@@ -57,9 +53,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
         Class<?> itemClass = null;
         Method setItem = null, setPickupDelay = null, unlimitedLife = null, itemTp = null;
-
-        boolean hasAi = false;
-        Method setAiMethod = null, removeFar = null;
 
         try {
             asClass = Class.forName("org.bukkit.entity.ArmorStand");
@@ -87,14 +80,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
         } catch (Exception ignored) {
         }
 
-        try {
-            Class<?> living = Class.forName("LivingEntity");
-            setAiMethod = living.getMethod("setAI", boolean.class);
-            removeFar   = living.getMethod("setRemoveWhenFarAway", boolean.class);
-            hasAi = true;
-        } catch (Exception ignored) {
-        }
-
         HAS_ARMOR_STAND   = asClass != null;
         ARMOR_STAND_CLASS = asClass;
         WORLD_SPAWN       = spawn;
@@ -115,10 +100,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
         SET_PICKUP_DELAY      = setPickupDelay;
         SET_UNLIMITED_LIFETIME = unlimitedLife;
         ITEM_TELEPORT         = itemTp;
-
-        HAS_AI_METHOD              = hasAi;
-        SET_AI                     = setAiMethod;
-        SET_REMOVE_WHEN_FAR_AWAY   = removeFar;
     }
 
     @Getter
@@ -364,25 +345,13 @@ public class OkasoBukkitHologram implements OkasoHologram {
             Entity entity = world.spawnEntity(loc, type);
             entities.add(entity);
 
-            if (HAS_AI_METHOD && SET_AI != null) {
-                try {
-                    SET_AI.invoke(entity, false);
-                } catch (Exception ignored) {
-                }
-            }
-            if (SET_REMOVE_WHEN_FAR_AWAY != null) {
-                try {
-                    SET_REMOVE_WHEN_FAR_AWAY.invoke(entity, false);
-                } catch (Exception ignored) {
-                }
-            }
-
             if (entity instanceof LivingEntity) {
                 LivingEntity living = (LivingEntity) entity;
                 living.setCollidable(false);
                 living.setInvulnerable(true);
                 living.setSilent(true);
                 living.setGravity(false);
+                living.setAI(false);
                 living.setCanPickupItems(false);
                 living.setRemoveWhenFarAway(false);
                 living.setMaxHealth(1.0);
