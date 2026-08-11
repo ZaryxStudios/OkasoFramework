@@ -110,19 +110,22 @@ public class OkasoBukkitHologram implements OkasoHologram {
     @Override
     public void setLines(List<HologramLine> newLines) {
         lines.clear();
-        lines.addAll(newLines);
+        if (newLines != null) {
+            lines.addAll(newLines);
+        }
         if (active) refresh();
     }
 
     @Override
     public void setLine(int index, HologramLine line) {
-        if (index < 0 || index >= lines.size()) return;
+        if (index < 0 || index >= lines.size() || line == null) return;
         lines.set(index, line);
         if (active) refresh();
     }
 
     @Override
     public void addLine(HologramLine line) {
+        if (line == null) return;
         lines.add(line);
         if (active) {
             int idx = lines.size() - 1;
@@ -132,7 +135,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void insertLine(int index, HologramLine line) {
-        if (index < 0 || index > lines.size()) return;
+        if (index < 0 || index > lines.size() || line == null) return;
         lines.add(index, line);
         if (active) refresh();
     }
@@ -166,8 +169,10 @@ public class OkasoBukkitHologram implements OkasoHologram {
     @Override
     public void setTextLines(List<String> textLines) {
         lines.clear();
-        for (String t : textLines) {
-            lines.add(HologramLine.text(t));
+        if (textLines != null) {
+            for (String t : textLines) {
+                lines.add(HologramLine.text(t));
+            }
         }
         if (active) refresh();
     }
