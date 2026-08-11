@@ -39,11 +39,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
     private static final Method SET_SMALL;
 
     private static final boolean HAS_ITEM_ENTITY;
-    private static final Class<?> ITEM_CLASS;
-    private static final Method SET_ITEM_STACK;
-    private static final Method SET_PICKUP_DELAY;
-    private static final Method SET_UNLIMITED_LIFETIME;
-    private static final Method ITEM_TELEPORT;
 
     static {
         Class<?> asClass = null;
@@ -51,8 +46,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
                nameVis = null, cname = null, marker = null, remove = null,
                teleport = null, basePlate = null, small = null;
 
-        Class<?> itemClass = null;
-        Method setItem = null, setPickupDelay = null, unlimitedLife = null, itemTp = null;
+        boolean hasItemEntity = false;
 
         try {
             asClass = Class.forName("org.bukkit.entity.ArmorStand");
@@ -72,11 +66,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
         }
 
         try {
-            itemClass     = Class.forName("org.bukkit.entity.Item");
-            setItem       = itemClass.getMethod("setItemStack", ItemStack.class);
-            setPickupDelay = itemClass.getMethod("setPickupDelay", int.class);
-            unlimitedLife = itemClass.getMethod("setUnlimitedLifetime", boolean.class);
-            itemTp        = itemClass.getMethod("teleport", Location.class);
+            hasItemEntity = Class.forName("org.bukkit.entity.Item") != null;
         } catch (Exception ignored) {
         }
 
@@ -94,12 +84,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
         SET_BASE_PLATE    = basePlate;
         SET_SMALL         = small;
 
-        HAS_ITEM_ENTITY       = itemClass != null;
-        ITEM_CLASS            = itemClass;
-        SET_ITEM_STACK        = setItem;
-        SET_PICKUP_DELAY      = setPickupDelay;
-        SET_UNLIMITED_LIFETIME = unlimitedLife;
-        ITEM_TELEPORT         = itemTp;
+        HAS_ITEM_ENTITY = hasItemEntity;
     }
 
     @Getter
