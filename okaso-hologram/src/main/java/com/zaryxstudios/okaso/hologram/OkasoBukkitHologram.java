@@ -7,6 +7,7 @@ import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -14,7 +15,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Item;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,63 +23,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 
 public class OkasoBukkitHologram implements OkasoHologram {
-
-    private static final boolean HAS_ARMOR_STAND;
-    private static final Class<?> ARMOR_STAND_CLASS;
-    private static final Method WORLD_SPAWN;
-    private static final Method SET_VISIBLE;
-    private static final Method SET_GRAVITY;
-    private static final Method SET_PICKUP;
-    private static final Method SET_NAME_VISIBLE;
-    private static final Method SET_CUSTOM_NAME;
-    private static final Method SET_MARKER;
-    private static final Method SET_BASE_PLATE;
-    private static final Method SET_SMALL;
-
-    private static final boolean HAS_ITEM_ENTITY;
-
-    static {
-        Class<?> asClass = null;
-        Method spawn = null, vis = null, grav = null, pickup = null,
-               nameVis = null, cname = null, marker = null,
-               basePlate = null, small = null;
-
-        boolean hasItemEntity = false;
-
-        try {
-            asClass = Class.forName("org.bukkit.entity.ArmorStand");
-
-            spawn     = World.class.getMethod("spawn", Location.class, Class.class);
-            vis       = asClass.getMethod("setVisible", boolean.class);
-            grav      = asClass.getMethod("setGravity", boolean.class);
-            pickup    = asClass.getMethod("setCanPickupItems", boolean.class);
-            nameVis   = asClass.getMethod("setCustomNameVisible", boolean.class);
-            cname     = asClass.getMethod("setCustomName", String.class);
-            marker    = asClass.getMethod("setMarker", boolean.class);
-            basePlate = asClass.getMethod("setBasePlate", boolean.class);
-            small     = asClass.getMethod("setSmall", boolean.class);
-        } catch (Exception ignored) {
-        }
-
-        try {
-            hasItemEntity = Class.forName("org.bukkit.entity.Item") != null;
-        } catch (Exception ignored) {
-        }
-
-        HAS_ARMOR_STAND   = asClass != null;
-        ARMOR_STAND_CLASS = asClass;
-        WORLD_SPAWN       = spawn;
-        SET_VISIBLE       = vis;
-        SET_GRAVITY       = grav;
-        SET_PICKUP        = pickup;
-        SET_NAME_VISIBLE  = nameVis;
-        SET_CUSTOM_NAME   = cname;
-        SET_MARKER        = marker;
-        SET_BASE_PLATE    = basePlate;
-        SET_SMALL         = small;
-
-        HAS_ITEM_ENTITY = hasItemEntity;
-    }
 
     @Getter
     private final String id;
@@ -266,20 +209,19 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     private void spawnTextLine(Location loc, String text) {
-        if (!HAS_ARMOR_STAND) return;
         World world = loc.getWorld();
         if (world == null) return;
         try {
-            Object stand = WORLD_SPAWN.invoke(world, loc, ARMOR_STAND_CLASS);
-            SET_VISIBLE.invoke(stand, false);
-            SET_GRAVITY.invoke(stand, false);
-            SET_PICKUP.invoke(stand, false);
-            SET_NAME_VISIBLE.invoke(stand, true);
-            SET_CUSTOM_NAME.invoke(stand, text);
-            SET_MARKER.invoke(stand, true);
-            if (SET_BASE_PLATE != null) SET_BASE_PLATE.invoke(stand, false);
-            if (SET_SMALL != null) SET_SMALL.invoke(stand, true);
-            entities.add((Entity) stand);
+            ArmorStand stand = world.spawn(loc, ArmorStand.class);
+            stand.setVisible(false);
+            stand.setGravity(false);
+            stand.setCanPickupItems(false);
+            stand.setCustomNameVisible(true);
+            stand.setCustomName(text);
+            stand.setMarker(true);
+            stand.setBasePlate(false);
+            stand.setSmall(true);
+            entities.add(stand);
         } catch (Exception ignored) {
         }
     }
@@ -292,10 +234,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
         if (mat == null) mat = Material.STONE;
 
         ItemStack stack = new ItemStack(mat, Math.max(1, amount));
-        if (!HAS_ITEM_ENTITY) {
-            spawnTextLine(loc, "[" + mat.name() + " x" + amount + "]");
-            return;
-        }
 
         try {
             Item item = world.dropItem(loc, stack);
