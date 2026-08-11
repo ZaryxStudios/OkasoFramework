@@ -4,7 +4,9 @@ import com.zaryxstudios.okaso.common.hologram.OkasoHologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,8 +37,7 @@ public class OkasoBukkitHologramManager implements HologramManager {
 
     @Override
     public OkasoHologram createHologram(String id, List<HologramLine> lines) {
-        Location fallback = new Location(null, 0, 0, 0);
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, fallback, new ArrayList<>(lines));
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, defaultLocation(), new ArrayList<>(lines));
         holograms.put(id, hologram);
         return hologram;
     }
@@ -93,5 +94,13 @@ public class OkasoBukkitHologramManager implements HologramManager {
                 h.stop();
             }
         }
+    }
+
+    private Location defaultLocation() {
+        List<World> worlds = Bukkit.getWorlds();
+        if (!worlds.isEmpty()) {
+            return worlds.get(0).getSpawnLocation();
+        }
+        return new Location(null, 0, 0, 0);
     }
 }
