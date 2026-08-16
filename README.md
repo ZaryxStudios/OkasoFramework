@@ -59,4 +59,4 @@ ItemBuilder items = OkasoAPI.service(ItemBuilder.class);
 
 ## License
 
-GNU Affero General Public License v3. See [LICENSE](LICENSE).
+MIT License. See [LICENSE](LICENSE).
