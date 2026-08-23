@@ -37,12 +37,16 @@ public class OkasoBukkitHologramManager implements HologramManager {
 
     @Override
     public OkasoHologram createHologram(String id, List<HologramLine> lines) {
+        validateId(id);
+        removeExisting(id);
         OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, defaultLocation(), copyLines(lines));
         holograms.put(id, hologram);
         return hologram;
     }
 
     public OkasoHologram createHologram(String id, Location location, List<HologramLine> lines) {
+        validateId(id);
+        removeExisting(id);
         Location loc = location != null ? location.clone() : defaultLocation();
         OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, loc, copyLines(lines));
         holograms.put(id, hologram);
@@ -61,6 +65,18 @@ public class OkasoBukkitHologramManager implements HologramManager {
     @Override
     public Collection<OkasoHologram> getHolograms() {
         return Collections.unmodifiableCollection(new ArrayList<>(holograms.values()));
+    }
+
+    public List<OkasoBukkitHologram> getHologramsInWorld(World world) {
+        List<OkasoBukkitHologram> result = new ArrayList<>();
+        if (world == null) return result;
+        for (OkasoBukkitHologram h : holograms.values()) {
+            Location loc = h.getLocation();
+            if (loc != null && world.equals(loc.getWorld())) {
+                result.add(h);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -107,5 +123,18 @@ public class OkasoBukkitHologramManager implements HologramManager {
 
     private List<HologramLine> copyLines(List<HologramLine> lines) {
         return lines != null ? new ArrayList<>(lines) : new ArrayList<>();
+    }
+
+    private void validateId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("Hologram id cannot be null or empty");
+        }
+    }
+
+    private void removeExisting(String id) {
+        OkasoBukkitHologram existing = holograms.remove(id);
+        if (existing != null) {
+            existing.stop();
+        }
     }
 }

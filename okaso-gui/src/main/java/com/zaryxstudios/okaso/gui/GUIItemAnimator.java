@@ -58,7 +58,14 @@ public class GUIItemAnimator {
                     }
                 }
                 stack.setItemMeta(meta);
-                gui.updateSlot(slot);
+                if (original instanceof OkasoBukkitGUIItem) {
+                    OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) original).copy();
+                    copy.setItemStack(stack);
+                    gui.setItem(slot, copy);
+                } else {
+                    stack.setItemMeta(meta);
+                    gui.setItem(slot, new OkasoBukkitGUIItem(stack));
+                }
             }
         };
         BukkitTask bukkitTask = task.runTaskTimer(plugin, 0L, intervalTicks);

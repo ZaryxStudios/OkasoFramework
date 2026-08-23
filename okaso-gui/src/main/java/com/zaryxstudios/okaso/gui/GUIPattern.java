@@ -159,7 +159,7 @@ public final class GUIPattern {
             int col = slot % 9;
             int row = slot / 9;
             boolean isBorder = row < thickness || row >= rows - thickness
-                || col < thickness || col >= 8 - thickness + 1;
+                || col < thickness || col > 8 - thickness;
             if (isBorder) {
                 gui.setItem(slot, borderItem);
             }

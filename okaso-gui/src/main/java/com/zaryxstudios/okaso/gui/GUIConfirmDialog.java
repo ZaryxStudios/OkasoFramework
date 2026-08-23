@@ -5,6 +5,7 @@ import com.zaryxstudios.okaso.common.text.TextColorizer;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import java.util.function.Consumer;
@@ -128,9 +129,9 @@ public class GUIConfirmDialog {
         }
         GUIItem confirmFinal = confirm;
         gui.setItem(confirmSlot, OkasoBukkitGUIItem.of(
-            confirmFinal.getItemStack() instanceof org.bukkit.inventory.ItemStack
-                ? (org.bukkit.inventory.ItemStack) confirmFinal.getItemStack()
-                : new org.bukkit.inventory.ItemStack(confirmMaterial),
+            confirmFinal.getItemStack() instanceof ItemStack
+                ? (ItemStack) confirmFinal.getItemStack()
+                : new ItemStack(confirmMaterial),
             event -> {
                 if (onConfirm != null) {
                     Object clicked = event.getWhoClicked();
@@ -148,9 +149,9 @@ public class GUIConfirmDialog {
         }
         GUIItem cancelFinal = cancel;
         gui.setItem(cancelSlot, OkasoBukkitGUIItem.of(
-            cancelFinal.getItemStack() instanceof org.bukkit.inventory.ItemStack
-                ? (org.bukkit.inventory.ItemStack) cancelFinal.getItemStack()
-                : new org.bukkit.inventory.ItemStack(cancelMaterial),
+            cancelFinal.getItemStack() instanceof ItemStack
+                ? (ItemStack) cancelFinal.getItemStack()
+                : new ItemStack(cancelMaterial),
             event -> {
                 if (onCancel != null) {
                     Object clicked = event.getWhoClicked();

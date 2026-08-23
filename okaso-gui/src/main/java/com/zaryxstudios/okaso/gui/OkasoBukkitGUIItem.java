@@ -683,9 +683,23 @@ public class OkasoBukkitGUIItem implements GUIItem {
             .build();
     }
 
+    public static OkasoBukkitGUIItem closeButton(String name, GUIClickHandler handler) {
+        return builder(Material.BARRIER)
+            .name(name)
+            .clickHandler(handler)
+            .build();
+    }
+
     public static OkasoBukkitGUIItem backButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
             .name("&7Atrás")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static OkasoBukkitGUIItem backButton(String name, GUIClickHandler handler) {
+        return builder(Material.ARROW)
+            .name(name)
             .clickHandler(handler)
             .build();
     }
@@ -697,9 +711,23 @@ public class OkasoBukkitGUIItem implements GUIItem {
             .build();
     }
 
+    public static OkasoBukkitGUIItem nextPageButton(String name, GUIClickHandler handler) {
+        return builder(Material.ARROW)
+            .name(name)
+            .clickHandler(handler)
+            .build();
+    }
+
     public static OkasoBukkitGUIItem previousPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
             .name("&aPágina anterior")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static OkasoBukkitGUIItem previousPageButton(String name, GUIClickHandler handler) {
+        return builder(Material.ARROW)
+            .name(name)
             .clickHandler(handler)
             .build();
     }
@@ -711,9 +739,23 @@ public class OkasoBukkitGUIItem implements GUIItem {
             .build();
     }
 
+    public static OkasoBukkitGUIItem confirmButton(String name, GUIClickHandler handler) {
+        return builder(Material.LIME_WOOL)
+            .name(name)
+            .clickHandler(handler)
+            .build();
+    }
+
     public static OkasoBukkitGUIItem cancelButton(GUIClickHandler handler) {
         return builder(Material.RED_WOOL)
             .name("&c&lCancelar")
+            .clickHandler(handler)
+            .build();
+    }
+
+    public static OkasoBukkitGUIItem cancelButton(String name, GUIClickHandler handler) {
+        return builder(Material.RED_WOOL)
+            .name(name)
             .clickHandler(handler)
             .build();
     }

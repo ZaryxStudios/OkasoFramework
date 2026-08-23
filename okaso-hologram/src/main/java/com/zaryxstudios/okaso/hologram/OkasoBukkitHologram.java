@@ -24,19 +24,33 @@ import lombok.Getter;
 
 public class OkasoBukkitHologram implements OkasoHologram {
 
+    public static final double DEFAULT_LINE_SPACING = 0.30;
+
     @Getter
     private final String id;
     private final List<HologramLine> lines;
     private final List<Entity> entities;
     private Location location;
     private boolean active;
+    private double lineSpacing;
 
     public OkasoBukkitHologram(String id, Location location, List<HologramLine> lines) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("Hologram id cannot be null or empty");
+        }
         this.id = id;
-        this.location = location.clone();
-        this.lines = new ArrayList<>(lines);
-        this.entities = new ArrayList<>();
+        this.location = location != null ? location.clone() : null;
+        this.lines = new ArrayList<>();
+        if (lines != null) {
+            for (HologramLine line : lines) {
+                if (line != null) {
+                    this.lines.add(line);
+                }
+            }
+        }
+        this.entities = Collections.synchronizedList(new ArrayList<>());
         this.active = false;
+        this.lineSpacing = DEFAULT_LINE_SPACING;
     }
 
     @Override
@@ -154,12 +168,18 @@ public class OkasoBukkitHologram implements OkasoHologram {
     @Override
     public void setLocation(Object location) {
         if (!(location instanceof Location)) return;
-        this.location = ((Location) location).clone();
+        Location newLocation = ((Location) location).clone();
+        if (newLocation.getWorld() == null && this.location != null) {
+            newLocation.setWorld(this.location.getWorld());
+        }
+        this.location = newLocation;
         if (active) {
-            for (int i = 0; i < entities.size(); i++) {
-                Entity e = entities.get(i);
-                if (e != null) {
-                    e.teleport(lineLocation(i));
+            synchronized (entities) {
+                for (int i = 0; i < entities.size(); i++) {
+                    Entity e = entities.get(i);
+                    if (e != null) {
+                        e.teleport(lineLocation(i));
+                    }
                 }
             }
         }
@@ -171,7 +191,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void start() {
-        if (active || location.getWorld() == null) return;
+        if (active || location == null || location.getWorld() == null) return;
         active = true;
         spawnAll();
     }
@@ -188,15 +208,47 @@ public class OkasoBukkitHologram implements OkasoHologram {
         return active;
     }
 
+    public double getLineSpacing() {
+        return lineSpacing;
+    }
+
+    public void setLineSpacing(double spacing) {
+        if (spacing <= 0 || spacing == lineSpacing) return;
+        this.lineSpacing = spacing;
+        if (active) refresh();
+    }
+
+    public double getHeight() {
+        return lines.size() * lineSpacing;
+    }
+
+    public int getEntityCount() {
+        synchronized (entities) {
+            return entities.size();
+        }
+    }
+
+    public void moveUp(double amount) {
+        if (amount <= 0) return;
+        setLocation(location.clone().add(0, amount, 0));
+    }
+
+    public void moveDown(double amount) {
+        if (amount <= 0) return;
+        setLocation(location.clone().subtract(0, amount, 0));
+    }
+
     private Location lineLocation(int index) {
-        return location.clone().add(0, -0.30 * index, 0);
+        return location.clone().add(0, -lineSpacing * index, 0);
     }
 
     private void spawnAll() {
-        entities.clear();
-        for (int i = 0; i < lines.size(); i++) {
-            HologramLine line = lines.get(i);
-            spawnEntityForLine(i, line, lineLocation(i));
+        synchronized (entities) {
+            entities.clear();
+            for (int i = 0; i < lines.size(); i++) {
+                HologramLine line = lines.get(i);
+                spawnEntityForLine(i, line, lineLocation(i));
+            }
         }
     }
 
@@ -299,12 +351,14 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     private void despawnAll() {
-        for (Entity e : entities) {
-            if (e != null && e.isValid()) {
-                e.remove();
+        synchronized (entities) {
+            for (Entity e : entities) {
+                if (e != null) {
+                    e.remove();
+                }
             }
+            entities.clear();
         }
-        entities.clear();
     }
 
     private void refresh() {

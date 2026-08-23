@@ -17,6 +17,7 @@ public class GUIMultiPageView {
 
     private final OkasoBukkitGUI gui;
     private final List<GUIItem> allItems;
+    private final int contentStartSlot;
     private final int contentSlots;
     private final int[] navigationSlots;
     private int currentPage;
@@ -26,10 +27,17 @@ public class GUIMultiPageView {
 
     public GUIMultiPageView(OkasoBukkitGUI gui, List<GUIItem> items, int contentStartSlot, int contentEndSlot,
                             int... navigationSlots) {
+        if (gui == null) {
+            throw new IllegalArgumentException("GUI cannot be null");
+        }
+        if (contentStartSlot < 0 || contentEndSlot < contentStartSlot) {
+            throw new IllegalArgumentException("Invalid content slot range: " + contentStartSlot + " to " + contentEndSlot);
+        }
         this.gui = gui;
         this.allItems = items != null ? new ArrayList<>(items) : new ArrayList<>();
+        this.contentStartSlot = contentStartSlot;
         this.contentSlots = contentEndSlot - contentStartSlot + 1;
-        this.navigationSlots = navigationSlots;
+        this.navigationSlots = navigationSlots != null ? navigationSlots : new int[0];
         this.currentPage = 0;
         this.titleFormatter = null;
         this.onPageChange = null;
@@ -43,7 +51,7 @@ public class GUIMultiPageView {
         gui.clear();
         int start = currentPage * contentSlots;
         int end = Math.min(start + contentSlots, allItems.size());
-        int slot = 0;
+        int slot = contentStartSlot;
         for (int i = start; i < end; i++) {
             gui.setItem(slot, allItems.get(i));
             slot++;
@@ -89,6 +97,14 @@ public class GUIMultiPageView {
 
     public int getPage() {
         return currentPage;
+    }
+
+    public int getContentStartSlot() {
+        return contentStartSlot;
+    }
+
+    public int getContentSlots() {
+        return contentSlots;
     }
 
     public int getTotalPages() {

@@ -227,13 +227,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
     }
 
     public void refresh() {
-        for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
-            int slot = entry.getKey();
-            Object bukkitItem = entry.getValue().getItemStack();
-            if (bukkitItem instanceof ItemStack) {
-                inventory.setItem(slot, (ItemStack) bukkitItem);
-            }
-        }
+        updateAll();
     }
 
     @Override
