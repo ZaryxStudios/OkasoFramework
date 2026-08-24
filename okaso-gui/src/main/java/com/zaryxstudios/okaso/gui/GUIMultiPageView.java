@@ -175,20 +175,6 @@ public class GUIMultiPageView {
             .build();
     }
 
-    public GUIItem createPageIndicator(String format) {
-        int total = getTotalPages();
-        if (total == 0) {
-            return OkasoBukkitGUIItem.of(Material.PAPER);
-        }
-        String display = format
-            .replace("{current}", String.valueOf(currentPage + 1))
-            .replace("{total}", String.valueOf(total))
-            .replace("{percent}", total == 0 ? "0" : String.valueOf((currentPage + 1) * 100 / total));
-        return OkasoBukkitGUIItem.builder(Material.PAPER)
-            .name(display)
-            .build();
-    }
-
     public GUIItem createFirstPageButton() {
         return OkasoBukkitGUIItem.builder(Material.CLOCK)
             .name(GUIMessages.get(GUIMessages.PAGE_FIRST))
