@@ -9,6 +9,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
 import com.zaryxstudios.okaso.common.OkasoAPI;
+import com.zaryxstudios.okaso.common.message.LogMessages;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
 
@@ -49,7 +50,7 @@ public final class OkasoVelocityPlugin implements OkasoPlugin {
         this.julLogger = java.util.logging.Logger.getLogger("Okaso");
         api = OkasoAPI.init(this);
         onOkasoEnable();
-        slf4jLogger.info("Okaso Velocity adapter enabled.");
+        slf4jLogger.info(LogMessages.get(LogMessages.ADAPTER_ENABLED));
     }
 
     @Subscribe
@@ -58,7 +59,7 @@ public final class OkasoVelocityPlugin implements OkasoPlugin {
         if (api != null) {
             api.getServiceRegistry().getAll().clear();
         }
-        slf4jLogger.info("Okaso Velocity adapter disabled.");
+        slf4jLogger.info(LogMessages.get(LogMessages.ADAPTER_DISABLED));
     }
 
     @Override

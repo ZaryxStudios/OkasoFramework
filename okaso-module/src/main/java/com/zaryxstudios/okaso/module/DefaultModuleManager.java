@@ -2,6 +2,7 @@ package com.zaryxstudios.okaso.module;
 
 import com.zaryxstudios.okaso.common.module.Module;
 import com.zaryxstudios.okaso.common.module.ModuleManager;
+import com.zaryxstudios.okaso.common.message.LogMessages;
 import com.zaryxstudios.okaso.common.module.ModuleVersion;
 
 import java.util.*;
@@ -31,7 +32,7 @@ public class DefaultModuleManager implements ModuleManager {
         modules.put(name, module);
         configs.put(name, new ModuleConfig(name));
         resolver.register(name, module.getDependencies());
-        LOG.info("Registered module: " + name);
+        LOG.info(LogMessages.get(LogMessages.MODULE_REGISTERED, name));
     }
 
     @Override
@@ -40,7 +41,7 @@ public class DefaultModuleManager implements ModuleManager {
         if (removed != null) {
             configs.remove(name);
             resolver.unregister(name);
-            LOG.info("Unregistered module: " + name);
+            LOG.info(LogMessages.get(LogMessages.MODULE_UNREGISTERED, name));
         }
     }
 
@@ -72,7 +73,7 @@ public class DefaultModuleManager implements ModuleManager {
         try {
             order = resolver.getEnableOrder();
         } catch (ModuleDependencyResolver.CycleDependencyException e) {
-            LOG.severe("Cannot enable modules: " + e.getMessage());
+            LOG.severe(LogMessages.get(LogMessages.MODULE_ENABLE_CYCLE, e.getMessage()));
             return;
         }
 
@@ -90,7 +91,7 @@ public class DefaultModuleManager implements ModuleManager {
         try {
             order = resolver.getDisableOrder();
         } catch (ModuleDependencyResolver.CycleDependencyException e) {
-            LOG.severe("Cannot disable modules: " + e.getMessage());
+            LOG.severe(LogMessages.get(LogMessages.MODULE_DISABLE_CYCLE, e.getMessage()));
             return;
         }
 
@@ -118,13 +119,13 @@ public class DefaultModuleManager implements ModuleManager {
     private boolean enableModule(String name, Module module) {
         try {
             module.onEnable();
-            LOG.info("Enabled module: " + name);
+            LOG.info(LogMessages.get(LogMessages.MODULE_ENABLED, name));
             for (ModuleLifecycleListener l : listeners) {
                 try { l.onModuleEnabled(name); } catch (Exception ignored) {}
             }
             return true;
         } catch (Exception e) {
-            LOG.severe("Failed to enable module " + name + ": " + e.getMessage());
+            LOG.severe(LogMessages.get(LogMessages.MODULE_ENABLE_FAILED, name, e.getMessage()));
             for (ModuleLifecycleListener l : listeners) {
                 try { l.onModuleEnableFailed(name, e); } catch (Exception ignored) {}
             }
@@ -135,12 +136,12 @@ public class DefaultModuleManager implements ModuleManager {
     private void disableModule(String name, Module module) {
         try {
             module.onDisable();
-            LOG.info("Disabled module: " + name);
+            LOG.info(LogMessages.get(LogMessages.MODULE_DISABLED, name));
             for (ModuleLifecycleListener l : listeners) {
                 try { l.onModuleDisabled(name); } catch (Exception ignored) {}
             }
         } catch (Exception e) {
-            LOG.warning("Error disabling module " + name + ": " + e.getMessage());
+            LOG.warning(LogMessages.get(LogMessages.MODULE_DISABLE_FAILED, name, e.getMessage()));
         }
     }
 }

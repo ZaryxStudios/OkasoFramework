@@ -1,6 +1,7 @@
 package com.zaryxstudios.okaso.bukkit.event;
 
 import com.zaryxstudios.okaso.common.event.EventBus;
+import com.zaryxstudios.okaso.common.message.LogMessages;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
@@ -59,7 +60,7 @@ public class OkasoBukkitEventBusAdapter implements Listener {
             }
         }
 
-        LOGGER.info("[Okaso] Bridged " + registered + " Bukkit events into the Okaso EventBus.");
+        LOGGER.info(LogMessages.get(LogMessages.EVENTS_BRIDGED, registered));
     }
 
     public void unregister() {

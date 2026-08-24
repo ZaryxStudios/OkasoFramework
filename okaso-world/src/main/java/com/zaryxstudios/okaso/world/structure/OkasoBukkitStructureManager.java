@@ -1,6 +1,7 @@
 package com.zaryxstudios.okaso.world.structure;
 
 import com.zaryxstudios.okaso.common.world.OkasoStructure;
+import com.zaryxstudios.okaso.common.message.LogMessages;
 import com.zaryxstudios.okaso.common.world.OkasoStructureManager;
 
 import org.bukkit.Location;
@@ -38,7 +39,7 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
     @Override
     public boolean saveStructure(String name, Object worldObj, int x1, int y1, int z1, int x2, int y2, int z2) {
         if (!(worldObj instanceof World)) {
-            logger.warning("saveStructure: world must be a Bukkit World");
+            logger.warning(LogMessages.get(LogMessages.STRUCTURE_SAVE_INVALID_WORLD));
             return false;
         }
         World world = (World) worldObj;
@@ -83,21 +84,21 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
         if (opt.isPresent()) {
             return placeStructure(opt.get(), location);
         }
-        logger.warning("Structure not found: " + name);
+        logger.warning(LogMessages.get(LogMessages.STRUCTURE_NOT_FOUND, name));
         return false;
     }
 
     @Override
     public boolean placeStructure(OkasoStructure structure, Object location) {
         if (!(location instanceof Location)) {
-            logger.warning("placeStructure: location must be a Bukkit Location");
+            logger.warning(LogMessages.get(LogMessages.STRUCTURE_PLACE_INVALID_LOCATION));
             return false;
         }
         try {
             structure.place(location, true);
             return true;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to place structure: " + structure.getName(), e);
+            logger.log(Level.SEVERE, LogMessages.get(LogMessages.STRUCTURE_PLACE_FAILED, structure.getName()), e);
             return false;
         }
     }
@@ -145,10 +146,10 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
             } else {
                 NbtStructureWriter.writeSimple(structure, filePath);
             }
-            logger.fine("Exported structure: " + name + " -> " + filePath);
+            logger.fine(LogMessages.get(LogMessages.STRUCTURE_EXPORTED, name, filePath));
             return true;
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to export structure: " + name, e);
+            logger.log(Level.SEVERE, LogMessages.get(LogMessages.STRUCTURE_EXPORT_FAILED, name), e);
             return false;
         }
     }
@@ -164,7 +165,7 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
     public boolean importStructure(String name, String filePath) {
         File file = new File(filePath);
         if (!file.exists()) {
-            logger.warning("Import file not found: " + filePath);
+            logger.warning(LogMessages.get(LogMessages.STRUCTURE_IMPORT_NOT_FOUND, filePath));
             return false;
         }
 
@@ -311,10 +312,10 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
                 }
             }
 
-            logger.fine("Saved structure: " + structure.getName() + " (" + blockCount + " blocks)");
+            logger.fine(LogMessages.get(LogMessages.STRUCTURE_SAVED, structure.getName(), blockCount));
             return true;
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to save structure: " + structure.getName(), e);
+            logger.log(Level.SEVERE, LogMessages.get(LogMessages.STRUCTURE_SAVE_FAILED, structure.getName()), e);
             return false;
         }
     }
@@ -328,7 +329,7 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             String header = reader.readLine();
             if (!FORMAT_HEADER.equals(header)) {
-                logger.warning("Invalid structure file header: " + file.getName());
+                logger.warning(LogMessages.get(LogMessages.STRUCTURE_INVALID_HEADER, file.getName()));
                 return null;
             }
 
@@ -340,7 +341,7 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
             if (nameLine == null || widthLine == null || heightLine == null ||
                 lengthLine == null || blocksLine == null) {
-                logger.warning("Truncated structure file: " + file.getName());
+                logger.warning(LogMessages.get(LogMessages.STRUCTURE_TRUNCATED, file.getName()));
                 return null;
             }
 
@@ -370,16 +371,16 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
                         Material mat = Material.valueOf(materialName);
                         structure.setBlock(bx, by, bz, mat, bdata);
                     } catch (IllegalArgumentException e) {
-                        logger.fine("Unknown material in structure file: " + materialName);
+                        logger.fine(LogMessages.get(LogMessages.STRUCTURE_UNKNOWN_MATERIAL, materialName));
                     }
                     blockCount++;
                 }
             }
 
-            logger.fine("Loaded structure: " + structName + " (" + blockCount + " blocks)");
+            logger.fine(LogMessages.get(LogMessages.STRUCTURE_LOADED, structName, blockCount));
             return structure;
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to load structure: " + name, e);
+            logger.log(Level.SEVERE, LogMessages.get(LogMessages.STRUCTURE_LOAD_FAILED, name), e);
             return null;
         }
     }

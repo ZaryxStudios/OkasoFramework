@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.world.structure;
 
+import com.zaryxstudios.okaso.common.message.LogMessages;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
@@ -207,7 +208,7 @@ public final class MaterialResolver {
             }
         }
 
-        LOG.fine("Unknown material '" + name + "', falling back to STONE");
+        LOG.fine(LogMessages.get(LogMessages.STRUCTURE_UNKNOWN_FALLBACK, name));
         return Material.STONE;
     }
 
