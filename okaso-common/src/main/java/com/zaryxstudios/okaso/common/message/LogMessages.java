@@ -4,6 +4,7 @@ import com.zaryxstudios.okaso.common.config.OkasoConfigurationProvider;
 import com.zaryxstudios.okaso.common.config.OkasoConfigurationSection;
 
 import java.io.File;
+import java.util.Map;
 
 public final class LogMessages {
 
@@ -112,6 +113,10 @@ public final class LogMessages {
 
     public static String get(String key, Object... args) {
         return provider().format(key, args);
+    }
+
+    public static String get(String key, Map<String, ?> placeholders, Object... args) {
+        return provider().format(key, placeholders, args);
     }
 
     public static void set(String key, String value) {

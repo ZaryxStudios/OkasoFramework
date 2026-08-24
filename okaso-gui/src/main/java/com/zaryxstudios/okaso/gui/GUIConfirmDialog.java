@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class GUIConfirmDialog {
@@ -178,9 +180,11 @@ public class GUIConfirmDialog {
 
     public static GUIConfirmDialog delete(Plugin plugin, String itemName,
                                           Consumer<Player> onDelete) {
+        Map<String, Object> placeholders = new HashMap<>();
+        placeholders.put("item", itemName);
         return new GUIConfirmDialog(plugin)
-            .title(GUIMessages.get(GUIMessages.DIALOG_DELETE_TITLE, itemName))
-            .message(GUIMessages.get(GUIMessages.DIALOG_DELETE_MESSAGE, itemName))
+            .title(GUIMessages.get(GUIMessages.DIALOG_DELETE_TITLE, placeholders, itemName))
+            .message(GUIMessages.get(GUIMessages.DIALOG_DELETE_MESSAGE, placeholders, itemName))
             .confirmMaterial(Material.RED_WOOL)
             .confirmName(GUIMessages.get(GUIMessages.DIALOG_DELETE_CONFIRM))
             .onConfirm(onDelete);

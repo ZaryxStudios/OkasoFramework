@@ -6,6 +6,7 @@ import com.zaryxstudios.okaso.common.message.DefaultMessageProvider;
 import com.zaryxstudios.okaso.common.message.MessageProvider;
 
 import java.io.File;
+import java.util.Map;
 
 public final class GUIMessages {
 
@@ -107,6 +108,10 @@ public final class GUIMessages {
 
     public static String get(String key, Object... args) {
         return provider().format(key, args);
+    }
+
+    public static String get(String key, Map<String, ?> placeholders, Object... args) {
+        return provider().format(key, placeholders, args);
     }
 
     public static void set(String key, String value) {

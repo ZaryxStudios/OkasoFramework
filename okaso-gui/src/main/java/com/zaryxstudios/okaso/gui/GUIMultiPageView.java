@@ -7,6 +7,7 @@ import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +170,11 @@ public class GUIMultiPageView {
         if (total == 0) {
             return OkasoBukkitGUIItem.of(Material.PAPER);
         }
-        String display = GUIMessages.get(GUIMessages.PAGE_INDICATOR, currentPage + 1, total);
+        Map<String, Object> placeholders = new HashMap<>();
+        placeholders.put("current", currentPage + 1);
+        placeholders.put("total", total);
+        placeholders.put("percent", (currentPage + 1) * 100 / total);
+        String display = GUIMessages.get(GUIMessages.PAGE_INDICATOR, placeholders, currentPage + 1, total);
         return OkasoBukkitGUIItem.builder(Material.PAPER)
             .name(display)
             .build();
