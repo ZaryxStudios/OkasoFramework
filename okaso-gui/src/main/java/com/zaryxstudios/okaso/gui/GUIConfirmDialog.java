@@ -30,12 +30,12 @@ public class GUIConfirmDialog {
 
     public GUIConfirmDialog(Plugin plugin) {
         this.plugin = plugin;
-        this.title = "&6Confirmar";
-        this.message = "¿Estás seguro?";
+        this.title = GUIMessages.get(GUIMessages.DIALOG_TITLE);
+        this.message = GUIMessages.get(GUIMessages.DIALOG_MESSAGE);
         this.confirmMaterial = Material.LIME_WOOL;
         this.cancelMaterial = Material.RED_WOOL;
-        this.confirmName = "&a&lConfirmar";
-        this.cancelName = "&c&lCancelar";
+        this.confirmName = GUIMessages.get(GUIMessages.BUTTON_CONFIRM);
+        this.cancelName = GUIMessages.get(GUIMessages.BUTTON_CANCEL);
         this.confirmSlot = 11;
         this.cancelSlot = 15;
         this.messageSlot = 4;
@@ -179,10 +179,10 @@ public class GUIConfirmDialog {
     public static GUIConfirmDialog delete(Plugin plugin, String itemName,
                                           Consumer<Player> onDelete) {
         return new GUIConfirmDialog(plugin)
-            .title("&cEliminar " + itemName)
-            .message("¿Eliminar " + itemName + "?")
+            .title(GUIMessages.get(GUIMessages.DIALOG_DELETE_TITLE, itemName))
+            .message(GUIMessages.get(GUIMessages.DIALOG_DELETE_MESSAGE, itemName))
             .confirmMaterial(Material.RED_WOOL)
-            .confirmName("&c&lEliminar")
+            .confirmName(GUIMessages.get(GUIMessages.DIALOG_DELETE_CONFIRM))
             .onConfirm(onDelete);
     }
 }

@@ -170,11 +170,11 @@ public class GUINavigator {
     public GUIItem createBackButton(Player player) {
         if (!canGoBack(player)) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&7Sin historial")
+                .name(GUIMessages.get(GUIMessages.NAV_NO_HISTORY))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(Material.ARROW)
-            .name("&eAtrás")
+            .name(GUIMessages.get(GUIMessages.NAV_BACK))
             .clickHandler(event -> goBack(player))
             .build();
     }
@@ -182,11 +182,11 @@ public class GUINavigator {
     public GUIItem createForwardButton(Player player) {
         if (!canGoForward(player)) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&7Sin adelante")
+                .name(GUIMessages.get(GUIMessages.NAV_NO_FORWARD))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(Material.ARROW)
-            .name("&eAdelante")
+            .name(GUIMessages.get(GUIMessages.NAV_FORWARD))
             .clickHandler(event -> goForward(player))
             .build();
     }
@@ -195,7 +195,7 @@ public class GUINavigator {
         GUI target = guiRegistry.get(targetId);
         if (target == null) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&cNo disponible")
+                .name(GUIMessages.get(GUIMessages.NAV_UNAVAILABLE))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(material)

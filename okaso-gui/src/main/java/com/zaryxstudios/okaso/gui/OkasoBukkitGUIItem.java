@@ -679,7 +679,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem closeButton(GUIClickHandler handler) {
         return builder(Material.BARRIER)
-            .name("&cCerrar")
+            .name(GUIMessages.get(GUIMessages.BUTTON_CLOSE))
             .clickHandler(handler)
             .build();
     }
@@ -693,7 +693,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem backButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
-            .name("&7Atrás")
+            .name(GUIMessages.get(GUIMessages.BUTTON_BACK))
             .clickHandler(handler)
             .build();
     }
@@ -707,7 +707,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem nextPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
-            .name("&aSiguiente página")
+            .name(GUIMessages.get(GUIMessages.BUTTON_NEXT_PAGE))
             .clickHandler(handler)
             .build();
     }
@@ -721,7 +721,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem previousPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
-            .name("&aPágina anterior")
+            .name(GUIMessages.get(GUIMessages.BUTTON_PREVIOUS_PAGE))
             .clickHandler(handler)
             .build();
     }
@@ -735,7 +735,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem confirmButton(GUIClickHandler handler) {
         return builder(Material.LIME_WOOL)
-            .name("&a&lConfirmar")
+            .name(GUIMessages.get(GUIMessages.BUTTON_CONFIRM))
             .clickHandler(handler)
             .build();
     }
@@ -749,7 +749,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem cancelButton(GUIClickHandler handler) {
         return builder(Material.RED_WOOL)
-            .name("&c&lCancelar")
+            .name(GUIMessages.get(GUIMessages.BUTTON_CANCEL))
             .clickHandler(handler)
             .build();
     }

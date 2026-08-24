@@ -143,11 +143,11 @@ public class GUIMultiPageView {
     public GUIItem createNextButton() {
         if (!hasNextPage()) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&7Sin más páginas")
+                .name(GUIMessages.get(GUIMessages.PAGE_NEXT_DISABLED))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(Material.ARROW)
-            .name("&aSiguiente →")
+            .name(GUIMessages.get(GUIMessages.PAGE_NEXT))
             .clickHandler(event -> nextPage())
             .build();
     }
@@ -155,11 +155,11 @@ public class GUIMultiPageView {
     public GUIItem createPreviousButton() {
         if (!hasPreviousPage()) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&7Sin páginas previas")
+                .name(GUIMessages.get(GUIMessages.PAGE_PREVIOUS_DISABLED))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(Material.ARROW)
-            .name("&a← Anterior")
+            .name(GUIMessages.get(GUIMessages.PAGE_PREVIOUS))
             .clickHandler(event -> previousPage())
             .build();
     }
@@ -169,7 +169,7 @@ public class GUIMultiPageView {
         if (total == 0) {
             return OkasoBukkitGUIItem.of(Material.PAPER);
         }
-        String display = "&ePágina " + (currentPage + 1) + " / " + total;
+        String display = GUIMessages.get(GUIMessages.PAGE_INDICATOR, currentPage + 1, total);
         return OkasoBukkitGUIItem.builder(Material.PAPER)
             .name(display)
             .build();
@@ -191,14 +191,14 @@ public class GUIMultiPageView {
 
     public GUIItem createFirstPageButton() {
         return OkasoBukkitGUIItem.builder(Material.CLOCK)
-            .name("&ePrimera página")
+            .name(GUIMessages.get(GUIMessages.PAGE_FIRST))
             .clickHandler(event -> firstPage())
             .build();
     }
 
     public GUIItem createLastPageButton() {
         return OkasoBukkitGUIItem.builder(Material.CLOCK)
-            .name("&eÚltima página")
+            .name(GUIMessages.get(GUIMessages.PAGE_LAST))
             .clickHandler(event -> lastPage())
             .build();
     }
