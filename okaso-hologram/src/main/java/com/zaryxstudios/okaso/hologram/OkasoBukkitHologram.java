@@ -7,6 +7,7 @@ import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -14,7 +15,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Item;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,102 +24,7 @@ import lombok.Getter;
 
 public class OkasoBukkitHologram implements OkasoHologram {
 
-    private static final boolean HAS_ARMOR_STAND;
-    private static final Class<?> ARMOR_STAND_CLASS;
-    private static final Method WORLD_SPAWN;
-    private static final Method SET_VISIBLE;
-    private static final Method SET_GRAVITY;
-    private static final Method SET_PICKUP;
-    private static final Method SET_NAME_VISIBLE;
-    private static final Method SET_CUSTOM_NAME;
-    private static final Method SET_MARKER;
-    private static final Method ENTITY_REMOVE;
-    private static final Method ENTITY_TELEPORT;
-    private static final Method SET_BASE_PLATE;
-    private static final Method SET_SMALL;
-
-    private static final boolean HAS_ITEM_ENTITY;
-    private static final Class<?> ITEM_CLASS;
-    private static final Method SET_ITEM_STACK;
-    private static final Method SET_PICKUP_DELAY;
-    private static final Method SET_UNLIMITED_LIFETIME;
-    private static final Method ITEM_TELEPORT;
-
-    private static final boolean HAS_AI_METHOD;
-    private static final Method SET_AI;
-    private static final Method SET_REMOVE_WHEN_FAR_AWAY;
-
-    static {
-        Class<?> asClass = null;
-        Method spawn = null, vis = null, grav = null, pickup = null,
-               nameVis = null, cname = null, marker = null, remove = null,
-               teleport = null, basePlate = null, small = null;
-
-        Class<?> itemClass = null;
-        Method setItem = null, setPickupDelay = null, unlimitedLife = null, itemTp = null;
-
-        boolean hasAi = false;
-        Method setAiMethod = null, removeFar = null;
-
-        try {
-            asClass = Class.forName("org.bukkit.entity.ArmorStand");
-
-            spawn     = World.class.getMethod("spawn", Location.class, Class.class);
-            vis       = asClass.getMethod("setVisible", boolean.class);
-            grav      = asClass.getMethod("setGravity", boolean.class);
-            pickup    = asClass.getMethod("setCanPickupItems", boolean.class);
-            nameVis   = asClass.getMethod("setCustomNameVisible", boolean.class);
-            cname     = asClass.getMethod("setCustomName", String.class);
-            marker    = asClass.getMethod("setMarker", boolean.class);
-            remove    = asClass.getMethod("remove");
-            teleport  = asClass.getMethod("teleport", Location.class);
-            basePlate = asClass.getMethod("setBasePlate", boolean.class);
-            small     = asClass.getMethod("setSmall", boolean.class);
-        } catch (Exception ignored) {
-        }
-
-        try {
-            itemClass     = Class.forName("org.bukkit.entity.Item");
-            setItem       = itemClass.getMethod("setItemStack", ItemStack.class);
-            setPickupDelay = itemClass.getMethod("setPickupDelay", int.class);
-            unlimitedLife = itemClass.getMethod("setUnlimitedLifetime", boolean.class);
-            itemTp        = itemClass.getMethod("teleport", Location.class);
-        } catch (Exception ignored) {
-        }
-
-        try {
-            Class<?> living = Class.forName("LivingEntity");
-            setAiMethod = living.getMethod("setAI", boolean.class);
-            removeFar   = living.getMethod("setRemoveWhenFarAway", boolean.class);
-            hasAi = true;
-        } catch (Exception ignored) {
-        }
-
-        HAS_ARMOR_STAND   = asClass != null;
-        ARMOR_STAND_CLASS = asClass;
-        WORLD_SPAWN       = spawn;
-        SET_VISIBLE       = vis;
-        SET_GRAVITY       = grav;
-        SET_PICKUP        = pickup;
-        SET_NAME_VISIBLE  = nameVis;
-        SET_CUSTOM_NAME   = cname;
-        SET_MARKER        = marker;
-        ENTITY_REMOVE     = remove;
-        ENTITY_TELEPORT   = teleport;
-        SET_BASE_PLATE    = basePlate;
-        SET_SMALL         = small;
-
-        HAS_ITEM_ENTITY       = itemClass != null;
-        ITEM_CLASS            = itemClass;
-        SET_ITEM_STACK        = setItem;
-        SET_PICKUP_DELAY      = setPickupDelay;
-        SET_UNLIMITED_LIFETIME = unlimitedLife;
-        ITEM_TELEPORT         = itemTp;
-
-        HAS_AI_METHOD              = hasAi;
-        SET_AI                     = setAiMethod;
-        SET_REMOVE_WHEN_FAR_AWAY   = removeFar;
-    }
+    public static final double DEFAULT_LINE_SPACING = 0.30;
 
     @Getter
     private final String id;
@@ -127,13 +32,25 @@ public class OkasoBukkitHologram implements OkasoHologram {
     private final List<Entity> entities;
     private Location location;
     private boolean active;
+    private double lineSpacing;
 
     public OkasoBukkitHologram(String id, Location location, List<HologramLine> lines) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("Hologram id cannot be null or empty");
+        }
         this.id = id;
-        this.location = location.clone();
-        this.lines = new ArrayList<>(lines);
-        this.entities = new ArrayList<>();
+        this.location = location != null ? location.clone() : null;
+        this.lines = new ArrayList<>();
+        if (lines != null) {
+            for (HologramLine line : lines) {
+                if (line != null) {
+                    this.lines.add(line);
+                }
+            }
+        }
+        this.entities = Collections.synchronizedList(new ArrayList<>());
         this.active = false;
+        this.lineSpacing = DEFAULT_LINE_SPACING;
     }
 
     @Override
@@ -144,19 +61,22 @@ public class OkasoBukkitHologram implements OkasoHologram {
     @Override
     public void setLines(List<HologramLine> newLines) {
         lines.clear();
-        lines.addAll(newLines);
+        if (newLines != null) {
+            lines.addAll(newLines);
+        }
         if (active) refresh();
     }
 
     @Override
     public void setLine(int index, HologramLine line) {
-        if (index < 0 || index >= lines.size()) return;
+        if (index < 0 || index >= lines.size() || line == null) return;
         lines.set(index, line);
         if (active) refresh();
     }
 
     @Override
     public void addLine(HologramLine line) {
+        if (line == null) return;
         lines.add(line);
         if (active) {
             int idx = lines.size() - 1;
@@ -166,7 +86,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void insertLine(int index, HologramLine line) {
-        if (index < 0 || index > lines.size()) return;
+        if (index < 0 || index > lines.size() || line == null) return;
         lines.add(index, line);
         if (active) refresh();
     }
@@ -200,8 +120,10 @@ public class OkasoBukkitHologram implements OkasoHologram {
     @Override
     public void setTextLines(List<String> textLines) {
         lines.clear();
-        for (String t : textLines) {
-            lines.add(HologramLine.text(t));
+        if (textLines != null) {
+            for (String t : textLines) {
+                lines.add(HologramLine.text(t));
+            }
         }
         if (active) refresh();
     }
@@ -240,12 +162,24 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void teleport(double x, double y, double z, float yaw, float pitch) {
-        this.location = new Location(location.getWorld(), x, y, z, yaw, pitch);
+        setLocation(new Location(location.getWorld(), x, y, z, yaw, pitch));
+    }
+
+    @Override
+    public void setLocation(Object location) {
+        if (!(location instanceof Location)) return;
+        Location newLocation = ((Location) location).clone();
+        if (newLocation.getWorld() == null && this.location != null) {
+            newLocation.setWorld(this.location.getWorld());
+        }
+        this.location = newLocation;
         if (active) {
-            for (int i = 0; i < entities.size(); i++) {
-                Entity e = entities.get(i);
-                if (e != null) {
-                    e.teleport(lineLocation(i));
+            synchronized (entities) {
+                for (int i = 0; i < entities.size(); i++) {
+                    Entity e = entities.get(i);
+                    if (e != null) {
+                        e.teleport(lineLocation(i));
+                    }
                 }
             }
         }
@@ -257,7 +191,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void start() {
-        if (active || location.getWorld() == null) return;
+        if (active || location == null || location.getWorld() == null) return;
         active = true;
         spawnAll();
     }
@@ -274,15 +208,47 @@ public class OkasoBukkitHologram implements OkasoHologram {
         return active;
     }
 
+    public double getLineSpacing() {
+        return lineSpacing;
+    }
+
+    public void setLineSpacing(double spacing) {
+        if (spacing <= 0 || spacing == lineSpacing) return;
+        this.lineSpacing = spacing;
+        if (active) refresh();
+    }
+
+    public double getHeight() {
+        return lines.size() * lineSpacing;
+    }
+
+    public int getEntityCount() {
+        synchronized (entities) {
+            return entities.size();
+        }
+    }
+
+    public void moveUp(double amount) {
+        if (amount <= 0) return;
+        setLocation(location.clone().add(0, amount, 0));
+    }
+
+    public void moveDown(double amount) {
+        if (amount <= 0) return;
+        setLocation(location.clone().subtract(0, amount, 0));
+    }
+
     private Location lineLocation(int index) {
-        return location.clone().add(0, -0.30 * index, 0);
+        return location.clone().add(0, -lineSpacing * index, 0);
     }
 
     private void spawnAll() {
-        entities.clear();
-        for (int i = 0; i < lines.size(); i++) {
-            HologramLine line = lines.get(i);
-            spawnEntityForLine(i, line, lineLocation(i));
+        synchronized (entities) {
+            entities.clear();
+            for (int i = 0; i < lines.size(); i++) {
+                HologramLine line = lines.get(i);
+                spawnEntityForLine(i, line, lineLocation(i));
+            }
         }
     }
 
@@ -301,20 +267,19 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     private void spawnTextLine(Location loc, String text) {
-        if (!HAS_ARMOR_STAND) return;
         World world = loc.getWorld();
         if (world == null) return;
         try {
-            Object stand = WORLD_SPAWN.invoke(world, loc, ARMOR_STAND_CLASS);
-            SET_VISIBLE.invoke(stand, false);
-            SET_GRAVITY.invoke(stand, false);
-            SET_PICKUP.invoke(stand, false);
-            SET_NAME_VISIBLE.invoke(stand, true);
-            SET_CUSTOM_NAME.invoke(stand, text);
-            SET_MARKER.invoke(stand, true);
-            if (SET_BASE_PLATE != null) SET_BASE_PLATE.invoke(stand, false);
-            if (SET_SMALL != null) SET_SMALL.invoke(stand, true);
-            entities.add((Entity) stand);
+            ArmorStand stand = world.spawn(loc, ArmorStand.class);
+            stand.setVisible(false);
+            stand.setGravity(false);
+            stand.setCanPickupItems(false);
+            stand.setCustomNameVisible(true);
+            stand.setCustomName(text);
+            stand.setMarker(true);
+            stand.setBasePlate(false);
+            stand.setSmall(true);
+            entities.add(stand);
         } catch (Exception ignored) {
         }
     }
@@ -327,10 +292,6 @@ public class OkasoBukkitHologram implements OkasoHologram {
         if (mat == null) mat = Material.STONE;
 
         ItemStack stack = new ItemStack(mat, Math.max(1, amount));
-        if (!HAS_ITEM_ENTITY) {
-            spawnTextLine(loc, "[" + mat.name() + " x" + amount + "]");
-            return;
-        }
 
         try {
             Item item = world.dropItem(loc, stack);
@@ -364,25 +325,13 @@ public class OkasoBukkitHologram implements OkasoHologram {
             Entity entity = world.spawnEntity(loc, type);
             entities.add(entity);
 
-            if (HAS_AI_METHOD && SET_AI != null) {
-                try {
-                    SET_AI.invoke(entity, false);
-                } catch (Exception ignored) {
-                }
-            }
-            if (SET_REMOVE_WHEN_FAR_AWAY != null) {
-                try {
-                    SET_REMOVE_WHEN_FAR_AWAY.invoke(entity, false);
-                } catch (Exception ignored) {
-                }
-            }
-
             if (entity instanceof LivingEntity) {
                 LivingEntity living = (LivingEntity) entity;
                 living.setCollidable(false);
                 living.setInvulnerable(true);
                 living.setSilent(true);
                 living.setGravity(false);
+                living.setAI(false);
                 living.setCanPickupItems(false);
                 living.setRemoveWhenFarAway(false);
                 living.setMaxHealth(1.0);
@@ -394,25 +343,22 @@ public class OkasoBukkitHologram implements OkasoHologram {
                 }
             }
 
-            if (SET_CUSTOM_NAME != null && SET_NAME_VISIBLE != null) {
-                try {
-                    SET_CUSTOM_NAME.invoke(entity, "");
-                    SET_NAME_VISIBLE.invoke(entity, false);
-                } catch (Exception ignored) {
-                }
-            }
+            entity.setCustomName("");
+            entity.setCustomNameVisible(false);
         } catch (Exception ignored) {
             spawnTextLine(loc, "[Mob: " + type.name() + "]");
         }
     }
 
     private void despawnAll() {
-        for (Entity e : entities) {
-            if (e != null && e.isValid()) {
-                e.remove();
+        synchronized (entities) {
+            for (Entity e : entities) {
+                if (e != null) {
+                    e.remove();
+                }
             }
+            entities.clear();
         }
-        entities.clear();
     }
 
     private void refresh() {

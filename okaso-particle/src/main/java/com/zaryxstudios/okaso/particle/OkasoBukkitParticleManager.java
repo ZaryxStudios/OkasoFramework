@@ -54,10 +54,6 @@ public class OkasoBukkitParticleManager implements ParticleManager {
 
     @Override
     public OkasoParticleEffect getOrCreateEffect(String name, String particleType) {
-        OkasoBukkitParticleEffect existing = effects.get(name);
-        if (existing != null) {
-            return existing;
-        }
-        return createEffect(name, particleType);
+        return effects.computeIfAbsent(name, k -> new OkasoBukkitParticleEffect(k, particleType));
     }
 }

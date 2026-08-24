@@ -4,6 +4,7 @@ import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
@@ -168,33 +169,33 @@ public class GUINavigator {
 
     public GUIItem createBackButton(Player player) {
         if (!canGoBack(player)) {
-            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
-                .name("&7Sin historial")
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
+                .name(GUIMessages.get(GUIMessages.NAV_NO_HISTORY))
                 .build();
         }
-        return OkasoBukkitGUIItem.builder(org.bukkit.Material.ARROW)
-            .name("&eAtrás")
+        return OkasoBukkitGUIItem.builder(Material.ARROW)
+            .name(GUIMessages.get(GUIMessages.NAV_BACK))
             .clickHandler(event -> goBack(player))
             .build();
     }
 
     public GUIItem createForwardButton(Player player) {
         if (!canGoForward(player)) {
-            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
-                .name("&7Sin adelante")
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
+                .name(GUIMessages.get(GUIMessages.NAV_NO_FORWARD))
                 .build();
         }
-        return OkasoBukkitGUIItem.builder(org.bukkit.Material.ARROW)
-            .name("&eAdelante")
+        return OkasoBukkitGUIItem.builder(Material.ARROW)
+            .name(GUIMessages.get(GUIMessages.NAV_FORWARD))
             .clickHandler(event -> goForward(player))
             .build();
     }
 
-    public GUIItem createNavButton(Player player, String targetId, String displayName, org.bukkit.Material material) {
+    public GUIItem createNavButton(Player player, String targetId, String displayName, Material material) {
         GUI target = guiRegistry.get(targetId);
         if (target == null) {
-            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
-                .name("&cNo disponible")
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
+                .name(GUIMessages.get(GUIMessages.NAV_UNAVAILABLE))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(material)

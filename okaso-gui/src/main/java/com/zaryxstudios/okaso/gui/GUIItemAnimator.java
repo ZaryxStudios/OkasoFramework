@@ -4,6 +4,8 @@ import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
 
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -47,18 +49,25 @@ public class GUIItemAnimator {
                 state[0] = !state[0];
                 if (state[0]) {
                     if (!meta.hasEnchants()) {
-                        meta.addEnchant(org.bukkit.enchantments.Enchantment.DURABILITY, 1, true);
+                        meta.addEnchant(Enchantment.DURABILITY, 1, true);
                     }
-                    meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                 } else {
-                    meta.removeItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+                    meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
                     if (meta.hasEnchants() && meta.getEnchants().size() == 1
-                        && meta.hasEnchant(org.bukkit.enchantments.Enchantment.DURABILITY)) {
-                        meta.removeEnchant(org.bukkit.enchantments.Enchantment.DURABILITY);
+                        && meta.hasEnchant(Enchantment.DURABILITY)) {
+                        meta.removeEnchant(Enchantment.DURABILITY);
                     }
                 }
                 stack.setItemMeta(meta);
-                gui.updateSlot(slot);
+                if (original instanceof OkasoBukkitGUIItem) {
+                    OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) original).copy();
+                    copy.setItemStack(stack);
+                    gui.setItem(slot, copy);
+                } else {
+                    stack.setItemMeta(meta);
+                    gui.setItem(slot, new OkasoBukkitGUIItem(stack));
+                }
             }
         };
         BukkitTask bukkitTask = task.runTaskTimer(plugin, 0L, intervalTicks);

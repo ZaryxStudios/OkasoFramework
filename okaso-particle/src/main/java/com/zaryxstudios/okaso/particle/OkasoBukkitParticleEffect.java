@@ -8,6 +8,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import lombok.Getter;
@@ -17,6 +18,9 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
     private static final boolean HAS_BUKKIT_API;
     private static final Method SPAWN_PARTICLE;
     private static final Method PLAYER_SPAWN_PARTICLE;
+    private static final Method PLAYER_GET_HANDLE;
+    private static final Field PLAYER_CONNECTION;
+    private static final Method SEND_PACKET;
     private static final Constructor<?> PACKET_CTOR_ENUM;
     private static final Constructor<?> PACKET_CTOR_STRING;
     private static final Object   ENUM_PARTICLE_FLAME;
@@ -25,6 +29,9 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
         boolean hasApi = false;
         Method spawnParticle = null;
         Method playerSpawnParticle = null;
+        Method getHandle = null;
+        Field playerConnection = null;
+        Method sendPacket = null;
         Constructor<?> ctorEnum = null;
         Constructor<?> ctorString = null;
         Object flameEnum = null;
@@ -72,12 +79,23 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
                     } catch (Exception ignored2) {
                     }
                 }
+
+                try {
+                    Class<?> packetClass = Class.forName("net.minecraft.server." + nms + ".Packet");
+                    getHandle = Player.class.getMethod("getHandle");
+                    playerConnection = Class.forName("net.minecraft.server." + nms + ".EntityPlayer").getField("playerConnection");
+                    sendPacket = playerConnection.getType().getMethod("sendPacket", packetClass);
+                } catch (Exception ignored2) {
+                }
             } catch (Exception ignored) {
             }
         }
 
         SPAWN_PARTICLE          = spawnParticle;
         PLAYER_SPAWN_PARTICLE   = playerSpawnParticle;
+        PLAYER_GET_HANDLE       = getHandle;
+        PLAYER_CONNECTION       = playerConnection;
+        SEND_PACKET             = sendPacket;
         PACKET_CTOR_ENUM   = ctorEnum;
         PACKET_CTOR_STRING = ctorString;
         ENUM_PARTICLE_FLAME = flameEnum;
@@ -321,11 +339,9 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
 
     private void sendPacket(Player player, Object packet) {
         try {
-            Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            Object connection = entityPlayer.getClass().getField("playerConnection").get(entityPlayer);
-            Class<?> packetSuper = packet.getClass().getSuperclass();
-            Method send = connection.getClass().getMethod("sendPacket", packetSuper);
-            send.invoke(connection, packet);
+            Object entityPlayer = PLAYER_GET_HANDLE.invoke(player);
+            Object connection = PLAYER_CONNECTION.get(entityPlayer);
+            SEND_PACKET.invoke(connection, packet);
         } catch (Exception ignored) {
         }
     }

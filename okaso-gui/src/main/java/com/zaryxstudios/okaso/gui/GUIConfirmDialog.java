@@ -5,8 +5,11 @@ import com.zaryxstudios.okaso.common.text.TextColorizer;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class GUIConfirmDialog {
@@ -29,12 +32,12 @@ public class GUIConfirmDialog {
 
     public GUIConfirmDialog(Plugin plugin) {
         this.plugin = plugin;
-        this.title = "&6Confirmar";
-        this.message = "¿Estás seguro?";
+        this.title = GUIMessages.get(GUIMessages.DIALOG_TITLE);
+        this.message = GUIMessages.get(GUIMessages.DIALOG_MESSAGE);
         this.confirmMaterial = Material.LIME_WOOL;
         this.cancelMaterial = Material.RED_WOOL;
-        this.confirmName = "&a&lConfirmar";
-        this.cancelName = "&c&lCancelar";
+        this.confirmName = GUIMessages.get(GUIMessages.BUTTON_CONFIRM);
+        this.cancelName = GUIMessages.get(GUIMessages.BUTTON_CANCEL);
         this.confirmSlot = 11;
         this.cancelSlot = 15;
         this.messageSlot = 4;
@@ -128,9 +131,9 @@ public class GUIConfirmDialog {
         }
         GUIItem confirmFinal = confirm;
         gui.setItem(confirmSlot, OkasoBukkitGUIItem.of(
-            confirmFinal.getItemStack() instanceof org.bukkit.inventory.ItemStack
-                ? (org.bukkit.inventory.ItemStack) confirmFinal.getItemStack()
-                : new org.bukkit.inventory.ItemStack(confirmMaterial),
+            confirmFinal.getItemStack() instanceof ItemStack
+                ? (ItemStack) confirmFinal.getItemStack()
+                : new ItemStack(confirmMaterial),
             event -> {
                 if (onConfirm != null) {
                     Object clicked = event.getWhoClicked();
@@ -148,9 +151,9 @@ public class GUIConfirmDialog {
         }
         GUIItem cancelFinal = cancel;
         gui.setItem(cancelSlot, OkasoBukkitGUIItem.of(
-            cancelFinal.getItemStack() instanceof org.bukkit.inventory.ItemStack
-                ? (org.bukkit.inventory.ItemStack) cancelFinal.getItemStack()
-                : new org.bukkit.inventory.ItemStack(cancelMaterial),
+            cancelFinal.getItemStack() instanceof ItemStack
+                ? (ItemStack) cancelFinal.getItemStack()
+                : new ItemStack(cancelMaterial),
             event -> {
                 if (onCancel != null) {
                     Object clicked = event.getWhoClicked();
@@ -177,11 +180,13 @@ public class GUIConfirmDialog {
 
     public static GUIConfirmDialog delete(Plugin plugin, String itemName,
                                           Consumer<Player> onDelete) {
+        Map<String, Object> placeholders = new HashMap<>();
+        placeholders.put("item", itemName);
         return new GUIConfirmDialog(plugin)
-            .title("&cEliminar " + itemName)
-            .message("¿Eliminar " + itemName + "?")
+            .title(GUIMessages.get(GUIMessages.DIALOG_DELETE_TITLE, placeholders, itemName))
+            .message(GUIMessages.get(GUIMessages.DIALOG_DELETE_MESSAGE, placeholders, itemName))
             .confirmMaterial(Material.RED_WOOL)
-            .confirmName("&c&lEliminar")
+            .confirmName(GUIMessages.get(GUIMessages.DIALOG_DELETE_CONFIRM))
             .onConfirm(onDelete);
     }
 }

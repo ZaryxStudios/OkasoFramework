@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -373,13 +374,13 @@ public class OkasoBukkitGUIItem implements GUIItem {
     private static Object createGameProfile(String base64Texture) {
         try {
             Class<?> gameProfileClass = Class.forName("com.mojang.authlib.GameProfile");
-            java.lang.reflect.Constructor<?> constructor = gameProfileClass.getConstructor(UUID.class, String.class);
+            Constructor<?> constructor = gameProfileClass.getConstructor(UUID.class, String.class);
             Object profile = constructor.newInstance(UUID.randomUUID(), "OkasoHead");
             Class<?> propertyMapClass = Class.forName("com.mojang.authlib.properties.PropertyMap");
             Method getProperties = gameProfileClass.getMethod("getProperties");
             Object propertyMap = getProperties.invoke(profile);
             Class<?> propertyClass = Class.forName("com.mojang.authlib.properties.Property");
-            java.lang.reflect.Constructor<?> propConstructor = propertyClass.getConstructor(String.class, String.class, String.class);
+            Constructor<?> propConstructor = propertyClass.getConstructor(String.class, String.class, String.class);
             Object property = propConstructor.newInstance("textures", base64Texture, "");
             Method put = propertyMapClass.getMethod("put", Object.class, Object.class);
             put.invoke(propertyMap, "textures", property);
@@ -438,7 +439,7 @@ public class OkasoBukkitGUIItem implements GUIItem {
         if (meta != null) {
             if (lore != null) {
                 meta.setLore(lore.stream()
-                    .filter(java.util.Objects::nonNull)
+                    .filter(Objects::nonNull)
                     .map(TextColorizer::translate)
                     .collect(Collectors.toList()));
             } else {
@@ -678,42 +679,42 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
     public static OkasoBukkitGUIItem closeButton(GUIClickHandler handler) {
         return builder(Material.BARRIER)
-            .name("&cCerrar")
+            .name(GUIMessages.get(GUIMessages.BUTTON_CLOSE))
             .clickHandler(handler)
             .build();
     }
 
     public static OkasoBukkitGUIItem backButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
-            .name("&7Atrás")
+            .name(GUIMessages.get(GUIMessages.BUTTON_BACK))
             .clickHandler(handler)
             .build();
     }
 
     public static OkasoBukkitGUIItem nextPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
-            .name("&aSiguiente página")
+            .name(GUIMessages.get(GUIMessages.BUTTON_NEXT_PAGE))
             .clickHandler(handler)
             .build();
     }
 
     public static OkasoBukkitGUIItem previousPageButton(GUIClickHandler handler) {
         return builder(Material.ARROW)
-            .name("&aPágina anterior")
+            .name(GUIMessages.get(GUIMessages.BUTTON_PREVIOUS_PAGE))
             .clickHandler(handler)
             .build();
     }
 
     public static OkasoBukkitGUIItem confirmButton(GUIClickHandler handler) {
         return builder(Material.LIME_WOOL)
-            .name("&a&lConfirmar")
+            .name(GUIMessages.get(GUIMessages.BUTTON_CONFIRM))
             .clickHandler(handler)
             .build();
     }
 
     public static OkasoBukkitGUIItem cancelButton(GUIClickHandler handler) {
         return builder(Material.RED_WOOL)
-            .name("&c&lCancelar")
+            .name(GUIMessages.get(GUIMessages.BUTTON_CANCEL))
             .clickHandler(handler)
             .build();
     }

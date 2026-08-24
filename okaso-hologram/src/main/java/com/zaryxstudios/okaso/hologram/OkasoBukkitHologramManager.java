@@ -4,7 +4,9 @@ import com.zaryxstudios.okaso.common.hologram.OkasoHologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,14 +37,18 @@ public class OkasoBukkitHologramManager implements HologramManager {
 
     @Override
     public OkasoHologram createHologram(String id, List<HologramLine> lines) {
-        Location fallback = new Location(null, 0, 0, 0);
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, fallback, new ArrayList<>(lines));
+        validateId(id);
+        removeExisting(id);
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, defaultLocation(), copyLines(lines));
         holograms.put(id, hologram);
         return hologram;
     }
 
     public OkasoHologram createHologram(String id, Location location, List<HologramLine> lines) {
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, location.clone(), new ArrayList<>(lines));
+        validateId(id);
+        removeExisting(id);
+        Location loc = location != null ? location.clone() : defaultLocation();
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, loc, copyLines(lines));
         holograms.put(id, hologram);
         return hologram;
     }
@@ -59,6 +65,18 @@ public class OkasoBukkitHologramManager implements HologramManager {
     @Override
     public Collection<OkasoHologram> getHolograms() {
         return Collections.unmodifiableCollection(new ArrayList<>(holograms.values()));
+    }
+
+    public List<OkasoBukkitHologram> getHologramsInWorld(World world) {
+        List<OkasoBukkitHologram> result = new ArrayList<>();
+        if (world == null) return result;
+        for (OkasoBukkitHologram h : holograms.values()) {
+            Location loc = h.getLocation();
+            if (loc != null && world.equals(loc.getWorld())) {
+                result.add(h);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -92,6 +110,31 @@ public class OkasoBukkitHologramManager implements HologramManager {
             if (h.isRunning()) {
                 h.stop();
             }
+        }
+    }
+
+    private Location defaultLocation() {
+        List<World> worlds = Bukkit.getWorlds();
+        if (!worlds.isEmpty()) {
+            return worlds.get(0).getSpawnLocation();
+        }
+        return new Location(null, 0, 0, 0);
+    }
+
+    private List<HologramLine> copyLines(List<HologramLine> lines) {
+        return lines != null ? new ArrayList<>(lines) : new ArrayList<>();
+    }
+
+    private void validateId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("Hologram id cannot be null or empty");
+        }
+    }
+
+    private void removeExisting(String id) {
+        OkasoBukkitHologram existing = holograms.remove(id);
+        if (existing != null) {
+            existing.stop();
         }
     }
 }

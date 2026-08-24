@@ -82,6 +82,10 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
         onOkasoDisable();
 
         if (api != null) {
+            HologramManager holograms = api.getServiceRegistry().get(HologramManager.class);
+            if (holograms != null) {
+                holograms.removeAll();
+            }
             eventBus.shutdown();
             api.getServiceRegistry().clear();
         }

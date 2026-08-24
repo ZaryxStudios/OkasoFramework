@@ -7,6 +7,7 @@ import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ public class GUIMultiPageView {
 
     private final OkasoBukkitGUI gui;
     private final List<GUIItem> allItems;
+    private final int contentStartSlot;
     private final int contentSlots;
     private final int[] navigationSlots;
     private int currentPage;
@@ -26,10 +28,17 @@ public class GUIMultiPageView {
 
     public GUIMultiPageView(OkasoBukkitGUI gui, List<GUIItem> items, int contentStartSlot, int contentEndSlot,
                             int... navigationSlots) {
+        if (gui == null) {
+            throw new IllegalArgumentException("GUI cannot be null");
+        }
+        if (contentStartSlot < 0 || contentEndSlot < contentStartSlot) {
+            throw new IllegalArgumentException("Invalid content slot range: " + contentStartSlot + " to " + contentEndSlot);
+        }
         this.gui = gui;
         this.allItems = items != null ? new ArrayList<>(items) : new ArrayList<>();
+        this.contentStartSlot = contentStartSlot;
         this.contentSlots = contentEndSlot - contentStartSlot + 1;
-        this.navigationSlots = navigationSlots;
+        this.navigationSlots = navigationSlots != null ? navigationSlots : new int[0];
         this.currentPage = 0;
         this.titleFormatter = null;
         this.onPageChange = null;
@@ -43,7 +52,7 @@ public class GUIMultiPageView {
         gui.clear();
         int start = currentPage * contentSlots;
         int end = Math.min(start + contentSlots, allItems.size());
-        int slot = 0;
+        int slot = contentStartSlot;
         for (int i = start; i < end; i++) {
             gui.setItem(slot, allItems.get(i));
             slot++;
@@ -91,6 +100,14 @@ public class GUIMultiPageView {
         return currentPage;
     }
 
+    public int getContentStartSlot() {
+        return contentStartSlot;
+    }
+
+    public int getContentSlots() {
+        return contentSlots;
+    }
+
     public int getTotalPages() {
         if (allItems.isEmpty() || contentSlots <= 0) return 0;
         return (int) Math.ceil((double) allItems.size() / contentSlots);
@@ -127,11 +144,11 @@ public class GUIMultiPageView {
     public GUIItem createNextButton() {
         if (!hasNextPage()) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&7Sin más páginas")
+                .name(GUIMessages.get(GUIMessages.PAGE_NEXT_DISABLED))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(Material.ARROW)
-            .name("&aSiguiente →")
+            .name(GUIMessages.get(GUIMessages.PAGE_NEXT))
             .clickHandler(event -> nextPage())
             .build();
     }
@@ -139,11 +156,11 @@ public class GUIMultiPageView {
     public GUIItem createPreviousButton() {
         if (!hasPreviousPage()) {
             return OkasoBukkitGUIItem.builder(Material.BARRIER)
-                .name("&7Sin páginas previas")
+                .name(GUIMessages.get(GUIMessages.PAGE_PREVIOUS_DISABLED))
                 .build();
         }
         return OkasoBukkitGUIItem.builder(Material.ARROW)
-            .name("&a← Anterior")
+            .name(GUIMessages.get(GUIMessages.PAGE_PREVIOUS))
             .clickHandler(event -> previousPage())
             .build();
     }
@@ -153,21 +170,11 @@ public class GUIMultiPageView {
         if (total == 0) {
             return OkasoBukkitGUIItem.of(Material.PAPER);
         }
-        String display = "&ePágina " + (currentPage + 1) + " / " + total;
-        return OkasoBukkitGUIItem.builder(Material.PAPER)
-            .name(display)
-            .build();
-    }
-
-    public GUIItem createPageIndicator(String format) {
-        int total = getTotalPages();
-        if (total == 0) {
-            return OkasoBukkitGUIItem.of(Material.PAPER);
-        }
-        String display = format
-            .replace("{current}", String.valueOf(currentPage + 1))
-            .replace("{total}", String.valueOf(total))
-            .replace("{percent}", total == 0 ? "0" : String.valueOf((currentPage + 1) * 100 / total));
+        Map<String, Object> placeholders = new HashMap<>();
+        placeholders.put("current", currentPage + 1);
+        placeholders.put("total", total);
+        placeholders.put("percent", (currentPage + 1) * 100 / total);
+        String display = GUIMessages.get(GUIMessages.PAGE_INDICATOR, placeholders, currentPage + 1, total);
         return OkasoBukkitGUIItem.builder(Material.PAPER)
             .name(display)
             .build();
@@ -175,14 +182,14 @@ public class GUIMultiPageView {
 
     public GUIItem createFirstPageButton() {
         return OkasoBukkitGUIItem.builder(Material.CLOCK)
-            .name("&ePrimera página")
+            .name(GUIMessages.get(GUIMessages.PAGE_FIRST))
             .clickHandler(event -> firstPage())
             .build();
     }
 
     public GUIItem createLastPageButton() {
         return OkasoBukkitGUIItem.builder(Material.CLOCK)
-            .name("&eÚltima página")
+            .name(GUIMessages.get(GUIMessages.PAGE_LAST))
             .clickHandler(event -> lastPage())
             .build();
     }
