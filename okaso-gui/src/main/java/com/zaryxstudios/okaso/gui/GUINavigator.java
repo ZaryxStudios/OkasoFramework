@@ -4,6 +4,7 @@ import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
@@ -168,11 +169,11 @@ public class GUINavigator {
 
     public GUIItem createBackButton(Player player) {
         if (!canGoBack(player)) {
-            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
                 .name("&7Sin historial")
                 .build();
         }
-        return OkasoBukkitGUIItem.builder(org.bukkit.Material.ARROW)
+        return OkasoBukkitGUIItem.builder(Material.ARROW)
             .name("&eAtrás")
             .clickHandler(event -> goBack(player))
             .build();
@@ -180,20 +181,20 @@ public class GUINavigator {
 
     public GUIItem createForwardButton(Player player) {
         if (!canGoForward(player)) {
-            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
                 .name("&7Sin adelante")
                 .build();
         }
-        return OkasoBukkitGUIItem.builder(org.bukkit.Material.ARROW)
+        return OkasoBukkitGUIItem.builder(Material.ARROW)
             .name("&eAdelante")
             .clickHandler(event -> goForward(player))
             .build();
     }
 
-    public GUIItem createNavButton(Player player, String targetId, String displayName, org.bukkit.Material material) {
+    public GUIItem createNavButton(Player player, String targetId, String displayName, Material material) {
         GUI target = guiRegistry.get(targetId);
         if (target == null) {
-            return OkasoBukkitGUIItem.builder(org.bukkit.Material.BARRIER)
+            return OkasoBukkitGUIItem.builder(Material.BARRIER)
                 .name("&cNo disponible")
                 .build();
         }

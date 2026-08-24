@@ -3,6 +3,7 @@ package com.zaryxstudios.okaso.gui;
 import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -149,7 +150,7 @@ public class GUIPlaceholderResolver {
         resolver.register("player_name", Player::getName);
         resolver.register("player_uuid", p -> p.getUniqueId().toString());
         resolver.register("player_health", p -> String.valueOf((int) p.getHealth()));
-        resolver.register("player_max_health", p -> String.valueOf((int) p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue()));
+        resolver.register("player_max_health", p -> String.valueOf((int) p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
         resolver.register("player_food", p -> String.valueOf(p.getFoodLevel()));
         resolver.register("player_level", p -> String.valueOf(p.getLevel()));
         resolver.register("player_exp", p -> String.valueOf(Math.round(p.getExp() * 100)));
