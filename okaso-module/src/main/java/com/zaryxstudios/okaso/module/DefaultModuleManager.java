@@ -3,7 +3,6 @@ package com.zaryxstudios.okaso.module;
 import com.zaryxstudios.okaso.common.module.Module;
 import com.zaryxstudios.okaso.common.module.ModuleManager;
 import com.zaryxstudios.okaso.common.message.LogMessages;
-import com.zaryxstudios.okaso.common.module.ModuleVersion;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

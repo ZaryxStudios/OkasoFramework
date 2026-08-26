@@ -1,7 +1,6 @@
 package com.zaryxstudios.okaso.gui;
 
 import com.zaryxstudios.okaso.common.gui.GUI;
-import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
 import org.bukkit.Material;

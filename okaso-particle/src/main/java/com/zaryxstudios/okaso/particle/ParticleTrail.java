@@ -1,11 +1,9 @@
 package com.zaryxstudios.okaso.particle;
 
 import com.zaryxstudios.okaso.common.OkasoAPI;
-import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 import com.zaryxstudios.okaso.common.particle.ParticleManager;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
