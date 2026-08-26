@@ -1,5 +1,6 @@
 name: Okaso
 version: ${project.version}
+api-version: "1.13"
 main: com.zaryxstudios.okaso.bukkit.OkasoBukkitPlugin
 load: STARTUP
 authors: [ZaryxStudios]
