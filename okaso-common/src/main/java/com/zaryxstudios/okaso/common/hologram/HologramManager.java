@@ -9,6 +9,8 @@ public interface HologramManager {
     OkasoHologram createHologram(String id);
     OkasoHologram createHologram(String id, HologramLine... lines);
     OkasoHologram createHologram(String id, List<HologramLine> lines);
+    OkasoHologram createHologram(String id, HologramStyle style);
+    OkasoHologram createHologram(String id, HologramStyle style, List<HologramLine> lines);
 
     Optional<OkasoHologram> getHologram(String id);
     Collection<OkasoHologram> getHolograms();
@@ -16,4 +18,6 @@ public interface HologramManager {
     void removeAll();
     boolean exists(String id);
     int count();
+    void setDefaultStyle(HologramStyle style);
+    HologramStyle getDefaultStyle();
 }

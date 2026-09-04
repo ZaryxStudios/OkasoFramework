@@ -4,6 +4,9 @@ import com.zaryxstudios.okaso.command.CommandRegistryImpl;
 import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.config.OkasoConfigurationProvider;
 import com.zaryxstudios.okaso.common.entity.EntityService;
+import com.zaryxstudios.okaso.common.entity.NPCManager;
+import com.zaryxstudios.okaso.common.entity.NPCMovementController;
+import com.zaryxstudios.okaso.common.entity.NPCSerializer;
 import com.zaryxstudios.okaso.common.event.EventBus;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
 import com.zaryxstudios.okaso.common.i18n.TranslationManager;
@@ -28,6 +31,10 @@ import com.zaryxstudios.okaso.common.world.WorldManager;
 import com.zaryxstudios.okaso.common.world.OkasoStructureManager;
 import com.zaryxstudios.okaso.common.module.ModuleManager;
 import com.zaryxstudios.okaso.config.DefaultConfigurationProvider;
+import com.zaryxstudios.okaso.entity.BukkitNPCInteractionListener;
+import com.zaryxstudios.okaso.entity.BukkitNPCManager;
+import com.zaryxstudios.okaso.entity.BukkitNPCMovementController;
+import com.zaryxstudios.okaso.entity.BukkitNPCSerializer;
 import com.zaryxstudios.okaso.entity.OkasoBukkitEntityService;
 import com.zaryxstudios.okaso.event.AnnotationEventRegistry;
 import com.zaryxstudios.okaso.hologram.OkasoBukkitHologramManager;
@@ -150,6 +157,11 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
         annotationEventRegistry = new AnnotationEventRegistry(eventBus);
 
         reg.register(ModuleManager.class, new DefaultModuleManager());
+
+        BukkitNPCManager npcManager = new BukkitNPCManager();
+        reg.register(NPCManager.class, npcManager);
+        reg.register(NPCMovementController.class, new BukkitNPCMovementController(reg.get(TaskScheduler.class)));
+        reg.register(NPCSerializer.class, new BukkitNPCSerializer(new File(dataFolder, "npcs.json")));
     }
 
     private void registerEventListeners() {

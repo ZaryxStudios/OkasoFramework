@@ -3,17 +3,10 @@ package com.zaryxstudios.okaso.hologram;
 import com.zaryxstudios.okaso.common.hologram.OkasoHologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramLineType;
+import com.zaryxstudios.okaso.common.hologram.HologramRenderer;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Item;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,16 +18,16 @@ import lombok.Getter;
 public class OkasoBukkitHologram implements OkasoHologram {
 
     public static final double DEFAULT_LINE_SPACING = 0.30;
-
     @Getter
     private final String id;
     private final List<HologramLine> lines;
-    private final List<Entity> entities;
+    private final List<Object> spawnedEntities;
+    private final HologramRenderer renderer;
     private Location location;
     private boolean active;
     private double lineSpacing;
 
-    public OkasoBukkitHologram(String id, Location location, List<HologramLine> lines) {
+    public OkasoBukkitHologram(String id, Location location, List<HologramLine> lines, HologramRenderer renderer) {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("Hologram id cannot be null or empty");
         }
@@ -42,15 +35,20 @@ public class OkasoBukkitHologram implements OkasoHologram {
         this.location = location != null ? location.clone() : null;
         this.lines = new ArrayList<>();
         if (lines != null) {
-            for (HologramLine line : lines) {
-                if (line != null) {
-                    this.lines.add(line);
+            for (HologramLine l : lines) {
+                if (l != null) {
+                    this.lines.add(l);
                 }
             }
         }
-        this.entities = Collections.synchronizedList(new ArrayList<>());
+        this.spawnedEntities = Collections.synchronizedList(new ArrayList<>());
+        this.renderer = renderer;
         this.active = false;
         this.lineSpacing = DEFAULT_LINE_SPACING;
+    }
+
+    public HologramRenderer getRenderer() {
+        return renderer;
     }
 
     @Override
@@ -62,7 +60,11 @@ public class OkasoBukkitHologram implements OkasoHologram {
     public void setLines(List<HologramLine> newLines) {
         lines.clear();
         if (newLines != null) {
-            lines.addAll(newLines);
+            for (HologramLine l : newLines) {
+                if (l != null){
+                    lines.add(l);
+                }
+            }
         }
         if (active) refresh();
     }
@@ -79,8 +81,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
         if (line == null) return;
         lines.add(line);
         if (active) {
-            int idx = lines.size() - 1;
-            spawnEntityForLine(idx, line, lineLocation(idx));
+            spawnEntityForLine(lines.size() - 1, line, lineLocation(lines.size() - 1));
         }
     }
 
@@ -105,8 +106,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void clearLines() {
-        lines.clear();
-        if (active) refresh();
+        lines.clear(); if (active) refresh();
     }
 
     @Override
@@ -136,7 +136,7 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     @Override
-    public void addText(String text) {
+    public void addText(String text) { 
         addLine(HologramLine.text(text));
     }
 
@@ -166,27 +166,27 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     @Override
-    public void setLocation(Object location) {
-        if (!(location instanceof Location)) return;
-        Location newLocation = ((Location) location).clone();
-        if (newLocation.getWorld() == null && this.location != null) {
-            newLocation.setWorld(this.location.getWorld());
+    public void setLocation(Object loc) {
+        if (!(loc instanceof Location)) {
+            return;
         }
-        this.location = newLocation;
+        Location newLoc = ((Location) loc).clone();
+        if (newLoc.getWorld() == null && this.location != null) {
+            newLoc.setWorld(this.location.getWorld());
+        }
+        this.location = newLoc;
         if (active) {
-            synchronized (entities) {
-                for (int i = 0; i < entities.size(); i++) {
-                    Entity e = entities.get(i);
-                    if (e != null) {
-                        e.teleport(lineLocation(i));
-                    }
+            synchronized (spawnedEntities) {
+                for (int i = 0; i < spawnedEntities.size(); i++) {
+                    Object obj = spawnedEntities.get(i);
+                    if (obj instanceof Entity) ((Entity) obj).teleport(lineLocation(i));
                 }
             }
         }
     }
 
     public Location getLocation() {
-        return location.clone();
+        return location != null ? location.clone() : null;
     }
 
     @Override
@@ -200,7 +200,8 @@ public class OkasoBukkitHologram implements OkasoHologram {
     public void stop() {
         if (!active) return;
         active = false;
-        despawnAll();
+        renderer.despawnAll();
+        spawnedEntities.clear();
     }
 
     @Override
@@ -223,19 +224,21 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     public int getEntityCount() {
-        synchronized (entities) {
-            return entities.size();
+        synchronized (spawnedEntities) {
+            return spawnedEntities.size();
+        }
+        }
+
+    public void moveUp(double amount) {
+        if (amount > 0) {
+            setLocation(location.clone().add(0, amount, 0));
         }
     }
 
-    public void moveUp(double amount) {
-        if (amount <= 0) return;
-        setLocation(location.clone().add(0, amount, 0));
-    }
-
     public void moveDown(double amount) {
-        if (amount <= 0) return;
-        setLocation(location.clone().subtract(0, amount, 0));
+        if (amount > 0) {
+            setLocation(location.clone().subtract(0, amount, 0));
+        }
     }
 
     private Location lineLocation(int index) {
@@ -243,126 +246,36 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     private void spawnAll() {
-        synchronized (entities) {
-            entities.clear();
-            for (int i = 0; i < lines.size(); i++) {
-                HologramLine line = lines.get(i);
-                spawnEntityForLine(i, line, lineLocation(i));
-            }
+        synchronized (spawnedEntities) {
+            spawnedEntities.clear();
+            for (int i = 0; i < lines.size(); i++) spawnEntityForLine(i, lines.get(i), lineLocation(i));
         }
     }
 
     private void spawnEntityForLine(int index, HologramLine line, Location loc) {
+        Object spawned = null;
         switch (line.getType()) {
             case TEXT:
-                spawnTextLine(loc, line.getText());
+                spawned = renderer.spawnText(loc, line.getText());
                 break;
             case ITEM:
-                spawnItemLine(loc, line.getItemMaterial(), line.getItemAmount());
+                if (renderer.supportsLineType(HologramLineType.ITEM)) {
+                    spawned = renderer.spawnItem(loc, line.getItemMaterial(), line.getItemAmount());
+                } else {
+                    spawned = renderer.spawnText(loc, "[" + line.getItemMaterial() + " x" + line.getItemAmount() + "]");
+                }
                 break;
             case MOB:
-                spawnMobLine(loc, line.getEntityType());
+                spawned = renderer.spawnMob(loc, line.getEntityType());
                 break;
         }
-    }
-
-    private void spawnTextLine(Location loc, String text) {
-        World world = loc.getWorld();
-        if (world == null) return;
-        try {
-            ArmorStand stand = world.spawn(loc, ArmorStand.class);
-            stand.setVisible(false);
-            stand.setGravity(false);
-            stand.setCanPickupItems(false);
-            stand.setCustomNameVisible(true);
-            stand.setCustomName(text);
-            stand.setMarker(true);
-            stand.setBasePlate(false);
-            stand.setSmall(true);
-            entities.add(stand);
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void spawnItemLine(Location loc, String materialName, int amount) {
-        World world = loc.getWorld();
-        if (world == null) return;
-
-        Material mat = Material.getMaterial(materialName.toUpperCase());
-        if (mat == null) mat = Material.STONE;
-
-        ItemStack stack = new ItemStack(mat, Math.max(1, amount));
-
-        try {
-            Item item = world.dropItem(loc, stack);
-            item.setPickupDelay(Integer.MAX_VALUE);
-            item.setUnlimitedLifetime(true);
-            item.setVelocity(item.getVelocity().zero());
-            entities.add(item);
-        } catch (Exception ignored) {
-            spawnTextLine(loc, "[" + mat.name() + " x" + amount + "]");
-        }
-    }
-
-    private void spawnMobLine(Location loc, String entityTypeName) {
-        World world = loc.getWorld();
-        if (world == null) return;
-
-        EntityType type;
-        try {
-            type = EntityType.valueOf(entityTypeName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            spawnTextLine(loc, "[Mob: " + entityTypeName + "]");
-            return;
-        }
-
-        if (!type.isSpawnable() || !type.isAlive()) {
-            spawnTextLine(loc, "[Mob: " + type.name() + "]");
-            return;
-        }
-
-        try {
-            Entity entity = world.spawnEntity(loc, type);
-            entities.add(entity);
-
-            if (entity instanceof LivingEntity) {
-                LivingEntity living = (LivingEntity) entity;
-                living.setCollidable(false);
-                living.setInvulnerable(true);
-                living.setSilent(true);
-                living.setGravity(false);
-                living.setAI(false);
-                living.setCanPickupItems(false);
-                living.setRemoveWhenFarAway(false);
-                living.setMaxHealth(1.0);
-                living.setHealth(1.0);
-
-                if (entity instanceof Ageable) {
-                    ((Ageable) entity).setAdult();
-                    ((Ageable) entity).setAgeLock(true);
-                }
-            }
-
-            entity.setCustomName("");
-            entity.setCustomNameVisible(false);
-        } catch (Exception ignored) {
-            spawnTextLine(loc, "[Mob: " + type.name() + "]");
-        }
-    }
-
-    private void despawnAll() {
-        synchronized (entities) {
-            for (Entity e : entities) {
-                if (e != null) {
-                    e.remove();
-                }
-            }
-            entities.clear();
+        if (spawned != null) {
+            spawnedEntities.add(spawned);
         }
     }
 
     private void refresh() {
-        despawnAll();
-        spawnAll();
+        renderer.despawnAll();
+        spawnedEntities.clear(); spawnAll();
     }
 }

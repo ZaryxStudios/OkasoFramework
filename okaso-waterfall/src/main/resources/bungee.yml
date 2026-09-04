@@ -1,5 +1,5 @@
 name: Okaso
-version: ${project.version}
+version: ${okaso.version}
 main: com.zaryxstudios.okaso.waterfall.OkasoWaterfallPlugin
 author: ZaryxStudios
 description: Okaso Framework — Waterfall Platform Adapter

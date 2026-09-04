@@ -16,10 +16,10 @@ mvn install -DskipTests
 
 The build produces shaded JARs in each adapter's `target/` directory:
 
-- `okaso-bukkit/target/okaso-bukkit-1.5.0.jar` — for Bukkit/Spigot/Paper servers
-- `okaso-bungeecord/target/okaso-bungeecord-1.5.0.jar` — for BungeeCord proxies
-- `okaso-velocity/target/okaso-velocity-1.5.0.jar` — for Velocity proxies
-- `okaso-waterfall/target/okaso-waterfall-1.5.0.jar` — for Waterfall proxies
+- `okaso-bukkit/target/okaso-bukkit-1.6.0.jar` — for Bukkit/Spigot/Paper servers
+- `okaso-bungeecord/target/okaso-bungeecord-1.6.0.jar` — for BungeeCord proxies
+- `okaso-velocity/target/okaso-velocity-1.6.0.jar` — for Velocity proxies
+- `okaso-waterfall/target/okaso-waterfall-1.6.0.jar` — for Waterfall proxies
 
 ## Installation
 
@@ -33,7 +33,7 @@ Copy the appropriate adapter JAR into your server or proxy's `plugins/` folder a
 <dependency>
     <groupId>com.zaryxstudios.okaso</groupId>
     <artifactId>okaso-bukkit</artifactId>
-    <version>1.5.0</version>
+    <version>1.6.0</version>
     <scope>provided</scope>
 </dependency>
 ```

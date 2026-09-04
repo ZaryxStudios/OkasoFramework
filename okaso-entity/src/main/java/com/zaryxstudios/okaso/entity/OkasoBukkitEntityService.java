@@ -1,83 +1,70 @@
 package com.zaryxstudios.okaso.entity;
 
-import com.zaryxstudios.okaso.common.entity.EntityService;
+import com.zaryxstudios.okaso.common.entity.*;
+import com.zaryxstudios.okaso.common.Preconditions;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
 
-public class OkasoBukkitEntityService implements EntityService {
+public final class OkasoBukkitEntityService implements EntityService {
 
     private static final boolean HAS_GET_ENTITY_UUID;
     private static final Method GET_ENTITY_UUID_METHOD;
 
     static {
-        boolean hasMethod = false;
-        Method method = null;
+        boolean has = false;
+        Method m = null;
         try {
-            method = Bukkit.class.getMethod("getEntity", UUID.class);
-            hasMethod = true;
+            m = Bukkit.class.getMethod("getEntity", UUID.class);
+            has = true;
         } catch (NoSuchMethodException ignored) {
         }
-        HAS_GET_ENTITY_UUID = hasMethod;
-        GET_ENTITY_UUID_METHOD = method;
+        HAS_GET_ENTITY_UUID = has;
+        GET_ENTITY_UUID_METHOD = m;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> Collection<T> getEntitiesInWorld(Object world, Class<T> type) {
-        if (world instanceof World) {
-            java.util.List<T> result = new ArrayList<>();
-            for (Entity entity : ((World) world).getEntities()) {
-                if (type.isInstance(entity)) {
-                    result.add((T) entity);
-                }
-            }
-            return result;
+        if (!(world instanceof World)) return Collections.emptyList();
+        List<T> result = new ArrayList<>();
+        for (Entity e : ((World) world).getEntities()) {
+            if (type.isInstance(e)) result.add((T) e);
         }
-        return new ArrayList<>();
+        return result;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> Collection<T> getNearbyEntities(Object location, double radius, Class<T> type) {
-        if (location instanceof Location) {
-            java.util.List<T> result = new ArrayList<>();
-            for (Entity entity : ((Location) location).getWorld().getEntities()) {
-                if (type.isInstance(entity)) {
-                    Location loc = entity.getLocation();
-                    if (loc.distanceSquared((Location) location) <= radius * radius) {
-                        result.add((T) entity);
-                    }
-                }
-            }
-            return result;
+        if (!(location instanceof Location)) return Collections.emptyList();
+        Location center = (Location) location;
+        List<T> result = new ArrayList<>();
+        for (Entity e : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
+            if (type.isInstance(e)) result.add((T) e);
         }
-        return new ArrayList<>();
+        return result;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Optional<Object> getEntity(UUID uuid) {
         if (HAS_GET_ENTITY_UUID) {
             try {
-                Entity entity = (Entity) GET_ENTITY_UUID_METHOD.invoke(null, uuid);
-                return Optional.ofNullable(entity);
+                Entity e = (Entity) GET_ENTITY_UUID_METHOD.invoke(null, uuid);
+                return Optional.ofNullable(e);
             } catch (Exception ignored) {
             }
         }
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (entity.getUniqueId().equals(uuid)) {
-                    return Optional.of(entity);
-                }
+        for (World w : Bukkit.getWorlds()) {
+            for (Entity e : w.getEntities()) {
+                if (e.getUniqueId().equals(uuid)) return Optional.of(e);
             }
         }
         return Optional.empty();
@@ -85,76 +72,110 @@ public class OkasoBukkitEntityService implements EntityService {
 
     @Override
     public boolean isValid(Object entity) {
-        if (entity instanceof Entity) {
-            return ((Entity) entity).isValid();
-        }
-        return false;
+        return entity instanceof Entity && ((Entity) entity).isValid();
     }
 
     @Override
     public void remove(Object entity) {
-        if (entity instanceof Entity) {
-            ((Entity) entity).remove();
-        }
+        if (entity instanceof Entity) ((Entity) entity).remove();
     }
 
     @Override
     public void teleport(Object entity, Object location) {
-        if (entity instanceof Entity && location instanceof Location) {
+        if (entity instanceof Entity && location instanceof Location)
             ((Entity) entity).teleport((Location) location);
-        }
     }
 
     @Override
     public Object getLocation(Object entity) {
-        if (entity instanceof Entity) {
-            return ((Entity) entity).getLocation();
-        }
-        return null;
+        return entity instanceof Entity ? ((Entity) entity).getLocation() : null;
     }
 
     @Override
     public Object getWorld(Object entity) {
-        if (entity instanceof Entity) {
-            return ((Entity) entity).getWorld();
-        }
-        return null;
+        return entity instanceof Entity ? ((Entity) entity).getWorld() : null;
     }
 
     @Override
     public String getName(Object entity) {
-        if (entity instanceof Entity) {
-            String customName = ((Entity) entity).getCustomName();
-            if (customName != null) return customName;
-            try {
-                return (String) entity.getClass().getMethod("getName").invoke(entity);
-            } catch (Exception ignored) {
-            }
+        if (!(entity instanceof Entity)) return "";
+        Entity e = (Entity) entity;
+        String customName = e.getCustomName();
+        if (customName != null) return customName;
+        try {
+            return (String) e.getClass().getMethod("getName").invoke(e);
+        } catch (Exception ignored) {
+            return "";
         }
-        return "";
     }
 
     @Override
     public void setFire(Object entity, int ticks) {
-        if (entity instanceof Entity) {
-            ((Entity) entity).setFireTicks(ticks);
-        }
+        if (entity instanceof Entity) ((Entity) entity).setFireTicks(ticks);
     }
 
     @Override
     public String getType(Object entity) {
-        if (entity instanceof Entity) {
-            return ((Entity) entity).getType().name();
-        }
-        return "";
+        return entity instanceof Entity ? ((Entity) entity).getType().name() : "";
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Collection<Object> getPassengers(Object entity) {
-        if (entity instanceof Entity) {
-            return (Collection<Object>) (Collection<?>) ((Entity) entity).getPassengers();
+        if (!(entity instanceof Entity)) return Collections.emptyList();
+        return (Collection<Object>) (Collection<?>) ((Entity) entity).getPassengers();
+    }
+
+    @Override
+    public NPCHandle createFakePlayer(String name, Location loc, Consumer<FakePlayerBuilder> builder) {
+        Preconditions.requireNonNull(loc, "Location cannot be null");
+        Preconditions.requireNonNull(builder, "Builder consumer cannot be null");
+        Entity base = spawnPlaceholder(loc);
+        FakePlayerBuilderImpl impl = new FakePlayerBuilderImpl(base);
+        builder.accept(impl);
+        impl.apply();
+        return new PacketNPCHandle(base, true);
+    }
+
+    @Override
+    public NPCHandle createFakeEntity(EntityType type, Location loc, Consumer<FakeEntityBuilder> builder) {
+        Preconditions.requireNonNull(type, "EntityType cannot be null");
+        Preconditions.requireNonNull(loc, "Location cannot be null");
+        Preconditions.requireNonNull(builder, "Builder consumer cannot be null");
+        Entity base = spawnEntity(type, loc);
+        FakeEntityBuilderImpl impl = new FakeEntityBuilderImpl(base);
+        builder.accept(impl);
+        impl.apply();
+        return new PacketNPCHandle(base, false);
+    }
+
+    @Override
+    public NPCHandle createNPC(NPCType npcType, Location loc, Consumer<NPCBuilder> builder) {
+        Preconditions.requireNonNull(npcType, "NPCType cannot be null");
+        Preconditions.requireNonNull(loc, "Location cannot be null");
+        Preconditions.requireNonNull(builder, "Builder consumer cannot be null");
+        if (npcType == NPCType.FAKE_PLAYER) {
+            return createFakePlayer("NPC", loc, b -> builder.accept(b));
+        } else {
+            return createFakeEntity(EntityType.ZOMBIE, loc, b -> builder.accept(b));
         }
-        return new ArrayList<>();
+    }
+
+    private Entity spawnPlaceholder(Location loc) {
+        if (VersionUtil.hasArmorStand()) {
+            return loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+        }
+        Entity z = loc.getWorld().spawnEntity(loc, EntityType.ZOMBIE);
+        AbstractNPCBuilder.safeInvoke(z, "setAI", false);
+        AbstractNPCBuilder.safeInvoke(z, "setGravity", false);
+        AbstractNPCBuilder.safeInvoke(z, "setSilent", true);
+        AbstractNPCBuilder.safeInvoke(z, "setInvulnerable", true);
+        AbstractNPCBuilder.safeInvoke(z, "setCustomNameVisible", true);
+        z.setCustomName("\u00a7r");
+        return z;
+    }
+
+    private Entity spawnEntity(EntityType type, Location loc) {
+        return loc.getWorld().spawnEntity(loc, type);
     }
 }

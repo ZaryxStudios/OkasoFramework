@@ -11,12 +11,10 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.message.LogMessages;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
-import com.zaryxstudios.okaso.common.service.ServiceRegistry;
 
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
-import java.util.logging.Level;
 
 import lombok.Getter;
 

@@ -1,8 +1,13 @@
 package com.zaryxstudios.okaso.common.entity;
 
+import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
+
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
+
 
 public interface EntityService {
     <T> Collection<T> getEntitiesInWorld(Object world, Class<T> type);
@@ -17,4 +22,8 @@ public interface EntityService {
     void setFire(Object entity, int ticks);
     String getType(Object entity);
     Collection<Object> getPassengers(Object entity);
+
+    NPCHandle createFakePlayer(String name, Location loc, Consumer<FakePlayerBuilder> builder);
+    NPCHandle createFakeEntity(EntityType type, Location loc, Consumer<FakeEntityBuilder> builder);
+    NPCHandle createNPC(NPCType npcType, Location loc, Consumer<NPCBuilder> builder);
 }
