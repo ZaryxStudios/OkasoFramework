@@ -5,6 +5,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public interface NPCBuilder<B extends NPCBuilder<B>> {
+
     B rotation(float yaw, float pitch);
     B armor(ItemStack helmet, ItemStack chestplate, ItemStack leggings, ItemStack boots);
     B addPotionEffect(PotionEffect effect);

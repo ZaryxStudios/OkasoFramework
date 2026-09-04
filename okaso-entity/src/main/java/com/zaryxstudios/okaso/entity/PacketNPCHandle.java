@@ -1,19 +1,22 @@
 package com.zaryxstudios.okaso.entity;
 
 import com.zaryxstudios.okaso.common.entity.NPCHandle;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
 import java.util.UUID;
 
 public class PacketNPCHandle implements NPCHandle {
+
     private final Entity entity;
     private final boolean fakePlayer;
-    private boolean spawned = false;
+    private boolean spawned;
 
-    public PacketNPCHandle(Entity entity, boolean fakePlayer) {
+    PacketNPCHandle(Entity entity, boolean fakePlayer) {
         this.entity = entity;
         this.fakePlayer = fakePlayer;
+        this.spawned = true;
     }
 
     @Override
@@ -42,6 +45,14 @@ public class PacketNPCHandle implements NPCHandle {
     }
 
     @Override
+    public void setRotation(float yaw, float pitch) {
+        Location loc = entity.getLocation();
+        loc.setYaw(yaw);
+        loc.setPitch(pitch);
+        entity.teleport(loc);
+    }
+
+    @Override
     public boolean isSpawned() {
         return spawned && entity.isValid();
     }
@@ -51,7 +62,25 @@ public class PacketNPCHandle implements NPCHandle {
         return entity.getUniqueId();
     }
 
+    @Override
+    public boolean isFakePlayer() {
+        return fakePlayer;
+    }
+
+    @Override
+    public void setCustomName(String name) {
+        entity.setCustomName(name);
+    }
+    
     public Entity getEntity() {
         return entity;
+    }
+
+    @Override
+    public String toString() {
+        return "PacketNPCHandle{uuid=" + getUniqueId()
+            + ", fakePlayer=" + fakePlayer
+            + ", spawned=" + isSpawned()
+            + "}";
     }
 }
