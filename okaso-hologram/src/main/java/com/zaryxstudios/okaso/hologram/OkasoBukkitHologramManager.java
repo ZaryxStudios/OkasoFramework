@@ -3,6 +3,8 @@ package com.zaryxstudios.okaso.hologram;
 import com.zaryxstudios.okaso.common.hologram.OkasoHologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLine;
 import com.zaryxstudios.okaso.common.hologram.HologramManager;
+import com.zaryxstudios.okaso.common.hologram.HologramRenderer;
+import com.zaryxstudios.okaso.common.hologram.HologramStyle;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,41 +22,75 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OkasoBukkitHologramManager implements HologramManager {
 
     private final Map<String, OkasoBukkitHologram> holograms;
+    private HologramStyle defaultStyle;
 
     public OkasoBukkitHologramManager() {
         this.holograms = new ConcurrentHashMap<>();
+        this.defaultStyle = HologramStyle.AUTO;
+    }
+
+    public OkasoBukkitHologramManager(HologramStyle defaultStyle) {
+        this.holograms = new ConcurrentHashMap<>();
+        this.defaultStyle = defaultStyle;
+    }
+
+    @Override
+    public void setDefaultStyle(HologramStyle style) {
+        this.defaultStyle = style;
+    }
+
+    @Override
+    public HologramStyle getDefaultStyle() {
+        return defaultStyle;
     }
 
     @Override
     public OkasoHologram createHologram(String id) {
-        return createHologram(id, new ArrayList<>());
+        return createHologram(id, defaultStyle, new ArrayList<>());
     }
 
     @Override
     public OkasoHologram createHologram(String id, HologramLine... lines) {
-        return createHologram(id, Arrays.asList(lines));
+        return createHologram(id, defaultStyle, Arrays.asList(lines));
     }
 
     @Override
     public OkasoHologram createHologram(String id, List<HologramLine> lines) {
+        return createHologram(id, defaultStyle, lines);
+    }
+
+    @Override
+    public OkasoHologram createHologram(String id, HologramStyle style) {
+        return createHologram(id, style, new ArrayList<>());
+    }
+
+    @Override
+    public OkasoHologram createHologram(String id, HologramStyle style, List<HologramLine> lines) {
         validateId(id);
         removeExisting(id);
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, defaultLocation(), copyLines(lines));
+        HologramRenderer renderer = resolveRenderer(style);
+        Location loc = defaultLocation();
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, loc, copyLines(lines), renderer);
         holograms.put(id, hologram);
         return hologram;
     }
 
     public OkasoHologram createHologram(String id, Location location, List<HologramLine> lines) {
+        return createHologram(id, location, defaultStyle, lines);
+    }
+
+    public OkasoHologram createHologram(String id, Location location, HologramStyle style, List<HologramLine> lines) {
         validateId(id);
         removeExisting(id);
         Location loc = location != null ? location.clone() : defaultLocation();
-        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, loc, copyLines(lines));
+        HologramRenderer renderer = resolveRenderer(style);
+        OkasoBukkitHologram hologram = new OkasoBukkitHologram(id, loc, copyLines(lines), renderer);
         holograms.put(id, hologram);
         return hologram;
     }
 
     public OkasoHologram createHologram(String id, Location location, HologramLine... lines) {
-        return createHologram(id, location, Arrays.asList(lines));
+        return createHologram(id, location, defaultStyle, Arrays.asList(lines));
     }
 
     @Override
@@ -113,6 +149,20 @@ public class OkasoBukkitHologramManager implements HologramManager {
         }
     }
 
+    private HologramRenderer resolveRenderer(HologramStyle style) {
+        switch (style) {
+            case DISPLAY:
+                if (DisplayRenderer.isAvailable()) return new DisplayRenderer();
+                return new ArmorStandRenderer();
+            case CLASSIC:
+                return new ArmorStandRenderer();
+            case AUTO:
+            default:
+                if (DisplayRenderer.isAvailable()) return new DisplayRenderer();
+                return new ArmorStandRenderer();
+        }
+    }
+
     private Location defaultLocation() {
         List<World> worlds = Bukkit.getWorlds();
         if (!worlds.isEmpty()) {
@@ -135,6 +185,6 @@ public class OkasoBukkitHologramManager implements HologramManager {
         OkasoBukkitHologram existing = holograms.remove(id);
         if (existing != null) {
             existing.stop();
-        }
+        } 
     }
 }
