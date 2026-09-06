@@ -15,4 +15,5 @@ public interface NPCHandle {
     boolean isFakePlayer();
     void setCustomName(String name);
     void setRotation(float yaw, float pitch);
+    SkinData getSkin();
 }
