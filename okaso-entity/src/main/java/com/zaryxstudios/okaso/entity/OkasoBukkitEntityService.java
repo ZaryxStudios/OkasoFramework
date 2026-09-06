@@ -11,6 +11,7 @@ import org.bukkit.entity.EntityType;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public final class OkasoBukkitEntityService implements EntityService {
@@ -48,8 +49,14 @@ public final class OkasoBukkitEntityService implements EntityService {
         Location center = (Location) location;
         if (center.getWorld() == null) return Collections.emptyList();
         List<T> result = new ArrayList<>();
-        for (Entity e : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
-            if (type.isInstance(e)) result.add((T) e);
+        double rangeSquared = radius * radius;
+        for (Entity e : center.getWorld().getEntities()) {
+            if (!type.isInstance(e)) {
+                continue;
+            }
+            if (e.getLocation().distanceSquared(center) <= rangeSquared) {
+                result.add((T) e);
+            }
         }
         return result;
     }
@@ -134,6 +141,7 @@ public final class OkasoBukkitEntityService implements EntityService {
         Location spawnLoc = requireSpawnableLocation(loc);
         requireMainThread("createFakePlayer");
         EntityType placeholder = resolvePlaceholderType();
+        AtomicReference<SkinData> skinRef = new AtomicReference<SkinData>();
         PacketNPCHandle.NamedConfigurator configurator = new PacketNPCHandle.NamedConfigurator(entity -> {
             FakePlayerBuilderImpl impl = new FakePlayerBuilderImpl(entity);
             if (name != null) {
@@ -142,9 +150,11 @@ public final class OkasoBukkitEntityService implements EntityService {
             }
             builder.accept(impl);
             impl.apply();
+            skinRef.set(impl.getSkin());
         }, name);
         PacketNPCHandle handle = new PacketNPCHandle(placeholder, spawnLoc, true, configurator);
         handle.spawn();
+        handle.setSkin(skinRef.get());
         return handle;
     }
 
@@ -183,8 +193,16 @@ public final class OkasoBukkitEntityService implements EntityService {
         if (world == null) {
             throw new IllegalArgumentException("NPC Location world must not be null");
         }
-        world.getChunkAt(loc).load(true);
+        ensureChunkLoaded(world, loc);
         return loc.clone();
+    }
+
+    private void ensureChunkLoaded(World world, Location loc) {
+        int cx = loc.getBlockX() >> 4;
+        int cz = loc.getBlockZ() >> 4;
+        if (!world.isChunkLoaded(cx, cz)) {
+            world.loadChunk(cx, cz, true);
+        }
     }
 
     private void requireMainThread(String operation) {

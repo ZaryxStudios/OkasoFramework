@@ -1,6 +1,7 @@
 package com.zaryxstudios.okaso.entity;
 
 import com.zaryxstudios.okaso.common.entity.NPCHandle;
+import com.zaryxstudios.okaso.common.entity.SkinData;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,6 +22,7 @@ public class PacketNPCHandle implements NPCHandle {
     private volatile Entity entity;
     private volatile Location pendingLocation;
     private volatile boolean spawned;
+    private volatile SkinData skin;
 
     PacketNPCHandle(Entity entity, boolean fakePlayer) {
         this(entity, fakePlayer, null, entity == null ? null : entity.getLocation().clone());
@@ -67,7 +69,11 @@ public class PacketNPCHandle implements NPCHandle {
             if (world == null) {
                 throw new IllegalStateException("NPC world is null");
             }
-            world.getChunkAt(loc).load(true);
+            int cx = loc.getBlockX() >> 4;
+            int cz = loc.getBlockZ() >> 4;
+            if (!world.isChunkLoaded(cx, cz)) {
+                world.loadChunk(cx, cz, true);
+            }
             EntityType type = spawnType != null ? spawnType : resolveFallbackType();
             Entity spawnedEntity;
             try {
@@ -162,6 +168,15 @@ public class PacketNPCHandle implements NPCHandle {
     @Override
     public boolean isFakePlayer() {
         return fakePlayer;
+    }
+
+    @Override
+    public SkinData getSkin() {
+        return skin;
+    }
+
+    public void setSkin(SkinData skin) {
+        this.skin = skin;
     }
 
     @Override
