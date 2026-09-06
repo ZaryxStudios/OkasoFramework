@@ -46,6 +46,7 @@ public final class OkasoBukkitEntityService implements EntityService {
     public <T> Collection<T> getNearbyEntities(Object location, double radius, Class<T> type) {
         if (!(location instanceof Location)) return Collections.emptyList();
         Location center = (Location) location;
+        if (center.getWorld() == null) return Collections.emptyList();
         List<T> result = new ArrayList<>();
         for (Entity e : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
             if (type.isInstance(e)) result.add((T) e);
@@ -130,11 +131,21 @@ public final class OkasoBukkitEntityService implements EntityService {
     public NPCHandle createFakePlayer(String name, Location loc, Consumer<FakePlayerBuilder> builder) {
         Preconditions.requireNonNull(loc, "Location cannot be null");
         Preconditions.requireNonNull(builder, "Builder consumer cannot be null");
-        Entity base = spawnPlaceholder(loc);
-        FakePlayerBuilderImpl impl = new FakePlayerBuilderImpl(base);
-        builder.accept(impl);
-        impl.apply();
-        return new PacketNPCHandle(base, true);
+        Location spawnLoc = requireSpawnableLocation(loc);
+        requireMainThread("createFakePlayer");
+        EntityType placeholder = resolvePlaceholderType();
+        PacketNPCHandle.NamedConfigurator configurator = new PacketNPCHandle.NamedConfigurator(entity -> {
+            FakePlayerBuilderImpl impl = new FakePlayerBuilderImpl(entity);
+            if (name != null) {
+                impl.customName(name);
+                impl.customNameVisible(true);
+            }
+            builder.accept(impl);
+            impl.apply();
+        }, name);
+        PacketNPCHandle handle = new PacketNPCHandle(placeholder, spawnLoc, true, configurator);
+        handle.spawn();
+        return handle;
     }
 
     @Override
@@ -142,11 +153,17 @@ public final class OkasoBukkitEntityService implements EntityService {
         Preconditions.requireNonNull(type, "EntityType cannot be null");
         Preconditions.requireNonNull(loc, "Location cannot be null");
         Preconditions.requireNonNull(builder, "Builder consumer cannot be null");
-        Entity base = spawnEntity(type, loc);
-        FakeEntityBuilderImpl impl = new FakeEntityBuilderImpl(base);
-        builder.accept(impl);
-        impl.apply();
-        return new PacketNPCHandle(base, false);
+        Location spawnLoc = requireSpawnableLocation(loc);
+        requireMainThread("createFakeEntity");
+        EntityType resolved = resolveSpawnableType(type);
+        PacketNPCHandle.NamedConfigurator configurator = new PacketNPCHandle.NamedConfigurator(entity -> {
+            FakeEntityBuilderImpl impl = new FakeEntityBuilderImpl(entity);
+            builder.accept(impl);
+            impl.apply();
+        }, null);
+        PacketNPCHandle handle = new PacketNPCHandle(resolved, spawnLoc, false, configurator);
+        handle.spawn();
+        return handle;
     }
 
     @Override
@@ -161,21 +178,37 @@ public final class OkasoBukkitEntityService implements EntityService {
         }
     }
 
-    private Entity spawnPlaceholder(Location loc) {
-        if (VersionUtil.hasArmorStand()) {
-            return loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+    private Location requireSpawnableLocation(Location loc) {
+        World world = loc.getWorld();
+        if (world == null) {
+            throw new IllegalArgumentException("NPC Location world must not be null");
         }
-        Entity z = loc.getWorld().spawnEntity(loc, EntityType.ZOMBIE);
-        AbstractNPCBuilder.safeInvoke(z, "setAI", false);
-        AbstractNPCBuilder.safeInvoke(z, "setGravity", false);
-        AbstractNPCBuilder.safeInvoke(z, "setSilent", true);
-        AbstractNPCBuilder.safeInvoke(z, "setInvulnerable", true);
-        AbstractNPCBuilder.safeInvoke(z, "setCustomNameVisible", true);
-        z.setCustomName("\u00a7r");
-        return z;
+        world.getChunkAt(loc).load(true);
+        return loc.clone();
     }
 
-    private Entity spawnEntity(EntityType type, Location loc) {
-        return loc.getWorld().spawnEntity(loc, type);
+    private void requireMainThread(String operation) {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("EntityService." + operation + " must be called on the server main thread");
+        }
+    }
+
+    private EntityType resolvePlaceholderType() {
+        if (VersionUtil.hasArmorStand()) {
+            try {
+                return EntityType.valueOf("ARMOR_STAND");
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return EntityType.ZOMBIE;
+    }
+
+    private EntityType resolveSpawnableType(EntityType requested) {
+        try {
+            EntityType.valueOf(requested.name());
+            return requested;
+        } catch (IllegalArgumentException ignored) {
+            return EntityType.ZOMBIE;
+        }
     }
 }
