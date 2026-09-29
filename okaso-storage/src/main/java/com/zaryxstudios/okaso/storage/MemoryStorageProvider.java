@@ -3,8 +3,10 @@ package com.zaryxstudios.okaso.storage;
 import com.zaryxstudios.okaso.common.storage.StorageProvider;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryStorageProvider implements StorageProvider {
@@ -16,14 +18,27 @@ public class MemoryStorageProvider implements StorageProvider {
     }
 
     @Override
+    public String getScope() {
+        return "memory";
+    }
+
+    @Override
+    public boolean isPersistent() {
+        return false;
+    }
+
+    @Override
     public void store(String key, Object value) {
-        if (key == null) throw new IllegalArgumentException("key must not be null");
+        if (key == null || key.isEmpty()) {
+            throw new IllegalArgumentException("key must not be null or empty");
+        }
         storage.put(key, value);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> Optional<T> get(String key, Class<T> type) {
+        if (type == null) return Optional.empty();
         Object value = storage.get(key);
         if (value == null) return Optional.empty();
         if (type.isInstance(value)) {
@@ -44,7 +59,7 @@ public class MemoryStorageProvider implements StorageProvider {
 
     @Override
     public Map<String, Object> getAll() {
-        return Collections.unmodifiableMap(storage);
+        return Collections.unmodifiableMap(new LinkedHashMap<>(storage));
     }
 
     @Override
@@ -53,8 +68,8 @@ public class MemoryStorageProvider implements StorageProvider {
     }
 
     @Override
-    public java.util.Set<String> keys() {
-        return java.util.Collections.unmodifiableSet(storage.keySet());
+    public Set<String> keys() {
+        return Collections.unmodifiableSet(new LinkedHashMap<>(storage).keySet());
     }
 
     @Override

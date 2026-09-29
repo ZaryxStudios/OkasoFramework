@@ -9,8 +9,13 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
 import com.zaryxstudios.okaso.common.OkasoAPI;
+import com.zaryxstudios.okaso.common.config.OkasoConfigurationProvider;
 import com.zaryxstudios.okaso.common.message.LogMessages;
 import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
+import com.zaryxstudios.okaso.common.service.ServiceRegistry;
+import com.zaryxstudios.okaso.common.storage.StorageManager;
+import com.zaryxstudios.okaso.config.DefaultConfigurationProvider;
+import com.zaryxstudios.okaso.storage.OkasoStorageBootstrap;
 
 import org.slf4j.Logger;
 
@@ -35,6 +40,7 @@ public final class OkasoVelocityPlugin implements OkasoPlugin {
 
     private OkasoAPI api;
     private java.util.logging.Logger julLogger;
+    private StorageManager storageManager;
 
     @Inject
     public OkasoVelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
@@ -47,6 +53,7 @@ public final class OkasoVelocityPlugin implements OkasoPlugin {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         this.julLogger = java.util.logging.Logger.getLogger("Okaso");
         api = OkasoAPI.init(this);
+        registerServices();
         onOkasoEnable();
         slf4jLogger.info(LogMessages.get(LogMessages.ADAPTER_ENABLED));
     }
@@ -54,10 +61,20 @@ public final class OkasoVelocityPlugin implements OkasoPlugin {
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         onOkasoDisable();
+        if (storageManager != null) {
+            storageManager.close();
+        }
         if (api != null) {
             api.getServiceRegistry().getAll().clear();
         }
         slf4jLogger.info(LogMessages.get(LogMessages.ADAPTER_DISABLED));
+    }
+
+    private void registerServices() {
+        ServiceRegistry reg = api.getServiceRegistry();
+        reg.register(OkasoConfigurationProvider.class, new DefaultConfigurationProvider());
+        storageManager = OkasoStorageBootstrap.bootstrap(
+            dataDirectory.toFile(), reg.get(OkasoConfigurationProvider.class), getOkasoLogger());
     }
 
     @Override

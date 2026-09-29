@@ -22,7 +22,7 @@ import com.zaryxstudios.okaso.common.plugin.OkasoPlugin;
 import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardManager;
 import com.zaryxstudios.okaso.common.security.OkasoSecurityManager;
 import com.zaryxstudios.okaso.common.service.ServiceRegistry;
-import com.zaryxstudios.okaso.common.storage.StorageProvider;
+import com.zaryxstudios.okaso.common.storage.StorageManager;
 import com.zaryxstudios.okaso.common.tablist.TabListManager;
 import com.zaryxstudios.okaso.common.task.TaskScheduler;
 import com.zaryxstudios.okaso.common.updater.UpdateChecker;
@@ -49,8 +49,7 @@ import com.zaryxstudios.okaso.permission.OkasoBukkitPermissionManager;
 import com.zaryxstudios.okaso.placeholder.SimplePlaceholderRegistry;
 import com.zaryxstudios.okaso.scoreboard.OkasoBukkitScoreboardManager;
 import com.zaryxstudios.okaso.security.DefaultSecurityManager;
-import com.zaryxstudios.okaso.storage.JsonFileStorageProvider;
-import com.zaryxstudios.okaso.storage.MemoryStorageProvider;
+import com.zaryxstudios.okaso.storage.OkasoStorageBootstrap;
 import com.zaryxstudios.okaso.tablist.OkasoBukkitTabListManager;
 import com.zaryxstudios.okaso.task.OkasoBukkitTaskScheduler;
 import com.zaryxstudios.okaso.updater.OkasoUpdateChecker;
@@ -70,6 +69,7 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
     private EventBus eventBus;
     private CommandRegistryImpl commandRegistry;
     private AnnotationEventRegistry annotationEventRegistry;
+    private StorageManager storageManager;
 
     @Override
     public void onEnable() {
@@ -92,6 +92,9 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
             HologramManager holograms = api.getServiceRegistry().get(HologramManager.class);
             if (holograms != null) {
                 holograms.removeAll();
+            }
+            if (storageManager != null) {
+                storageManager.close();
             }
             eventBus.shutdown();
             api.getServiceRegistry().clear();
@@ -148,9 +151,8 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
 
         File dataFolder = getDataFolder();
         if (!dataFolder.exists()) dataFolder.mkdirs();
-        JsonFileStorageProvider jsonStorage = new JsonFileStorageProvider(
-            new File(dataFolder, "storage.json"));
-        reg.register(StorageProvider.class, jsonStorage);
+        storageManager = OkasoStorageBootstrap.bootstrap(
+            dataFolder, reg.get(OkasoConfigurationProvider.class), getOkasoLogger());
 
         commandRegistry = new CommandRegistryImpl();
 
