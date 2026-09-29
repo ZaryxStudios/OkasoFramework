@@ -352,43 +352,6 @@
     </modules>
 
     <build>
-        <plugins>
-            <!--
-              CI-friendly versions only work for the module that *declares* them.
-              Every module pom (and the parent reference they all carry) ends up
-              installed verbatim, so downstream consumers receive
-              `<parent><version>${revision}</version></parent>` and Maven cannot
-              resolve it -> "Could not read artifact descriptor".
-
-              flatten-maven-plugin resolves the placeholders in the *installed*
-              poms, which is what makes Okaso consumable as a normal dependency.
-            -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.5.0</version>
-                <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
