@@ -42,7 +42,6 @@ public class OkasoBukkitGUI implements GUI, Listener {
     private final int size;
     @Getter
     private Inventory inventory;
-    @Getter
     private final InventoryType inventoryType;
     private final Map<Integer, GUIItem> items;
     private boolean registered;
@@ -579,7 +578,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
             renderPage();
             return;
         }
-        this.pageableItems = new ArrayList<>(items);
+        this.pageableItems = items.stream().filter(item -> item != null).collect(Collectors.toList());
         this.pageSize = pageSize;
         this.page = 0;
         renderPage();
@@ -606,6 +605,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
             }
             if (slot >= size) break;
             GUIItem item = pageableItems.get(i);
+            if (item == null) continue;
             items.put(slot, item);
             Object bukkitItem = item.getItemStack();
             if (bukkitItem instanceof ItemStack) {
@@ -635,7 +635,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
         Map<Integer, List<ItemStack>> validAnimations = new HashMap<>();
         for (Map.Entry<Integer, List<ItemStack>> entry : slotAnimations.entrySet()) {
             int slot = entry.getKey();
-            if (slot >= 0 && slot < size) {
+            if (slot >= 0 && slot < size && entry.getValue() != null && !entry.getValue().isEmpty()) {
                 validAnimations.put(slot, entry.getValue());
             }
         }

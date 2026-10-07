@@ -32,6 +32,7 @@ import org.bukkit.potion.PotionType;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings("deprecation")
 public class OkasoBukkitGUIItem implements GUIItem {
 
     private ItemStack itemStack;
