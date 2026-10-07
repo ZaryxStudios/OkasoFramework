@@ -24,6 +24,12 @@ public class OkasoBukkitStructure implements OkasoStructure {
     private byte[][][] blockData;
 
     public OkasoBukkitStructure(String name, int width, int height, int length) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Structure name cannot be empty");
+        }
+        if (width <= 0 || height <= 0 || length <= 0) {
+            throw new IllegalArgumentException("Structure dimensions must be positive");
+        }
         this.name = name;
         this.width = width;
         this.height = height;
@@ -171,13 +177,18 @@ public class OkasoBukkitStructure implements OkasoStructure {
     @Override
     public void setBlock(int x, int y, int z, Object material, byte data) {
         checkBounds(x, y, z);
+        Material resolved;
         if (material instanceof Material) {
-            blocks[x][y][z] = (Material) material;
+            resolved = (Material) material;
         } else if (material instanceof String) {
-            blocks[x][y][z] = Material.getMaterial((String) material);
+            resolved = MaterialResolver.resolveMaterial((String) material);
         } else {
             throw new IllegalArgumentException("Material must be a Bukkit Material or a String name");
         }
+        if (resolved == null) {
+            throw new IllegalArgumentException("Unknown material: " + material);
+        }
+        blocks[x][y][z] = resolved;
         blockData[x][y][z] = data;
     }
 

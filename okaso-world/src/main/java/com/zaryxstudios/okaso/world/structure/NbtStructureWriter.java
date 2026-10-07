@@ -20,7 +20,6 @@ public class NbtStructureWriter {
             Map<String, Integer> paletteMap = new LinkedHashMap<>();
             List<String> paletteOrder = new ArrayList<>();
             Material[][][] blocks = structure.getRawBlocks();
-            byte[][][] blockData = structure.getRawBlockData();
             List<int[]> blockEntries = new ArrayList<>();
 
             for (int x = 0; x < structure.getWidth(); x++) {

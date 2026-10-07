@@ -5,7 +5,7 @@ import com.zaryxstudios.okaso.common.world.WorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.entity.Player;
+import org.bukkit.WorldType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +15,9 @@ public class OkasoBukkitWorldManager implements WorldManager {
 
     @Override
     public Optional<Object> getWorld(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return Optional.empty();
+        }
         World world = Bukkit.getWorld(name);
         return Optional.ofNullable(world);
     }
@@ -26,15 +29,23 @@ public class OkasoBukkitWorldManager implements WorldManager {
 
     @Override
     public Object createWorld(String name, Object worldType) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("World name cannot be empty");
+        }
         WorldCreator creator = new WorldCreator(name);
         if (worldType instanceof World.Environment) {
             creator.environment((World.Environment) worldType);
+        } else if (worldType instanceof WorldType) {
+            creator.type((WorldType) worldType);
         }
         return creator.createWorld();
     }
 
     @Override
     public boolean unloadWorld(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
         World world = Bukkit.getWorld(name);
         if (world != null) {
             return Bukkit.unloadWorld(world, true);
@@ -44,7 +55,7 @@ public class OkasoBukkitWorldManager implements WorldManager {
 
     @Override
     public boolean isWorldLoaded(String name) {
-        return Bukkit.getWorld(name) != null;
+        return name != null && !name.trim().isEmpty() && Bukkit.getWorld(name) != null;
     }
 
     @Override
@@ -108,8 +119,12 @@ public class OkasoBukkitWorldManager implements WorldManager {
     public boolean saveWorld(String name) {
         World world = Bukkit.getWorld(name);
         if (world != null) {
-            world.save();
-            return true;
+            try {
+                world.save();
+                return true;
+            } catch (RuntimeException ignored) {
+                return false;
+            }
         }
         return false;
     }

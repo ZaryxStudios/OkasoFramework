@@ -43,6 +43,10 @@ public class NbtStructureReader {
         int height = ((Number) sizeList.get(1)).intValue();
         int length = ((Number) sizeList.get(2)).intValue();
 
+        if (width <= 0 || height <= 0 || length <= 0) {
+            throw new IllegalArgumentException("Structure dimensions must be positive");
+        }
+
         OkasoBukkitStructure structure = new OkasoBukkitStructure(name, width, height, length);
 
         List<Object> paletteList = (List<Object>) root.get("palette");
@@ -70,9 +74,12 @@ public class NbtStructureReader {
             int by = ((Number) posList.get(1)).intValue();
             int bz = ((Number) posList.get(2)).intValue();
 
-            int state = ((Number) blockEntry.get("state")).intValue();
+                Object stateValue = blockEntry.get("state");
+                if (!(stateValue instanceof Number)) continue;
+                int state = ((Number) stateValue).intValue();
 
-            if (state >= 0 && state < palette.size()) {
+                if (bx >= 0 && bx < width && by >= 0 && by < height && bz >= 0 && bz < length
+                    && state >= 0 && state < palette.size()) {
                 Map<String, Object> paletteEntry = palette.get(state);
                 Material material = resolveMaterial(paletteEntry);
 
@@ -106,6 +113,9 @@ public class NbtStructureReader {
     private static List<Object> readList(DataInputStream in) throws IOException {
         int elementType = in.readUnsignedByte();
         int elementCount = in.readInt();
+        if (elementCount < 0 || elementCount > 1_000_000) {
+            throw new IOException("Invalid NBT list length: " + elementCount);
+        }
 
         List<Object> list = new ArrayList<>(elementCount);
         for (int i = 0; i < elementCount; i++) {
@@ -124,6 +134,7 @@ public class NbtStructureReader {
             case 6:  return in.readDouble();
             case 7: 
                 int byteLen = in.readInt();
+                if (byteLen < 0 || byteLen > 64 * 1024 * 1024) throw new IOException("Invalid NBT byte array length: " + byteLen);
                 byte[] byteArr = new byte[byteLen];
                 in.readFully(byteArr);
                 return byteArr;
@@ -132,6 +143,7 @@ public class NbtStructureReader {
             case 10: return readCompound(in);
             case 11:
                 int intLen = in.readInt();
+                if (intLen < 0 || intLen > 1_000_000) throw new IOException("Invalid NBT int array length: " + intLen);
                 int[] intArr = new int[intLen];
                 for (int i = 0; i < intLen; i++) {
                     intArr[i] = in.readInt();
@@ -139,6 +151,7 @@ public class NbtStructureReader {
                 return intArr;
             case 12:
                 int longLen = in.readInt();
+                if (longLen < 0 || longLen > 1_000_000) throw new IOException("Invalid NBT long array length: " + longLen);
                 long[] longArr = new long[longLen];
                 for (int i = 0; i < longLen; i++) {
                     longArr[i] = in.readLong();
