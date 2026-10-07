@@ -95,7 +95,7 @@ public class DisplayRenderer implements HologramRenderer {
             EntityType type = EntityType.valueOf("ITEM_DISPLAY");
             Entity entity = world.spawnEntity(loc, type);
             entities.add(entity);
-            Material mat = Material.getMaterial(materialName.toUpperCase());
+            Material mat = BukkitCompatibilityResolver.material(materialName);
             if (mat == null) {
                 mat = Material.STONE;
             }
@@ -122,10 +122,8 @@ public class DisplayRenderer implements HologramRenderer {
             return null;
         }
 
-        EntityType type;
-        try {
-            type = EntityType.valueOf(entityType.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        EntityType type = BukkitCompatibilityResolver.entity(entityType);
+        if (type == null) {
             return null;
         }
 

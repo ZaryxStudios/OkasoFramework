@@ -48,7 +48,7 @@ public class ArmorStandRenderer implements HologramRenderer {
     public Object spawnItem(Location loc, String materialName, int amount) {
         World world = loc.getWorld();
         if (world == null) return null;
-        Material mat = materialName == null ? null : Material.getMaterial(materialName.toUpperCase());
+        Material mat = BukkitCompatibilityResolver.material(materialName);
         if (mat == null) mat = Material.STONE;
         ItemStack stack = new ItemStack(mat, Math.max(1, amount));
         try {
@@ -67,10 +67,8 @@ public class ArmorStandRenderer implements HologramRenderer {
     public Object spawnMob(Location loc, String entityType) {
         World world = loc.getWorld();
         if (world == null) return null;
-        EntityType type;
-        try {
-            type = EntityType.valueOf(entityType.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        EntityType type = BukkitCompatibilityResolver.entity(entityType);
+        if (type == null) {
             return spawnText(loc, "[Mob: " + entityType + "]");
         }
         if (!type.isSpawnable() || !type.isAlive()) {

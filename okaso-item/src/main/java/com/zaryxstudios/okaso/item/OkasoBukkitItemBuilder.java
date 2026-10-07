@@ -1,6 +1,7 @@
 package com.zaryxstudios.okaso.item;
 
 import com.zaryxstudios.okaso.common.item.ItemBuilder;
+import com.zaryxstudios.okaso.common.compat.CompatibilityNames;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -64,6 +65,14 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
 
     public static OkasoBukkitItemBuilder of(Material material, int amount) {
         return new OkasoBukkitItemBuilder(material, amount);
+    }
+
+    public static OkasoBukkitItemBuilder of(String materialName) {
+        return of(resolveMaterial(materialName));
+    }
+
+    public static OkasoBukkitItemBuilder of(String materialName, int amount) {
+        return of(resolveMaterial(materialName), amount);
     }
 
     public static OkasoBukkitItemBuilder named(String name, Material material) {
@@ -212,6 +221,10 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
         itemStack.setAmount(normalizeAmount(material, itemStack.getAmount()));
         this.meta = itemStack.getItemMeta();
         return this;
+    }
+
+    public ItemBuilder type(String materialName) {
+        return type(resolveMaterial(materialName));
     }
 
     public ItemBuilder damage(short damage) {
@@ -369,5 +382,13 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
     private static int normalizeAmount(Material material, int amount) {
         int max = Math.max(1, material.getMaxStackSize());
         return Math.max(1, Math.min(amount, max));
+    }
+
+    private static Material resolveMaterial(String materialName) {
+        for (String candidate : CompatibilityNames.materials(materialName)) {
+            Material material = Material.getMaterial(candidate);
+            if (material != null) return material;
+        }
+        throw new IllegalArgumentException("Unknown material: " + materialName);
     }
 }
