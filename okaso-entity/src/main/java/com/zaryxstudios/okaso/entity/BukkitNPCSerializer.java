@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.AtomicMoveNotSupportedException;
 
 public class BukkitNPCSerializer implements NPCSerializer {
 
@@ -16,36 +19,55 @@ public class BukkitNPCSerializer implements NPCSerializer {
     private final ObjectMapper mapper;
 
     public BukkitNPCSerializer(File dataFile) {
+        if (dataFile == null) {
+            throw new IllegalArgumentException("NPC data file cannot be null");
+        }
         this.dataFile = dataFile;
         this.mapper = new ObjectMapper();
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     @Override
-    public void saveAll(List<NPCData> npcs) {
+    public synchronized void saveAll(List<NPCData> npcs) {
+        if (npcs == null) {
+            throw new IllegalArgumentException("NPC data cannot be null");
+        }
+        File temporaryFile = new File(dataFile.getPath() + ".tmp");
         try {
-            if (!dataFile.getParentFile().exists()) {
-                dataFile.getParentFile().mkdirs();
+            File parent = dataFile.getParentFile();
+            if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                throw new IOException("Could not create NPC data directory");
             }
-            mapper.writeValue(dataFile, npcs);
+            mapper.writeValue(temporaryFile, npcs);
+            try {
+                Files.move(temporaryFile.toPath(), dataFile.toPath(), StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporaryFile.toPath(), dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
+            temporaryFile.delete();
             throw new RuntimeException("Failed to save NPC data", e);
         }
     }
 
     @Override
-    public List<NPCData> loadAll() {
+    public synchronized List<NPCData> loadAll() {
         if (!dataFile.exists()) return new ArrayList<>();
         try {
-            return mapper.readValue(dataFile,
+            List<NPCData> result = mapper.readValue(dataFile,
                 mapper.getTypeFactory().constructCollectionType(List.class, NPCData.class));
+            return result == null ? new ArrayList<>() : result;
         } catch (IOException e) {
             throw new RuntimeException("Failed to load NPC data", e);
         }
     }
 
     @Override
-    public void save(NPCData npc) {
+    public synchronized void save(NPCData npc) {
+        if (npc == null || npc.getId() == null || npc.getId().trim().isEmpty()) {
+            throw new IllegalArgumentException("NPC and NPC id are required");
+        }
         List<NPCData> all = loadAll();
         all.removeIf(existing -> existing.getId() != null && existing.getId().equals(npc.getId()));
         all.add(npc);
@@ -53,14 +75,15 @@ public class BukkitNPCSerializer implements NPCSerializer {
     }
 
     @Override
-    public void delete(String id) {
+    public synchronized void delete(String id) {
+        if (id == null || id.trim().isEmpty()) return;
         List<NPCData> all = loadAll();
         all.removeIf(existing -> existing.getId() != null && existing.getId().equals(id));
         saveAll(all);
     }
 
     @Override
-    public boolean exists(String id) {
-        return loadAll().stream().anyMatch(npc -> id.equals(npc.getId()));
+    public synchronized boolean exists(String id) {
+        return id != null && loadAll().stream().anyMatch(npc -> id.equals(npc.getId()));
     }
 }

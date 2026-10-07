@@ -6,10 +6,10 @@ import com.zaryxstudios.okaso.common.task.TaskScheduler;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.TimeUnit;
 
 public class BukkitNPCMovementController implements NPCMovementController {
@@ -17,6 +17,7 @@ public class BukkitNPCMovementController implements NPCMovementController {
     private final TaskScheduler scheduler;
     private final Map<UUID, PatrolState> patrols = new ConcurrentHashMap<>();
     private final Map<UUID, TaskHandle> tasks = new ConcurrentHashMap<>();
+    private final Map<UUID, TaskHandle> movementTasks = new ConcurrentHashMap<>();
 
     public BukkitNPCMovementController(TaskScheduler scheduler) {
         this.scheduler = scheduler;
@@ -24,6 +25,15 @@ public class BukkitNPCMovementController implements NPCMovementController {
 
     @Override
     public void startPatrol(NPCHandle handle, List<NPCWaypoint> waypoints, boolean loop) {
+        requireHandle(handle);
+        if (waypoints == null || waypoints.isEmpty()) {
+            throw new IllegalArgumentException("Patrol waypoints cannot be empty");
+        }
+        for (NPCWaypoint waypoint : waypoints) {
+            if (waypoint == null || waypoint.getLocation() == null || waypoint.getLocation().getWorld() == null) {
+                throw new IllegalArgumentException("Patrol waypoints must have a world location");
+            }
+        }
         stopPatrol(handle);
         PatrolState state = new PatrolState(waypoints, loop, 0);
         patrols.put(handle.getUniqueId(), state);
@@ -32,39 +42,67 @@ public class BukkitNPCMovementController implements NPCMovementController {
 
     @Override
     public void stopPatrol(NPCHandle handle) {
+        requireHandle(handle);
         patrols.remove(handle.getUniqueId());
         TaskHandle task = tasks.remove(handle.getUniqueId());
         if (task != null) task.cancel();
+        TaskHandle movementTask = movementTasks.remove(handle.getUniqueId());
+        if (movementTask != null) movementTask.cancel();
     }
 
     @Override
     public void moveTo(NPCHandle handle, Location location, double speed) {
+        requireHandle(handle);
+        if (location == null || location.getWorld() == null) {
+            throw new IllegalArgumentException("Movement location must have a world");
+        }
         Entity entity = getEntity(handle);
         if (entity == null) return;
+        if (entity.getWorld() != location.getWorld()) return;
         final double moveSpeed = speed <= 0 ? 0.2 : speed;
+        TaskHandle previous = movementTasks.remove(handle.getUniqueId());
+        if (previous != null) previous.cancel();
 
-        scheduler.runTimer(() -> {
-            if (entity == null || !entity.isValid()) return;
-            Location current = entity.getLocation();
+        AtomicReference<TaskHandle> currentTask = new AtomicReference<>();
+        TaskHandle movementTask = scheduler.runTimer(() -> {
+            Entity currentEntity = getEntity(handle);
+            if (currentEntity == null || !currentEntity.isValid() || currentEntity.getWorld() != location.getWorld()) {
+                cancelMovement(handle, currentTask.get());
+                return;
+            }
+            Location current = currentEntity.getLocation();
             double dist = current.distance(location);
-            if (dist < 0.5) return;
+            if (dist < 0.5) {
+                currentEntity.teleport(location);
+                cancelMovement(handle, currentTask.get());
+                return;
+            }
 
             double dx = location.getX() - current.getX();
             double dy = location.getY() - current.getY();
             double dz = location.getZ() - current.getZ();
             double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            if (len < 0.01) return;
+            if (len < 0.01) {
+                cancelMovement(handle, currentTask.get());
+                return;
+            }
 
             Location next = current.clone().add(dx / len * moveSpeed, dy / len * moveSpeed, dz / len * moveSpeed);
             next.setYaw((float) Math.toDegrees(Math.atan2(-dx, dz)));
-            entity.teleport(next);
+            currentEntity.teleport(next);
         }, 0L, 1L, TimeUnit.MILLISECONDS);
+        currentTask.set(movementTask);
+        movementTasks.put(handle.getUniqueId(), movementTask);
     }
 
     @Override
     public void lookAt(NPCHandle handle, Location location) {
+        requireHandle(handle);
+        if (location == null || location.getWorld() == null) {
+            throw new IllegalArgumentException("Look location must have a world");
+        }
         Entity entity = getEntity(handle);
-        if (entity == null) return;
+        if (entity == null || entity.getWorld() != location.getWorld()) return;
         Location current = entity.getLocation();
         double dx = location.getX() - current.getX();
         double dy = location.getY() - current.getY();
@@ -107,7 +145,7 @@ public class BukkitNPCMovementController implements NPCMovementController {
             lookAt(handle, wp.getLocation());
             state.currentIndex++;
             if (patrols.containsKey(handle.getUniqueId())) {
-                scheduler.runLater(() -> scheduleNext(handle, state), wp.getDelayTicks() + 20L, TimeUnit.MILLISECONDS);
+                scheduler.runLater(() -> scheduleNext(handle, state), (wp.getDelayTicks() + 20L) * 50L, TimeUnit.MILLISECONDS);
             }
         }, 50L, TimeUnit.MILLISECONDS);
         tasks.put(handle.getUniqueId(), task);
@@ -118,6 +156,19 @@ public class BukkitNPCMovementController implements NPCMovementController {
             return ((PacketNPCHandle) handle).getEntity();
         }
         return null;
+    }
+
+    private void cancelMovement(NPCHandle handle, TaskHandle task) {
+        if (task != null) {
+            task.cancel();
+        }
+        movementTasks.remove(handle.getUniqueId(), task);
+    }
+
+    private void requireHandle(NPCHandle handle) {
+        if (handle == null) {
+            throw new IllegalArgumentException("NPC handle cannot be null");
+        }
     }
 
     private static class PatrolState {
