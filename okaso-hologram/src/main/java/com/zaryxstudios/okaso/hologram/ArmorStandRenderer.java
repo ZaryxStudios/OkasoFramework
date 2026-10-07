@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public class ArmorStandRenderer implements HologramRenderer {
 
     private final List<Entity> entities = Collections.synchronizedList(new ArrayList<>());
@@ -47,7 +48,7 @@ public class ArmorStandRenderer implements HologramRenderer {
     public Object spawnItem(Location loc, String materialName, int amount) {
         World world = loc.getWorld();
         if (world == null) return null;
-        Material mat = Material.getMaterial(materialName.toUpperCase());
+        Material mat = materialName == null ? null : Material.getMaterial(materialName.toUpperCase());
         if (mat == null) mat = Material.STONE;
         ItemStack stack = new ItemStack(mat, Math.max(1, amount));
         try {
@@ -106,7 +107,7 @@ public class ArmorStandRenderer implements HologramRenderer {
     public void despawnAll() {
         synchronized (entities) {
             for (Entity e : entities) {
-                if (e != null) e.remove();
+                if (e != null && e.isValid()) e.remove();
             }
             entities.clear();
         }
@@ -118,6 +119,9 @@ public class ArmorStandRenderer implements HologramRenderer {
     }
 
     public List<Entity> getEntities() {
-        return Collections.unmodifiableList(new ArrayList<>(entities));
+        synchronized (entities) {
+            entities.removeIf(entity -> entity == null || !entity.isValid());
+            return Collections.unmodifiableList(new ArrayList<>(entities));
+        }
     }
 }

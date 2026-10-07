@@ -17,7 +17,9 @@ public final class HologramLine {
     }
 
     public static HologramLine item(String materialName, int amount) {
-        return new HologramLine(HologramLineType.ITEM, materialName + ":" + Math.max(1, amount));
+        String material = materialName == null || materialName.trim().isEmpty()
+            ? "STONE" : materialName.trim().toUpperCase();
+        return new HologramLine(HologramLineType.ITEM, material + ":" + Math.max(1, amount));
     }
 
     public static HologramLine item(String materialName) {
@@ -25,7 +27,8 @@ public final class HologramLine {
     }
 
     public static HologramLine mob(String entityType) {
-        return new HologramLine(HologramLineType.MOB, entityType != null ? entityType.toUpperCase() : "");
+        return new HologramLine(HologramLineType.MOB,
+            entityType != null ? entityType.trim().toUpperCase() : "");
     }
 
     public HologramLineType getType() {

@@ -162,17 +162,20 @@ public class OkasoBukkitHologram implements OkasoHologram {
 
     @Override
     public void teleport(double x, double y, double z, float yaw, float pitch) {
+        if (location == null || location.getWorld() == null) {
+            throw new IllegalStateException("Hologram world is not set");
+        }
         setLocation(new Location(location.getWorld(), x, y, z, yaw, pitch));
     }
 
     @Override
     public void setLocation(Object loc) {
         if (!(loc instanceof Location)) {
-            return;
+            throw new IllegalArgumentException("Location must be a Bukkit Location");
         }
         Location newLoc = ((Location) loc).clone();
-        if (newLoc.getWorld() == null && this.location != null) {
-            newLoc.setWorld(this.location.getWorld());
+        if (newLoc.getWorld() == null) {
+            throw new IllegalArgumentException("Hologram world cannot be null");
         }
         this.location = newLoc;
         if (active) {
@@ -214,7 +217,10 @@ public class OkasoBukkitHologram implements OkasoHologram {
     }
 
     public void setLineSpacing(double spacing) {
-        if (spacing <= 0 || spacing == lineSpacing) return;
+        if (spacing <= 0 || Double.isNaN(spacing) || Double.isInfinite(spacing)) {
+            throw new IllegalArgumentException("Line spacing must be finite and positive");
+        }
+        if (spacing == lineSpacing) return;
         this.lineSpacing = spacing;
         if (active) refresh();
     }
