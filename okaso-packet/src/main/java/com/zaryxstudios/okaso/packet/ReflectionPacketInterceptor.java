@@ -3,15 +3,18 @@ package com.zaryxstudios.okaso.packet;
 import com.zaryxstudios.okaso.common.packet.PacketHandler;
 import com.zaryxstudios.okaso.common.packet.PacketInterceptor;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -233,5 +236,340 @@ public class ReflectionPacketInterceptor implements PacketInterceptor {
     private static String capitalize(String str) {
         if (str == null || str.isEmpty()) return str;
         return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+    }
+
+    public static Object createPacket(String packetClassName) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame(packetClassName);
+            if (packetClass == null) {
+                packetClass = PacketCompatibilityResolver.getNMSClass("network.protocol." + packetClassName);
+            }
+            if (packetClass != null) {
+                return packetClass.getDeclaredConstructor().newInstance();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createPacket(String packetClassName, Object... args) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame(packetClassName);
+            if (packetClass == null) {
+                packetClass = PacketCompatibilityResolver.getNMSClass("network.protocol." + packetClassName);
+            }
+            if (packetClass != null) {
+                Class<?>[] argTypes = new Class<?>[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    argTypes[i] = args[i].getClass();
+                }
+                return packetClass.getConstructor(argTypes).newInstance(args);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntitySpawnPacket(int entityId, UUID uuid, int entityType, double x, double y, double z, float yaw, float pitch) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundAddEntityPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, java.util.UUID.class, int.class, double.class, double.class, double.class, float.class, float.class)
+                    .newInstance(entityId, uuid, entityType, x, y, z, yaw, pitch);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityMetadataPacket(int entityId, Object metadata) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundSetEntityDataPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, metadata.getClass()).newInstance(entityId, metadata);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityTeleportPacket(int entityId, double x, double y, double z, float yaw, float pitch, boolean onGround) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundTeleportEntityPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, double.class, double.class, double.class, float.class, float.class, boolean.class)
+                    .newInstance(entityId, x, y, z, yaw, pitch, onGround);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityAnimationPacket(int entityId, int animationId) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundAnimatePacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, int.class).newInstance(entityId, animationId);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createParticlePacket(String particleName, double x, double y, double z, float offsetX, float offsetY, float offsetZ, float speed, int count) {
+        try {
+            Object particle = PacketCompatibilityResolver.getParticleType(particleName);
+            if (particle == null) return null;
+            
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundLevelParticlesPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(
+                    particle.getClass(), boolean.class, double.class, double.class, double.class,
+                    float.class, float.class, float.class, float.class, int.class
+                ).newInstance(particle, false, x, y, z, offsetX, offsetY, offsetZ, speed, count);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityRemovePacket(int... entityIds) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundRemoveEntitiesPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int[].class).newInstance((Object) entityIds);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityHeadRotationPacket(int entityId, byte yaw, byte pitch) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundRotateHeadPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, byte.class, byte.class).newInstance(entityId, yaw, pitch);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityVelocityPacket(int entityId, double x, double y, double z) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundSetEntityMotionPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, double.class, double.class, double.class)
+                    .newInstance(entityId, x, y, z);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityEquipmentPacket(int entityId, Object equipmentSlot, Object itemStack) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundSetEquipmentPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, equipmentSlot.getClass(), itemStack.getClass())
+                    .newInstance(entityId, equipmentSlot, itemStack);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createEntityStatusPacket(int entityId, byte status) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundEntityEventPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(int.class, byte.class).newInstance(entityId, status);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createSoundPacket(String soundName, double x, double y, double z, float volume, float pitch) {
+        try {
+            Object sound = PacketCompatibilityResolver.getSoundEvent(soundName);
+            if (sound == null) return null;
+            
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundSoundPacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(
+                    sound.getClass(), int.class, double.class, double.class, double.class, float.class, float.class
+                ).newInstance(sound, 0, x, y, z, volume, pitch);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object createExplosionPacket(double x, double y, double z, float radius, java.util.List<Object> blocks, float playerMotionX, float playerMotionY, float playerMotionZ) {
+        try {
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClassGame("ClientboundExplodePacket");
+            if (packetClass != null) {
+                return packetClass.getConstructor(
+                    double.class, double.class, double.class, float.class,
+                    java.util.List.class, float.class, float.class, float.class
+                ).newInstance(x, y, z, radius, blocks, playerMotionX, playerMotionY, playerMotionZ);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static PacketHandler createFakeMobSpawner(int entityId, UUID uuid, int entityType, double x, double y, double z, float yaw, float pitch) {
+        return (player, packet) -> {
+            Object spawnPacket = createEntitySpawnPacket(entityId, uuid, entityType, x, y, z, yaw, pitch);
+            if (spawnPacket != null) {
+                sendPacket(player, spawnPacket);
+            }
+            return packet;
+        };
+    }
+
+    public static PacketHandler createFakeAnimation(int entityId, int animationId) {
+        return (player, packet) -> {
+            Object animPacket = createEntityAnimationPacket(entityId, animationId);
+            if (animPacket != null) {
+                sendPacket(player, animPacket);
+            }
+            return packet;
+        };
+    }
+
+    public static PacketHandler createFakeParticle(String particleName, double x, double y, double z, float offsetX, float offsetY, float offsetZ, float speed, int count) {
+        return (player, packet) -> {
+            Object particlePacket = createParticlePacket(particleName, x, y, z, offsetX, offsetY, offsetZ, speed, count);
+            if (particlePacket != null) {
+                sendPacket(player, particlePacket);
+            }
+            return packet;
+        };
+    }
+
+    public static PacketHandler createFakeSound(String soundName, double x, double y, double z, float volume, float pitch) {
+        return (player, packet) -> {
+            Object soundPacket = createSoundPacket(soundName, x, y, z, volume, pitch);
+            if (soundPacket != null) {
+                sendPacket(player, soundPacket);
+            }
+            return packet;
+        };
+    }
+
+    public static void sendPacket(Object player, Object packet) {
+        try {
+            if (player == null || packet == null) return;
+            Class<?> playerClass = player.getClass();
+            Method getHandle = playerClass.getMethod("getHandle");
+            Object nmsPlayer = getHandle.invoke(player);
+            Class<?> nmsPlayerClass = nmsPlayer.getClass();
+            Method connectionField = nmsPlayerClass.getMethod("getConnection");
+            Object connection = connectionField.invoke(nmsPlayer);
+            Class<?> packetClass = PacketCompatibilityResolver.getNMSClass("network.protocol.Packet");
+            if (packetClass != null) {
+                Method sendPacket = connection.getClass().getMethod("sendPacket", packetClass);
+                sendPacket.invoke(connection, packet);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void sendPackets(Object player, Object... packets) {
+        for (Object packet : packets) {
+            sendPacket(player, packet);
+        }
+    }
+
+    public static Object getNMSPlayer(Object player) {
+        try {
+            if (player == null) return null;
+            Method getHandle = player.getClass().getMethod("getHandle");
+            return getHandle.invoke(player);
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Object getPlayerConnection(Object player) {
+        Object nmsPlayer = getNMSPlayer(player);
+        if (nmsPlayer == null) return null;
+        try {
+            Method getConnection = nmsPlayer.getClass().getMethod("getConnection");
+            return getConnection.invoke(nmsPlayer);
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void setField(Object object, String fieldName, Object value) {
+        try {
+            java.lang.reflect.Field field = object.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(object, value);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static Object getField(Object object, String fieldName) {
+        try {
+            java.lang.reflect.Field field = object.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.get(object);
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static void invokeMethod(Object object, String methodName, Object... args) {
+        try {
+            Class<?>[] argTypes = new Class<?>[args.length];
+            for (int i = 0; i < args.length; i++) {
+                argTypes[i] = args[i].getClass();
+            }
+            Method method = object.getClass().getMethod(methodName, argTypes);
+            method.invoke(object, args);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static Object invokeMethodReturn(Object object, String methodName, Object... args) {
+        try {
+            Class<?>[] argTypes = new Class<?>[args.length];
+            for (int i = 0; i < args.length; i++) {
+                argTypes[i] = args[i].getClass();
+            }
+            Method method = object.getClass().getMethod(methodName, argTypes);
+            return method.invoke(object, args);
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public static Class<?> getNMSClass(String className) {
+        return PacketCompatibilityResolver.getNMSClass(className);
+    }
+
+    public static Class<?> getNMSClassGame(String className) {
+        return PacketCompatibilityResolver.getNMSClassGame(className);
+    }
+
+    public static Class<?> getNMSClassWorld(String className) {
+        return PacketCompatibilityResolver.getNMSClassWorld(className);
+    }
+
+    public static Class<?> getNMSClassEntity(String className) {
+        return PacketCompatibilityResolver.getNMSClassEntity(className);
+    }
+
+    public static Class<?> getNMSClassParticle(String className) {
+        return PacketCompatibilityResolver.getNMSClassParticle(className);
+    }
+
+    public static Class<?> getNMSClassSound(String className) {
+        return PacketCompatibilityResolver.getNMSClassSound(className);
     }
 }
