@@ -26,6 +26,9 @@ public class GUIItemSlot implements GUIItem {
     }
 
     public GUIItemSlot(GUI gui, int slot, Supplier<ItemStack> itemSupplier, Consumer<GUIClickEvent> clickHandler) {
+        if (gui == null || itemSupplier == null) {
+            throw new IllegalArgumentException("GUI and item supplier are required");
+        }
         this.gui = gui;
         this.slot = slot;
         this.itemSupplier = itemSupplier;
@@ -67,6 +70,10 @@ public class GUIItemSlot implements GUIItem {
     }
 
     public void startAutoUpdate(Plugin plugin, long intervalTicks) {
+        if (plugin == null) {
+            throw new IllegalArgumentException("Plugin cannot be null");
+        }
+        if (intervalTicks <= 0) intervalTicks = 1;
         stopAutoUpdate();
         this.autoUpdateTask = new BukkitRunnable() {
             @Override

@@ -222,8 +222,8 @@ public final class MaterialResolver {
         block.setType(material);
     }
 
+    @SuppressWarnings("deprecation")
     public static void setLegacyData(Block block, byte data) {
-        if (data == 0) return;
         try {
             block.getState().setRawData(data);
             block.getState().update();
@@ -231,6 +231,7 @@ public final class MaterialResolver {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static byte getLegacyData(Block block) {
         try {
             return block.getState().getRawData();

@@ -31,12 +31,12 @@ public class OkasoBukkitHologramManager implements HologramManager {
 
     public OkasoBukkitHologramManager(HologramStyle defaultStyle) {
         this.holograms = new ConcurrentHashMap<>();
-        this.defaultStyle = defaultStyle;
+        this.defaultStyle = defaultStyle == null ? HologramStyle.AUTO : defaultStyle;
     }
 
     @Override
     public void setDefaultStyle(HologramStyle style) {
-        this.defaultStyle = style;
+        this.defaultStyle = style == null ? HologramStyle.AUTO : style;
     }
 
     @Override
@@ -150,6 +150,7 @@ public class OkasoBukkitHologramManager implements HologramManager {
     }
 
     private HologramRenderer resolveRenderer(HologramStyle style) {
+        if (style == null) style = HologramStyle.AUTO;
         switch (style) {
             case DISPLAY:
                 if (DisplayRenderer.isAvailable()) return new DisplayRenderer();

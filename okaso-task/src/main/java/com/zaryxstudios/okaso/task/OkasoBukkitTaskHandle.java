@@ -13,6 +13,9 @@ public class OkasoBukkitTaskHandle implements TaskHandle {
     private final int taskId;
 
     public OkasoBukkitTaskHandle(BukkitTask task) {
+        if (task == null) {
+            throw new IllegalArgumentException("Bukkit task cannot be null");
+        }
         this.task = task;
         this.taskId = task.getTaskId();
     }
@@ -24,6 +27,8 @@ public class OkasoBukkitTaskHandle implements TaskHandle {
 
     @Override
     public void cancel() {
-        task.cancel();
+        if (!task.isCancelled()) {
+            task.cancel();
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.zaryxstudios.okaso.item;
 
 import com.zaryxstudios.okaso.common.item.ItemBuilder;
+import com.zaryxstudios.okaso.common.compat.CompatibilityNames;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -19,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("deprecation")
 public class OkasoBukkitItemBuilder implements ItemBuilder {
 
     private static final boolean HAS_SET_DURABILITY;
@@ -46,7 +48,10 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
     }
 
     public OkasoBukkitItemBuilder(Material material, int amount) {
-        this.itemStack = new ItemStack(material, amount);
+        if (material == null) {
+            throw new IllegalArgumentException("Material cannot be null");
+        }
+        this.itemStack = new ItemStack(material, normalizeAmount(material, amount));
         this.meta = itemStack.getItemMeta();
     }
 
@@ -62,6 +67,14 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
         return new OkasoBukkitItemBuilder(material, amount);
     }
 
+    public static OkasoBukkitItemBuilder of(String materialName) {
+        return of(resolveMaterial(materialName));
+    }
+
+    public static OkasoBukkitItemBuilder of(String materialName, int amount) {
+        return of(resolveMaterial(materialName), amount);
+    }
+
     public static OkasoBukkitItemBuilder named(String name, Material material) {
         OkasoBukkitItemBuilder builder = new OkasoBukkitItemBuilder(material);
         builder.name(name);
@@ -69,7 +82,7 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
     }
 
     public OkasoBukkitItemBuilder placeholder(String key, Object value) {
-        if (key != null && !key.isEmpty() && value != null) {
+        if (key != null && !key.trim().isEmpty() && value != null) {
             placeholders.put(key, value);
         }
         return this;
@@ -105,7 +118,8 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
         if (meta != null && lore != null) {
             List<String> colored = new ArrayList<>();
             for (String line : lore) {
-                colored.add(ChatColor.translateAlternateColorCodes('&', applyPlaceholders(line)));
+                String value = line == null ? "" : line;
+                colored.add(ChatColor.translateAlternateColorCodes('&', applyPlaceholders(value)));
             }
             meta.setLore(colored);
         }
@@ -122,7 +136,7 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
 
     @Override
     public ItemBuilder amount(int amount) {
-        itemStack.setAmount(amount);
+        itemStack.setAmount(normalizeAmount(itemStack.getType(), amount));
         return this;
     }
 
@@ -200,9 +214,17 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
     }
 
     public ItemBuilder type(Material material) {
+        if (material == null) {
+            throw new IllegalArgumentException("Material cannot be null");
+        }
         itemStack.setType(material);
+        itemStack.setAmount(normalizeAmount(material, itemStack.getAmount()));
         this.meta = itemStack.getItemMeta();
         return this;
+    }
+
+    public ItemBuilder type(String materialName) {
+        return type(resolveMaterial(materialName));
     }
 
     public ItemBuilder damage(short damage) {
@@ -353,6 +375,20 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
     public OkasoBukkitItemBuilder copy() {
         OkasoBukkitItemBuilder cloned = new OkasoBukkitItemBuilder(itemStack.clone());
         cloned.meta = cloned.itemStack.getItemMeta();
+        cloned.placeholders.putAll(placeholders);
         return cloned;
+    }
+
+    private static int normalizeAmount(Material material, int amount) {
+        int max = Math.max(1, material.getMaxStackSize());
+        return Math.max(1, Math.min(amount, max));
+    }
+
+    private static Material resolveMaterial(String materialName) {
+        for (String candidate : CompatibilityNames.materials(materialName)) {
+            Material material = Material.getMaterial(candidate);
+            if (material != null) return material;
+        }
+        throw new IllegalArgumentException("Unknown material: " + materialName);
     }
 }

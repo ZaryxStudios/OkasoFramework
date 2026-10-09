@@ -13,16 +13,21 @@ public class BukkitNPCManager implements NPCManager {
 
     @Override
     public void register(NPCHandle handle) {
+        if (handle == null || handle.getUniqueId() == null) {
+            throw new IllegalArgumentException("NPC handle and UUID are required");
+        }
         npcs.put(handle.getUniqueId(), handle);
     }
 
     @Override
     public Optional<NPCHandle> unregister(UUID uuid) {
+        if (uuid == null) return Optional.empty();
         return Optional.ofNullable(npcs.remove(uuid));
     }
 
     @Override
     public Optional<NPCHandle> getNPC(UUID uuid) {
+        if (uuid == null) return Optional.empty();
         return Optional.ofNullable(npcs.get(uuid));
     }
 
@@ -46,7 +51,10 @@ public class BukkitNPCManager implements NPCManager {
     @Override
     public void despawnAll() {
         for (NPCHandle handle : npcs.values()) {
-            handle.despawn();
+            try {
+                handle.despawn();
+            } catch (RuntimeException ignored) {
+            }
         }
         npcs.clear();
     }

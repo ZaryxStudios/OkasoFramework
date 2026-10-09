@@ -24,10 +24,12 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -42,7 +44,6 @@ public class OkasoBukkitGUI implements GUI, Listener {
     private final int size;
     @Getter
     private Inventory inventory;
-    @Getter
     private final InventoryType inventoryType;
     private final Map<Integer, GUIItem> items;
     private boolean registered;
@@ -151,7 +152,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
             registerListener();
             ((Player) player).openInventory(inventory);
             if (openHandler != null) {
-                openHandler.accept(player);
+                openHandler.accept((Player) player);
             }
         }
     }
@@ -177,6 +178,13 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }
     }
 
+    public GUIItem setItemAndGetPrevious(int slot, GUIItem item) {
+        if (slot < 0 || slot >= size) return null;
+        GUIItem previous = items.get(slot);
+        setItem(slot, item);
+        return previous;
+    }
+
     @Override
     public GUIItem getItem(int slot) {
         return items.get(slot);
@@ -187,6 +195,13 @@ public class OkasoBukkitGUI implements GUI, Listener {
         if (slot < 0 || slot >= size) return;
         items.remove(slot);
         inventory.clear(slot);
+    }
+
+    public GUIItem removeItemAndGet(int slot) {
+        if (slot < 0 || slot >= size) return null;
+        GUIItem item = items.remove(slot);
+        inventory.clear(slot);
+        return item;
     }
 
     @Override
@@ -230,6 +245,12 @@ public class OkasoBukkitGUI implements GUI, Listener {
         updateAll();
     }
 
+    public void updateAllItems() {
+        for (Map.Entry<Integer, GUIItem> entry : items.entrySet()) {
+            updateSlot(entry.getKey());
+        }
+    }
+
     @Override
     public boolean isEmpty() {
         return items.isEmpty();
@@ -260,16 +281,44 @@ public class OkasoBukkitGUI implements GUI, Listener {
         return result;
     }
 
+    public List<Player> getPlayerViewers() {
+        return inventory.getViewers().stream()
+            .filter(v -> v instanceof Player)
+            .map(v -> (Player) v)
+            .collect(Collectors.toList());
+    }
+
     @Override
     public boolean isViewing(Object player) {
         return player instanceof Player
             && ((Player) player).getOpenInventory().getTopInventory().equals(inventory);
     }
 
+    public boolean hasViewers() {
+        return !inventory.getViewers().isEmpty();
+    }
+
+    public int getViewerCount() {
+        return inventory.getViewers().size();
+    }
+
     @Override
     public void closeAll() {
         for (HumanEntity viewer : new ArrayList<>(inventory.getViewers())) {
             viewer.closeInventory();
+        }
+    }
+
+    public void openAll(Collection<? extends Player> players) {
+        if (players == null || players.isEmpty()) return;
+        registerListener();
+        for (Player player : players) {
+            player.openInventory(inventory);
+        }
+        if (openHandler != null) {
+            for (Player player : players) {
+                openHandler.accept(player);
+            }
         }
     }
 
@@ -315,6 +364,21 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }
     }
 
+    public void fillEmptyRange(GUIItem item, int startSlot, int endSlot) {
+        if (item == null) return;
+        Object bukkitItem = item.getItemStack();
+        if (!(bukkitItem instanceof ItemStack)) return;
+        ItemStack stack = (ItemStack) bukkitItem;
+        startSlot = Math.max(0, startSlot);
+        endSlot = Math.min(size - 1, endSlot);
+        for (int slot = startSlot; slot <= endSlot; slot++) {
+            if (!items.containsKey(slot)) {
+                items.put(slot, item);
+                inventory.setItem(slot, stack);
+            }
+        }
+    }
+
     @Override
     public void fillBorder(GUIItem item) {
         if (item == null) return;
@@ -334,6 +398,22 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }
     }
 
+    public void fillCorners(GUIItem item) {
+        if (item == null) return;
+        Object bukkitItem = item.getItemStack();
+        if (!(bukkitItem instanceof ItemStack)) return;
+        ItemStack stack = (ItemStack) bukkitItem;
+        int rows = getRows();
+        if (rows < 2) return;
+        int[] corners = {0, 8, (rows - 1) * 9, (rows - 1) * 9 + 8};
+        for (int slot : corners) {
+            if (slot < size && !items.containsKey(slot)) {
+                items.put(slot, item);
+                inventory.setItem(slot, stack);
+            }
+        }
+    }
+
     @Override
     public void fillRow(int row, GUIItem item) {
         if (item == null) return;
@@ -344,6 +424,16 @@ public class OkasoBukkitGUI implements GUI, Listener {
             if (!items.containsKey(slot)) {
                 setItem(slot, item);
             }
+        }
+    }
+
+    public void fillRowForce(int row, GUIItem item) {
+        if (item == null) return;
+        if (row < 0 || row >= getRows()) return;
+        int start = row * 9;
+        int end = Math.min(start + 9, size);
+        for (int slot = start; slot < end; slot++) {
+            setItem(slot, item);
         }
     }
 
@@ -360,9 +450,42 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }
     }
 
+    public void fillColumnForce(int column, GUIItem item) {
+        if (item == null) return;
+        if (column < 0 || column > 8) return;
+        int rows = getRows();
+        for (int row = 0; row < rows; row++) {
+            int slot = row * 9 + column;
+            if (slot < size) {
+                setItem(slot, item);
+            }
+        }
+    }
+
     @Override
     public int getFirstEmptySlot() {
         for (int slot = 0; slot < size; slot++) {
+            if (!items.containsKey(slot)) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    public int getFirstEmptySlotFrom(int startSlot) {
+        for (int slot = Math.max(0, startSlot); slot < size; slot++) {
+            if (!items.containsKey(slot)) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    public int getFirstEmptySlotInRow(int row) {
+        if (row < 0 || row >= getRows()) return -1;
+        int start = row * 9;
+        int end = Math.min(start + 9, size);
+        for (int slot = start; slot < end; slot++) {
             if (!items.containsKey(slot)) {
                 return slot;
             }
@@ -378,6 +501,14 @@ public class OkasoBukkitGUI implements GUI, Listener {
     @Override
     public boolean hasSlot(int slot) {
         return slot >= 0 && slot < size;
+    }
+
+    public boolean isOccupied(int slot) {
+        if (slot < 0 || slot >= size) return false;
+        GUIItem item = items.get(slot);
+        if (item == null) return false;
+        Object stack = item.getItemStack();
+        return stack instanceof ItemStack && ((ItemStack) stack).getType() != Material.AIR;
     }
 
     public void setFreeSlot(int slot) {
@@ -418,6 +549,23 @@ public class OkasoBukkitGUI implements GUI, Listener {
         return new HashSet<>(freeSlots);
     }
 
+    public void setFreeSlotsRange(int startSlot, int endSlot) {
+        startSlot = Math.max(0, startSlot);
+        endSlot = Math.min(size - 1, endSlot);
+        for (int slot = startSlot; slot <= endSlot; slot++) {
+            freeSlots.add(slot);
+        }
+    }
+
+    public void setFreeSlotsRow(int row) {
+        if (row < 0 || row >= getRows()) return;
+        int start = row * 9;
+        int end = Math.min(start + 9, size);
+        for (int slot = start; slot < end; slot++) {
+            freeSlots.add(slot);
+        }
+    }
+
     public void setDragHandler(Consumer<Integer> handler) {
         this.dragHandler = handler;
     }
@@ -425,6 +573,14 @@ public class OkasoBukkitGUI implements GUI, Listener {
     @Override
     public boolean setItemIfAbsent(int slot, GUIItem item) {
         if (items.containsKey(slot)) return false;
+        setItem(slot, item);
+        return true;
+    }
+
+    public boolean setItemIfEmpty(int slot, GUIItem item) {
+        if (slot < 0 || slot >= size) return false;
+        GUIItem existing = items.get(slot);
+        if (existing != null && isOccupied(slot)) return false;
         setItem(slot, item);
         return true;
     }
@@ -457,6 +613,15 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }
     }
 
+    public GUIItem[] swapAndGet(int slot1, int slot2) {
+        if (slot1 < 0 || slot1 >= size || slot2 < 0 || slot2 >= size) return null;
+        if (slot1 == slot2) return new GUIItem[]{items.get(slot1), items.get(slot2)};
+        GUIItem item1 = items.get(slot1);
+        GUIItem item2 = items.get(slot2);
+        swap(slot1, slot2);
+        return new GUIItem[]{item1, item2};
+    }
+
     @Override
     public void moveItem(int fromSlot, int toSlot) {
         if (fromSlot < 0 || fromSlot >= size || toSlot < 0 || toSlot >= size) return;
@@ -472,6 +637,15 @@ public class OkasoBukkitGUI implements GUI, Listener {
         inventory.clear(fromSlot);
     }
 
+    public GUIItem moveItemAndGet(int fromSlot, int toSlot) {
+        if (fromSlot < 0 || fromSlot >= size || toSlot < 0 || toSlot >= size) return null;
+        if (fromSlot == toSlot) return items.get(fromSlot);
+        GUIItem item = items.get(fromSlot);
+        if (item == null) return null;
+        moveItem(fromSlot, toSlot);
+        return item;
+    }
+
     @Override
     public void setSlotEmpty(int slot) {
         if (slot < 0 || slot >= size) return;
@@ -479,9 +653,27 @@ public class OkasoBukkitGUI implements GUI, Listener {
         inventory.clear(slot);
     }
 
+    public void setSlotsEmpty(int... slots) {
+        for (int slot : slots) {
+            setSlotEmpty(slot);
+        }
+    }
+
+    public void setSlotsEmptyRange(int startSlot, int endSlot) {
+        startSlot = Math.max(0, startSlot);
+        endSlot = Math.min(size - 1, endSlot);
+        for (int slot = startSlot; slot <= endSlot; slot++) {
+            setSlotEmpty(slot);
+        }
+    }
+
     @Override
     public Set<Integer> getOccupiedSlots() {
         return new HashSet<>(items.keySet());
+    }
+
+    public Set<Integer> getOccupiedSlotsUnmodifiable() {
+        return Collections.unmodifiableSet(items.keySet());
     }
 
     @Override
@@ -498,6 +690,19 @@ public class OkasoBukkitGUI implements GUI, Listener {
             int slot = startSlot + i;
             if (slot >= size) break;
             setItem(slot, items.get(i));
+        }
+    }
+
+    public void setItems(List<GUIItem> items) {
+        setItems(0, items);
+    }
+
+    public void setItems(int startSlot, GUIItem... items) {
+        if (items == null) return;
+        for (int i = 0; i < items.length; i++) {
+            int slot = startSlot + i;
+            if (slot >= size) break;
+            setItem(slot, items[i]);
         }
     }
 
@@ -527,6 +732,14 @@ public class OkasoBukkitGUI implements GUI, Listener {
         return true;
     }
 
+    public int replaceAllItems(Predicate<GUIItem> predicate, GUIItem newItem) {
+        List<Integer> slots = findSlots(predicate);
+        for (int slot : slots) {
+            setItem(slot, newItem);
+        }
+        return slots.size();
+    }
+
     @Override
     public void setPage(int page) {
         if (pageableItems == null) return;
@@ -534,6 +747,13 @@ public class OkasoBukkitGUI implements GUI, Listener {
         if (page >= getTotalPages()) page = getTotalPages() - 1;
         this.page = page;
         renderPage();
+    }
+
+    public boolean setPageAndCheck(int page) {
+        if (pageableItems == null) return false;
+        int oldPage = this.page;
+        setPage(page);
+        return this.page != oldPage;
     }
 
     @Override
@@ -579,7 +799,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
             renderPage();
             return;
         }
-        this.pageableItems = new ArrayList<>(items);
+        this.pageableItems = items.stream().filter(item -> item != null).collect(Collectors.toList());
         this.pageSize = pageSize;
         this.page = 0;
         renderPage();
@@ -591,6 +811,26 @@ public class OkasoBukkitGUI implements GUI, Listener {
 
     public List<GUIItem> getPageableItems() {
         return pageableItems == null ? null : new ArrayList<>(pageableItems);
+    }
+
+    public void addPageableItems(List<GUIItem> items) {
+        if (items == null || items.isEmpty()) return;
+        if (this.pageableItems == null) {
+            this.pageableItems = new ArrayList<>();
+        }
+        this.pageableItems.addAll(items.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+        renderPage();
+    }
+
+    public boolean removePageableItem(int index) {
+        if (pageableItems == null || index < 0 || index >= pageableItems.size()) return false;
+        pageableItems.remove(index);
+        int totalPages = getTotalPages();
+        if (page >= totalPages && page > 0) {
+            page = totalPages - 1;
+        }
+        renderPage();
+        return true;
     }
 
     private void renderPage() {
@@ -606,6 +846,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
             }
             if (slot >= size) break;
             GUIItem item = pageableItems.get(i);
+            if (item == null) continue;
             items.put(slot, item);
             Object bukkitItem = item.getItemStack();
             if (bukkitItem instanceof ItemStack) {
@@ -613,6 +854,14 @@ public class OkasoBukkitGUI implements GUI, Listener {
             }
             slot++;
         }
+    }
+
+    public void renderPage(int page) {
+        if (pageableItems == null) return;
+        int oldPage = this.page;
+        this.page = page;
+        renderPage();
+        this.page = oldPage;
     }
 
     public void animate(List<Runnable> frames, long intervalTicks) {
@@ -629,13 +878,38 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }, 0L, intervalTicks);
     }
 
+    public void animateSlot(int slot, long intervalTicks, GUIItem... items) {
+        if (items == null || items.length == 0) return;
+        if (slot < 0 || slot >= size) return;
+        if (intervalTicks <= 0) intervalTicks = 1;
+        stopAnimation();
+        final int[] index = {0};
+        this.animTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            GUIItem current = items[index[0] % items.length];
+            setItem(slot, current);
+            index[0]++;
+        }, 0L, intervalTicks);
+    }
+
+    public void animateSlotStacks(int slot, long intervalTicks, ItemStack... stacks) {
+        if (stacks == null || stacks.length == 0) return;
+        if (slot < 0 || slot >= size) return;
+        if (intervalTicks <= 0) intervalTicks = 1;
+        stopAnimation();
+        final int[] index = {0};
+        this.animTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            inventory.setItem(slot, stacks[index[0] % stacks.length]);
+            index[0]++;
+        }, 0L, intervalTicks);
+    }
+
     public void animateSlots(Map<Integer, List<ItemStack>> slotAnimations, long intervalTicks) {
         if (slotAnimations == null || slotAnimations.isEmpty()) return;
         if (intervalTicks <= 0) intervalTicks = 1;
         Map<Integer, List<ItemStack>> validAnimations = new HashMap<>();
         for (Map.Entry<Integer, List<ItemStack>> entry : slotAnimations.entrySet()) {
             int slot = entry.getKey();
-            if (slot >= 0 && slot < size) {
+            if (slot >= 0 && slot < size && entry.getValue() != null && !entry.getValue().isEmpty()) {
                 validAnimations.put(slot, entry.getValue());
             }
         }
@@ -659,6 +933,57 @@ public class OkasoBukkitGUI implements GUI, Listener {
         }, 0L, intervalTicks);
     }
 
+    public void pulseSlot(int slot, long intervalTicks) {
+        if (slot < 0 || slot >= size) return;
+        GUIItem item = items.get(slot);
+        if (item == null) return;
+        if (item instanceof OkasoBukkitGUIItem) {
+            animateSlot(slot, intervalTicks, item, ((OkasoBukkitGUIItem) item).withGlow());
+        }
+    }
+
+    public void countdownSlot(int slot, int seconds, String format, GUIItem baseItem, Runnable onFinish) {
+        if (slot < 0 || slot >= size) return;
+        if (baseItem == null || seconds <= 0) return;
+        stopAnimation();
+        final int[] remaining = {seconds};
+        this.animTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (remaining[0] <= 0) {
+                stopAnimation();
+                if (onFinish != null) {
+                    onFinish.run();
+                }
+                return;
+            }
+            Object bukkitItem = baseItem.getItemStack();
+            if (!(bukkitItem instanceof ItemStack)) {
+                stopAnimation();
+                return;
+            }
+            ItemStack stack = ((ItemStack) bukkitItem).clone();
+            ItemMeta meta = stack.getItemMeta();
+            if (meta == null) {
+                stopAnimation();
+                return;
+            }
+            int mins = remaining[0] / 60;
+            int secs = remaining[0] % 60;
+            String timeStr = String.format("%02d:%02d", mins, secs);
+            String display = format.replace("{time}", timeStr)
+                .replace("{seconds}", String.valueOf(remaining[0]));
+            meta.setDisplayName(TextColorizer.translate(display));
+            stack.setItemMeta(meta);
+            if (baseItem instanceof OkasoBukkitGUIItem) {
+                OkasoBukkitGUIItem copy = ((OkasoBukkitGUIItem) baseItem).copy();
+                copy.setItemStack(stack);
+                setItem(slot, copy);
+            } else {
+                setItem(slot, new OkasoBukkitGUIItem(stack));
+            }
+            remaining[0]--;
+        }, 20L, 20L);
+    }
+
     public void stopAnimation() {
         if (animTask != null) {
             animTask.cancel();
@@ -670,6 +995,11 @@ public class OkasoBukkitGUI implements GUI, Listener {
 
     public boolean isAnimating() {
         return animTask != null;
+    }
+
+    public void stopAnimationAndRestore(int slot) {
+        stopAnimation();
+        updateSlot(slot);
     }
 
     public void confirm(Consumer<Boolean> callback, GUIItem confirmItem, GUIItem cancelItem,

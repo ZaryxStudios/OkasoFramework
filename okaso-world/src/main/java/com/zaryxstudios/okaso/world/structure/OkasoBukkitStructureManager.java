@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.AtomicMoveNotSupportedException;
 
 import lombok.Getter;
 
@@ -38,6 +40,9 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public boolean saveStructure(String name, Object worldObj, int x1, int y1, int z1, int x2, int y2, int z2) {
+        if (!isValidName(name)) {
+            return false;
+        }
         if (!(worldObj instanceof World)) {
             logger.warning(LogMessages.get(LogMessages.STRUCTURE_SAVE_INVALID_WORLD));
             return false;
@@ -125,6 +130,9 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public boolean deleteStructure(String name) {
+        if (!isValidName(name)) {
+            return false;
+        }
         File file = getStructureFile(name);
         if (file.exists()) {
             return file.delete();
@@ -163,6 +171,9 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public boolean importStructure(String name, String filePath) {
+        if (!isValidName(name) || filePath == null || filePath.trim().isEmpty()) {
+            return false;
+        }
         File file = new File(filePath);
         if (!file.exists()) {
             logger.warning(LogMessages.get(LogMessages.STRUCTURE_IMPORT_NOT_FOUND, filePath));
@@ -236,10 +247,14 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
                     int by = Integer.parseInt(parts[1]);
                     int bz = Integer.parseInt(parts[2]);
                     String materialName = parts[3];
-                    byte bdata = Byte.parseByte(parts[4]);
+                    int data = Integer.parseInt(parts[4]);
+                    if (data < 0 || data > 255) {
+                        throw new IllegalArgumentException("Invalid block data");
+                    }
+                    byte bdata = (byte) data;
 
                     try {
-                        Material mat = Material.valueOf(materialName);
+                        Material mat = MaterialResolver.resolveMaterial(materialName);
                         structure.setBlock(bx, by, bz, mat, bdata);
                     } catch (IllegalArgumentException ignored) {
                     }
@@ -255,10 +270,11 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
     @Override
     public void setStructureDirectory(String path) {
-        File dir = new File(path);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        if (path == null || path.trim().isEmpty()) {
+            throw new IllegalArgumentException("Structure directory cannot be empty");
         }
+        File dir = new File(path);
+        ensureDirectoryExists(dir);
         this.structureDirectory = dir;
     }
 
@@ -270,8 +286,9 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
     private boolean saveStructureToFile(OkasoBukkitStructure structure) {
         File file = getStructureFile(structure.getName());
         ensureDirectoryExists(file.getParentFile());
+        File temporaryFile = new File(file.getPath() + ".tmp");
 
-        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(temporaryFile.toPath(), StandardCharsets.UTF_8)) {
             writer.write(FORMAT_HEADER);
             writer.newLine();
 
@@ -312,9 +329,16 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
                 }
             }
 
+            try {
+                Files.move(temporaryFile.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporaryFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
             logger.fine(LogMessages.get(LogMessages.STRUCTURE_SAVED, structure.getName(), blockCount));
             return true;
         } catch (IOException e) {
+            temporaryFile.delete();
             logger.log(Level.SEVERE, LogMessages.get(LogMessages.STRUCTURE_SAVE_FAILED, structure.getName()), e);
             return false;
         }
@@ -386,8 +410,18 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
     }
 
     private void ensureDirectoryExists(File dir) {
-        if (!dir.exists()) {
-            dir.mkdirs();
+        if (dir == null) {
+            throw new IllegalArgumentException("Structure directory cannot be null");
         }
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IllegalStateException("Could not create structure directory: " + dir);
+        }
+        if (!dir.isDirectory()) {
+            throw new IllegalStateException("Structure path is not a directory: " + dir);
+        }
+    }
+
+    private boolean isValidName(String name) {
+        return name != null && !name.trim().isEmpty() && !name.equals(".") && !name.equals("..");
     }
 }
