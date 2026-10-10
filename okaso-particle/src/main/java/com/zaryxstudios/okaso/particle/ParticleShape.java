@@ -46,4 +46,49 @@ public class ParticleShape {
         OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_column", particleType);
         effect.playColumn(center, height, count, 0);
     }
+
+    public static void heart(Object center, String particleType, double size, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_heart", particleType);
+        effect.playHeart(center, size, count, 0);
+    }
+
+    public static void star(Object center, String particleType, double size, int points, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_star", particleType);
+        effect.playStar(center, size, points, count, 0);
+    }
+
+    public static void square(Object center, String particleType, double size, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_square", particleType);
+        effect.playSquare(center, size, count, 0);
+    }
+
+    public static void triangle(Object center, String particleType, double size, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_triangle", particleType);
+        effect.playTriangle(center, size, count, 0);
+    }
+
+    public static void cone(Object center, String particleType, double radius, double height, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_cone", particleType);
+        effect.playCone(center, radius, height, count, 0);
+    }
+
+    public static void tornado(Object center, String particleType, double radius, double height, int turns, int pointsPerTurn) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_tornado", particleType);
+        effect.playTornado(center, radius, height, turns, pointsPerTurn, 0);
+    }
+
+    public static void dna(Object center, String particleType, double radius, double height, int turns, int pointsPerTurn) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_dna", particleType);
+        effect.playDNA(center, radius, height, turns, pointsPerTurn, 0);
+    }
+
+    public static void cube(Object center, String particleType, double size, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_cube", particleType);
+        effect.playCube(center, size, count, 0);
+    }
+
+    public static void pyramid(Object center, String particleType, double baseSize, double height, int count) {
+        OkasoBukkitParticleEffect effect = new OkasoBukkitParticleEffect("shape_pyramid", particleType);
+        effect.playPyramid(center, baseSize, height, count, 0);
+    }
 }

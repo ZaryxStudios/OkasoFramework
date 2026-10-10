@@ -4,16 +4,23 @@ import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardManager;
 import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardObjective;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager {
 
@@ -52,8 +59,7 @@ public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager {
         Player p = (Player) player;
         if (objective instanceof OkasoBukkitScoreboardObjective) {
             OkasoBukkitScoreboardObjective bukkitObj = (OkasoBukkitScoreboardObjective) objective;
-            Scoreboard board = bukkitObj.getOrCreateScoreboard();
-            p.setScoreboard(board);
+            bukkitObj.applyTo(p);
             objectives.put(p.getUniqueId(), bukkitObj);
         }
     }
@@ -106,5 +112,54 @@ public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager {
         Scoreboard board = p.getScoreboard();
         if (board == null) return;
         board.resetScores(p.getName());
+    }
+
+    public Collection<Player> getPlayersWithScoreboard() {
+        return objectives.keySet().stream()
+            .map(Bukkit::getPlayer)
+            .filter(p -> p != null && p.isOnline())
+            .collect(Collectors.toList());
+    }
+
+    public int getPlayerCount() {
+        return (int) objectives.keySet().stream()
+            .map(Bukkit::getPlayer)
+            .filter(p -> p != null && p.isOnline())
+            .count();
+    }
+
+    public int cleanupOfflinePlayers() {
+        List<UUID> toRemove = new ArrayList<>();
+        for (UUID uuid : objectives.keySet()) {
+            if (Bukkit.getPlayer(uuid) == null) {
+                toRemove.add(uuid);
+            }
+        }
+        for (UUID uuid : toRemove) {
+            objectives.remove(uuid);
+        }
+        return toRemove.size();
+    }
+
+    public OkasoBukkitScoreboardObjective createObjective(String title) {
+        return new OkasoBukkitScoreboardObjective(title);
+    }
+
+    public OkasoBukkitScoreboardObjective createObjective(String title, List<String> lines) {
+        OkasoBukkitScoreboardObjective obj = new OkasoBukkitScoreboardObjective(title);
+        obj.setLines(lines);
+        return obj;
+    }
+
+    public void updateAll(OkasoBukkitScoreboardObjective objective) {
+        for (Player player : getPlayersWithScoreboard()) {
+            if (objectives.get(player.getUniqueId()) == objective) {
+                setScoreboard(player, objective);
+            }
+        }
+    }
+
+    public void removeObjective(OkasoBukkitScoreboardObjective objective) {
+        objectives.entrySet().removeIf(entry -> entry.getValue() == objective);
     }
 }

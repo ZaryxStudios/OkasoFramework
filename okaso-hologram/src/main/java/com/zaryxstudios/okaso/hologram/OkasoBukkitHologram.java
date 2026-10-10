@@ -6,11 +6,14 @@ import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 import com.zaryxstudios.okaso.common.hologram.HologramRenderer;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -283,5 +286,102 @@ public class OkasoBukkitHologram implements OkasoHologram {
     private void refresh() {
         renderer.despawnAll();
         spawnedEntities.clear(); spawnAll();
+    }
+
+    public boolean updateLine(int index, HologramLine line) {
+        if (index < 0 || index >= lines.size() || line == null) return false;
+        lines.set(index, line);
+        if (!active) return true;
+        synchronized (spawnedEntities) {
+            if (index < spawnedEntities.size()) {
+                Object oldEntity = spawnedEntities.get(index);
+                if (oldEntity instanceof Entity) {
+                    ((Entity) oldEntity).remove();
+                }
+                Object newEntity = spawnEntityForLineReturn(index, line, lineLocation(index));
+                if (newEntity != null) {
+                    spawnedEntities.set(index, newEntity);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private Object spawnEntityForLineReturn(int index, HologramLine line, Location loc) {
+        switch (line.getType()) {
+            case TEXT:
+                return renderer.spawnText(loc, line.getText());
+            case ITEM:
+                if (renderer.supportsLineType(HologramLineType.ITEM)) {
+                    return renderer.spawnItem(loc, line.getItemMaterial(), line.getItemAmount());
+                } else {
+                    return renderer.spawnText(loc, "[" + line.getItemMaterial() + " x" + line.getItemAmount() + "]");
+                }
+            case MOB:
+                return renderer.spawnMob(loc, line.getEntityType());
+            default:
+                return null;
+        }
+    }
+
+    public Location getLineLocation(int index) {
+        if (location == null) return null;
+        return lineLocation(index);
+    }
+
+    public boolean isPlayerInRange(Player player, double range) {
+        if (location == null || player == null) return false;
+        if (!location.getWorld().equals(player.getWorld())) return false;
+        return location.distanceSquared(player.getLocation()) <= range * range;
+    }
+
+    public World getWorld() {
+        return location != null ? location.getWorld() : null;
+    }
+
+    public void setYaw(float yaw) {
+        if (location != null) {
+            Location loc = location.clone();
+            loc.setYaw(yaw);
+            setLocation((Object) loc);
+        }
+    }
+
+    public void setDirection(float yaw, float pitch) {
+        if (location != null) {
+            Location loc = location.clone();
+            loc.setYaw(yaw);
+            loc.setPitch(pitch);
+            setLocation((Object) loc);
+        }
+    }
+
+    public void move(double x, double y, double z) {
+        if (location != null && (x != 0 || y != 0 || z != 0)) {
+            Location loc = location.clone();
+            loc.add(x, y, z);
+            setLocation((Object) loc);
+        }
+    }
+
+    public Location getCenterLocation() {
+        if (location == null || lines.isEmpty()) return null;
+        int centerIndex = lines.size() / 2;
+        return lineLocation(centerIndex);
+    }
+
+    public OkasoBukkitHologram copy(String newId) {
+        return new OkasoBukkitHologram(newId, location, new ArrayList<>(lines), renderer);
+    }
+
+    public double[] getBoundingBox() {
+        if (location == null || lines.isEmpty()) return null;
+        double height = getHeight();
+        double halfWidth = 1.0;
+        return new double[] {
+            location.getX() - halfWidth, location.getY() - height, location.getZ() - halfWidth,
+            location.getX() + halfWidth, location.getY(), location.getZ() + halfWidth
+        };
     }
 }

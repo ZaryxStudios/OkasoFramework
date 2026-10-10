@@ -3,6 +3,7 @@ package com.zaryxstudios.okaso.hologram;
 import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 import com.zaryxstudios.okaso.common.hologram.HologramRenderer;
 
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -16,6 +17,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
 public class DisplayRenderer implements HologramRenderer {
@@ -46,6 +50,33 @@ public class DisplayRenderer implements HologramRenderer {
 
     private final List<Entity> entities = Collections.synchronizedList(new ArrayList<>());
 
+    @Getter @Setter
+    private boolean shadowed = false;
+    @Getter @Setter
+    private int backgroundColor = 0;
+    @Getter @Setter
+    private float viewRange = 0.5f;
+    @Getter @Setter
+    private String alignment = "CENTER";
+    @Getter @Setter
+    private boolean glowing = false;
+    @Getter @Setter
+    private boolean invulnerable = true;
+    @Getter @Setter
+    private boolean collidable = false;
+    @Getter @Setter
+    private boolean silent = true;
+    @Getter @Setter
+    private boolean gravity = false;
+    @Getter @Setter
+    private boolean ai = false;
+    @Getter @Setter
+    private boolean canPickupItems = false;
+    @Getter @Setter
+    private boolean removeWhenFarAway = false;
+    @Getter @Setter
+    private double maxHealth = 1.0;
+
     public static boolean isAvailable() {
         return AVAILABLE;
     }
@@ -66,15 +97,27 @@ public class DisplayRenderer implements HologramRenderer {
             Entity entity = world.spawnEntity(loc, type);
             entities.add(entity);
             SET_TEXT.invoke(entity, text);
-            invokeIfAvailable(SET_SHADOWED, entity, false);
-            invokeIfAvailable(SET_BACKGROUND, entity, createTransparentBackground());
-            invokeIfAvailable(SET_VIEW_RANGE, entity, 0.5f);
+            invokeIfAvailable(SET_SHADOWED, entity, shadowed);
+            invokeIfAvailable(SET_BACKGROUND, entity, createBackgroundColor());
+            invokeIfAvailable(SET_VIEW_RANGE, entity, viewRange);
             if (SET_ALIGNMENT != null) {
                 try {
-                    Object center = Enum.valueOf((Class<? extends Enum>) SET_ALIGNMENT.getParameterTypes()[0], "CENTER");
-                    SET_ALIGNMENT.invoke(entity, center);
+                    Object align = Enum.valueOf((Class<? extends Enum>) SET_ALIGNMENT.getParameterTypes()[0], alignment);
+                    SET_ALIGNMENT.invoke(entity, align);
                 } catch (Exception ignored) {
                 }
+            }
+            if (entity instanceof LivingEntity) {
+                LivingEntity living = (LivingEntity) entity;
+                living.setCollidable(collidable);
+                living.setInvulnerable(invulnerable);
+                living.setSilent(silent);
+                living.setGravity(gravity);
+                living.setAI(ai);
+                living.setCanPickupItems(canPickupItems);
+                living.setRemoveWhenFarAway(removeWhenFarAway);
+                living.setMaxHealth(maxHealth);
+                living.setHealth(maxHealth);
             }
             return entity;
         } catch (Exception e) {
@@ -136,15 +179,15 @@ public class DisplayRenderer implements HologramRenderer {
             entities.add(entity);
             if (entity instanceof LivingEntity) {
                 LivingEntity living = (LivingEntity) entity;
-                living.setCollidable(false);
-                living.setInvulnerable(true);
-                living.setSilent(true);
-                living.setGravity(false);
-                living.setAI(false);
-                living.setCanPickupItems(false);
-                living.setRemoveWhenFarAway(false);
-                living.setMaxHealth(1.0);
-                living.setHealth(1.0);
+                living.setCollidable(collidable);
+                living.setInvulnerable(invulnerable);
+                living.setSilent(silent);
+                living.setGravity(gravity);
+                living.setAI(ai);
+                living.setCanPickupItems(canPickupItems);
+                living.setRemoveWhenFarAway(removeWhenFarAway);
+                living.setMaxHealth(maxHealth);
+                living.setHealth(maxHealth);
                 if (entity instanceof Ageable) {
                     ((Ageable) entity).setAdult();
                     ((Ageable) entity).setAgeLock(true);
@@ -208,9 +251,124 @@ public class DisplayRenderer implements HologramRenderer {
         }
     }
 
+    private Object createBackgroundColor() {
+        try {
+            Class<?> colorClass = Class.forName("org.bukkit.Color");
+            Method fromRGB = colorClass.getMethod("fromRGB", int.class);
+            return fromRGB.invoke(null, backgroundColor);
+        } catch (Exception ignored) {
+            return createTransparentBackground();
+        }
+    }
+
     private static void invokeIfAvailable(Method method, Object target, Object argument) throws Exception {
         if (method != null && argument != null) {
             method.invoke(target, argument);
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private boolean shadowed = false;
+        private int backgroundColor = 0;
+        private float viewRange = 0.5f;
+        private String alignment = "CENTER";
+        private boolean glowing = false;
+        private boolean invulnerable = true;
+        private boolean collidable = false;
+        private boolean silent = true;
+        private boolean gravity = false;
+        private boolean ai = false;
+        private boolean canPickupItems = false;
+        private boolean removeWhenFarAway = false;
+        private double maxHealth = 1.0;
+
+        private Builder() {}
+
+        public Builder shadowed(boolean shadowed) {
+            this.shadowed = shadowed;
+            return this;
+        }
+
+        public Builder backgroundColor(int backgroundColor) {
+            this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public Builder viewRange(float viewRange) {
+            this.viewRange = viewRange;
+            return this;
+        }
+
+        public Builder alignment(String alignment) {
+            this.alignment = alignment;
+            return this;
+        }
+
+        public Builder glowing(boolean glowing) {
+            this.glowing = glowing;
+            return this;
+        }
+
+        public Builder invulnerable(boolean invulnerable) {
+            this.invulnerable = invulnerable;
+            return this;
+        }
+
+        public Builder collidable(boolean collidable) {
+            this.collidable = collidable;
+            return this;
+        }
+
+        public Builder silent(boolean silent) {
+            this.silent = silent;
+            return this;
+        }
+
+        public Builder gravity(boolean gravity) {
+            this.gravity = gravity;
+            return this;
+        }
+
+        public Builder ai(boolean ai) {
+            this.ai = ai;
+            return this;
+        }
+
+        public Builder canPickupItems(boolean canPickupItems) {
+            this.canPickupItems = canPickupItems;
+            return this;
+        }
+
+        public Builder removeWhenFarAway(boolean removeWhenFarAway) {
+            this.removeWhenFarAway = removeWhenFarAway;
+            return this;
+        }
+
+        public Builder maxHealth(double maxHealth) {
+            this.maxHealth = maxHealth;
+            return this;
+        }
+
+        public DisplayRenderer build() {
+            DisplayRenderer renderer = new DisplayRenderer();
+            renderer.setShadowed(shadowed);
+            renderer.setBackgroundColor(backgroundColor);
+            renderer.setViewRange(viewRange);
+            renderer.setAlignment(alignment);
+            renderer.setGlowing(glowing);
+            renderer.setInvulnerable(invulnerable);
+            renderer.setCollidable(collidable);
+            renderer.setSilent(silent);
+            renderer.setGravity(gravity);
+            renderer.setAi(ai);
+            renderer.setCanPickupItems(canPickupItems);
+            renderer.setRemoveWhenFarAway(removeWhenFarAway);
+            renderer.setMaxHealth(maxHealth);
+            return renderer;
         }
     }
 }

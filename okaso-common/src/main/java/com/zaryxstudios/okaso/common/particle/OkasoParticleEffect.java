@@ -16,4 +16,13 @@ public interface OkasoParticleEffect {
     void playRandom(Object center, double radius, int count, double speed);
     void playColumn(Object center, double height, int count, double speed);
     void playWave(Object center, double radius, double amplitude, int count, double speed);
+    void playHeart(Object center, double size, int count, double speed);
+    void playStar(Object center, double size, int points, int count, double speed);
+    void playSquare(Object center, double size, int count, double speed);
+    void playTriangle(Object center, double size, int count, double speed);
+    void playCone(Object center, double radius, double height, int count, double speed);
+    void playTornado(Object center, double radius, double height, int turns, int pointsPerTurn, double speed);
+    void playDNA(Object center, double radius, double height, int turns, int pointsPerTurn, double speed);
+    void playCube(Object center, double size, int count, double speed);
+    void playPyramid(Object center, double baseSize, double height, int count, double speed);
 }

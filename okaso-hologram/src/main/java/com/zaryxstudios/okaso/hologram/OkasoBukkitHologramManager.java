@@ -9,6 +9,7 @@ import com.zaryxstudios.okaso.common.hologram.HologramStyle;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +18,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class OkasoBukkitHologramManager implements HologramManager {
 
@@ -186,6 +189,122 @@ public class OkasoBukkitHologramManager implements HologramManager {
         OkasoBukkitHologram existing = holograms.remove(id);
         if (existing != null) {
             existing.stop();
-        } 
+        }
+    }
+
+    public List<OkasoBukkitHologram> getHologramsNear(Location location, double radius) {
+        List<OkasoBukkitHologram> result = new ArrayList<>();
+        if (location == null || radius <= 0) return result;
+        double radiusSq = radius * radius;
+        for (OkasoBukkitHologram h : holograms.values()) {
+            Location hLoc = h.getLocation();
+            if (hLoc != null && hLoc.getWorld().equals(location.getWorld())) {
+                if (hLoc.distanceSquared(location) <= radiusSq) {
+                    result.add(h);
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<OkasoBukkitHologram> getHologramsNear(Player player, double radius) {
+        if (player == null) return Collections.emptyList();
+        return getHologramsNear(player.getLocation(), radius);
+    }
+
+    public List<OkasoBukkitHologram> getRunningHolograms() {
+        return holograms.values().stream()
+            .filter(OkasoBukkitHologram::isRunning)
+            .collect(Collectors.toList());
+    }
+
+    public List<OkasoBukkitHologram> getStoppedHolograms() {
+        return holograms.values().stream()
+            .filter(h -> !h.isRunning())
+            .collect(Collectors.toList());
+    }
+
+    public int startAll() {
+        int count = 0;
+        for (OkasoBukkitHologram h : holograms.values()) {
+            if (!h.isRunning()) {
+                h.start();
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int stopAllRunning() {
+        int count = 0;
+        for (OkasoBukkitHologram h : holograms.values()) {
+            if (h.isRunning()) {
+                h.stop();
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int removeAllInWorld(World world) {
+        if (world == null) return 0;
+        List<String> toRemove = new ArrayList<>();
+        for (Map.Entry<String, OkasoBukkitHologram> entry : holograms.entrySet()) {
+            Location loc = entry.getValue().getLocation();
+            if (loc != null && world.equals(loc.getWorld())) {
+                toRemove.add(entry.getKey());
+            }
+        }
+        for (String id : toRemove) {
+            removeHologram(id);
+        }
+        return toRemove.size();
+    }
+
+    public OkasoBukkitHologram getBukkitHologram(String id) {
+        return holograms.get(id);
+    }
+
+    public boolean isRunning(String id) {
+        OkasoBukkitHologram h = holograms.get(id);
+        return h != null && h.isRunning();
+    }
+
+    public boolean teleportHologram(String id, Location location) {
+        OkasoBukkitHologram h = holograms.get(id);
+        if (h == null || location == null) return false;
+        h.setLocation(location);
+        return true;
+    }
+
+    public boolean renameHologram(String oldId, String newId) {
+        if (oldId == null || newId == null || oldId.equals(newId)) return false;
+        if (holograms.containsKey(newId)) return false;
+        OkasoBukkitHologram h = holograms.remove(oldId);
+        if (h == null) return false;
+        OkasoBukkitHologram newHologram = new OkasoBukkitHologram(
+            newId, h.getLocation(), new ArrayList<>(h.getLines()), h.getRenderer()
+        );
+        if (h.isRunning()) {
+            newHologram.start();
+        }
+        holograms.put(newId, newHologram);
+        return true;
+    }
+
+    public int getTotalLineCount() {
+        return holograms.values().stream()
+            .mapToInt(OkasoBukkitHologram::getLineCount)
+            .sum();
+    }
+
+    public int getTotalEntityCount() {
+        return holograms.values().stream()
+            .mapToInt(OkasoBukkitHologram::getEntityCount)
+            .sum();
+    }
+
+    public void clearRegistry() {
+        holograms.clear();
     }
 }
