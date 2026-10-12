@@ -24,14 +24,14 @@ public class OkasoBukkitTaskScheduler implements TaskScheduler {
     @Override
     public TaskHandle runAsync(Runnable task) {
         requireTask(task);
-        return new OkasoBukkitTaskHandle(scheduler.runTaskAsynchronously(plugin, task));
+        return new OkasoBukkitTaskHandle(scheduler, scheduler.runTaskAsynchronously(plugin, task));
     }
 
     @Override
     public TaskHandle runLater(Runnable task, long delay, TimeUnit unit) {
         requireTask(task);
         long ticks = toDelayTicks(delay, unit);
-        return new OkasoBukkitTaskHandle(scheduler.runTaskLater(plugin, task, ticks));
+        return new OkasoBukkitTaskHandle(scheduler, scheduler.runTaskLater(plugin, task, ticks));
     }
 
     @Override
@@ -39,13 +39,13 @@ public class OkasoBukkitTaskScheduler implements TaskScheduler {
         requireTask(task);
         long delayTicks = toDelayTicks(delay, unit);
         long intervalTicks = toIntervalTicks(interval, unit);
-        return new OkasoBukkitTaskHandle(scheduler.runTaskTimer(plugin, task, delayTicks, intervalTicks));
+        return new OkasoBukkitTaskHandle(scheduler, scheduler.runTaskTimer(plugin, task, delayTicks, intervalTicks));
     }
 
     @Override
     public TaskHandle runSync(Runnable task) {
         requireTask(task);
-        return new OkasoBukkitTaskHandle(scheduler.runTask(plugin, task));
+        return new OkasoBukkitTaskHandle(scheduler, scheduler.runTask(plugin, task));
     }
 
     @Override

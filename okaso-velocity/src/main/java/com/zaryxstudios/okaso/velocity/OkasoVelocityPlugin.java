@@ -32,7 +32,7 @@ import lombok.Getter;
 )
 public final class OkasoVelocityPlugin implements OkasoPlugin {
 
-    public static final String VERSION = "1.8.0";
+    public static final String VERSION = "1.8.1";
 
     @Getter
     private final ProxyServer server;
