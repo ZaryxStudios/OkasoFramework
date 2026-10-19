@@ -11,7 +11,27 @@ import java.util.Set;
 
 public final class CompatibilityNames {
 
-    private static final Map<String, List<String>> MATERIAL_ALIASES = aliases(
+    // Legacy (pre-1.13) data values of the 16 dye colors, in order
+    private static final String[] COLORS = {
+        "WHITE", "ORANGE", "MAGENTA", "LIGHT_BLUE", "YELLOW", "LIME", "PINK", "GRAY",
+        "LIGHT_GRAY", "CYAN", "PURPLE", "BLUE", "BROWN", "GREEN", "RED", "BLACK"
+    };
+
+    // Modern colored suffix -> legacy material that takes the color as data value
+    private static final String[][] COLORED_FAMILIES = {
+        {"WOOL", "WOOL"},
+        {"STAINED_GLASS_PANE", "STAINED_GLASS_PANE"},
+        {"STAINED_GLASS", "STAINED_GLASS"},
+        {"TERRACOTTA", "STAINED_CLAY"},
+        {"CARPET", "CARPET"},
+        {"CONCRETE_POWDER", "CONCRETE_POWDER"},
+        {"CONCRETE", "CONCRETE"}
+    };
+
+    private static final Map<String, List<String>> MATERIAL_ALIASES = aliases(withColoredFamilies(
+        "CLOCK", "WATCH",
+        "PLAYER_HEAD", "SKULL_ITEM",
+        "PLAYER_WALL_HEAD", "SKULL",
         "GRASS_BLOCK", "GRASS",
         "OAK_PLANKS", "WOOD",
         "OAK_LOG", "LOG",
@@ -37,8 +57,8 @@ public final class CompatibilityNames {
         "OAK_WALL_SIGN", "WALL_SIGN",
         "OAK_TRAPDOOR", "TRAP_DOOR",
         "REDSTONE_TORCH", "REDSTONE_TORCH_ON",
-        "REDSTONE_WIRE", "REDSTONE" 
-    );
+        "REDSTONE_WIRE", "REDSTONE"
+    ));
 
     private static final Map<String, List<String>> ENTITY_ALIASES = aliases(
         "ZOMBIFIED_PIGLIN", "PIG_ZOMBIE",
@@ -77,6 +97,33 @@ public final class CompatibilityNames {
 
     public static List<String> sounds(String name) {
         return candidates(name, SOUND_ALIASES);
+    }
+
+    /**
+     * Data value of a modern material name on servers before 1.13, e.g. LIME_WOOL -> 5
+     * (WOOL:5) and PLAYER_HEAD -> 3 (SKULL_ITEM:3). Returns 0 when no data value applies.
+     */
+    public static short legacyData(String name) {
+        if (name == null) return 0;
+        String normalized = normalize(name);
+        if (normalized.equals("PLAYER_HEAD") || normalized.equals("PLAYER_WALL_HEAD")) return 3;
+        for (String[] family : COLORED_FAMILIES) {
+            for (short data = 0; data < COLORS.length; data++) {
+                if (normalized.equals(COLORS[data] + "_" + family[0])) return data;
+            }
+        }
+        return 0;
+    }
+
+    private static String[] withColoredFamilies(String... values) {
+        List<String> result = new ArrayList<>(Arrays.asList(values));
+        for (String[] family : COLORED_FAMILIES) {
+            for (String color : COLORS) {
+                result.add(color + "_" + family[0]);
+                result.add(family[1]);
+            }
+        }
+        return result.toArray(new String[0]);
     }
 
     private static List<String> candidates(String name, Map<String, List<String>> aliases) {

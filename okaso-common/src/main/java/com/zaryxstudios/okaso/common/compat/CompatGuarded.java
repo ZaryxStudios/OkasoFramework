@@ -8,13 +8,14 @@ import java.lang.annotation.Target;
 
 /**
  * Marks code that references Bukkit API newer than the oldest supported version (1.8.8)
- * and is only reached behind a version check or a catch of
- * NoSuchMethodError / NoSuchFieldError / NoClassDefFoundError with a fallback.
+ * and is only reached behind a version check or a catch of LinkageError
+ * (NoSuchMethodError / NoSuchFieldError / NoClassDefFoundError) with a fallback,
+ * or a field of a newer type that stays null on older servers.
  * The Animal Sniffer build check skips annotated members.
  */
 @Documented
 @Retention(RetentionPolicy.CLASS)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
 public @interface CompatGuarded {
 
     /** First Minecraft version that provides the referenced API, e.g. "1.13". */
