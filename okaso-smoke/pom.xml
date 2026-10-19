@@ -11,7 +11,7 @@
     <artifactId>okaso-smoke</artifactId>
     <packaging>jar</packaging>
     <name>Okaso Smoke Test</name>
-    <description>Bukkit plugin that exercises Okaso on a real server and then shuts it down. Used by CI only; not released.</description>
+    <description>Plugin for Bukkit, BungeeCord/Waterfall and Velocity that exercises Okaso on a real server and then shuts it down. Used by CI only; not released.</description>
     <dependencies>
         <dependency>
             <groupId>com.zaryxstudios.okaso</groupId>
@@ -22,6 +22,16 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.md-5</groupId>
+            <artifactId>bungeecord-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.velocitypowered</groupId>
+            <artifactId>velocity-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

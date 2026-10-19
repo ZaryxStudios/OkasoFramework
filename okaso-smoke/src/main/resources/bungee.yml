@@ -1,0 +1,5 @@
+name: OkasoSmoke
+version: ${project.version}
+main: com.zaryxstudios.okaso.smoke.proxy.BungeeSmokePlugin
+depends: [Okaso]
+description: Exercises Okaso on BungeeCord/Waterfall, writes plugins/OkasoSmoke/result.json and stops the proxy. CI only.

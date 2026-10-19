@@ -1,0 +1,10 @@
+{
+  "id": "okaso-smoke",
+  "name": "OkasoSmoke",
+  "version": "${project.version}",
+  "description": "Exercises Okaso on Velocity, writes plugins/okaso-smoke/result.json and shuts the proxy down. CI only.",
+  "main": "com.zaryxstudios.okaso.smoke.proxy.VelocitySmokePlugin",
+  "dependencies": [
+    { "id": "okaso-velocity", "optional": false }
+  ]
+}
