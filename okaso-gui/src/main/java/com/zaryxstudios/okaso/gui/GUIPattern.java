@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.gui;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
@@ -218,11 +219,11 @@ public final class GUIPattern {
     }
 
     public static GUIItem fillerPane() {
-        return OkasoBukkitGUIItem.of(Material.BLACK_STAINED_GLASS_PANE);
+        return OkasoBukkitGUIItem.of(BukkitCompat.item("BLACK_STAINED_GLASS_PANE"));
     }
 
     public static GUIItem transparentPane() {
-        return OkasoBukkitGUIItem.of(Material.GRAY_STAINED_GLASS_PANE);
+        return OkasoBukkitGUIItem.of(BukkitCompat.item("GRAY_STAINED_GLASS_PANE"));
     }
 
     public static GUIItem glassPane(Material material, String displayName, String... lore) {

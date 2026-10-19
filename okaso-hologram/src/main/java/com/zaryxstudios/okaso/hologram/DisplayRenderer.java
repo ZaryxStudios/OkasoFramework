@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.hologram;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 import com.zaryxstudios.okaso.common.hologram.HologramRenderer;
 
@@ -109,11 +110,11 @@ public class DisplayRenderer implements HologramRenderer {
             }
             if (entity instanceof LivingEntity) {
                 LivingEntity living = (LivingEntity) entity;
-                living.setCollidable(collidable);
-                living.setInvulnerable(invulnerable);
-                living.setSilent(silent);
-                living.setGravity(gravity);
-                living.setAI(ai);
+                BukkitCompat.setCollidable(living, collidable);
+                BukkitCompat.setInvulnerable(living, invulnerable);
+                BukkitCompat.setSilent(living, silent);
+                BukkitCompat.setGravity(living, gravity);
+                BukkitCompat.setAI(living, ai);
                 living.setCanPickupItems(canPickupItems);
                 living.setRemoveWhenFarAway(removeWhenFarAway);
                 living.setMaxHealth(maxHealth);
@@ -179,11 +180,11 @@ public class DisplayRenderer implements HologramRenderer {
             entities.add(entity);
             if (entity instanceof LivingEntity) {
                 LivingEntity living = (LivingEntity) entity;
-                living.setCollidable(collidable);
-                living.setInvulnerable(invulnerable);
-                living.setSilent(silent);
-                living.setGravity(gravity);
-                living.setAI(ai);
+                BukkitCompat.setCollidable(living, collidable);
+                BukkitCompat.setInvulnerable(living, invulnerable);
+                BukkitCompat.setSilent(living, silent);
+                BukkitCompat.setGravity(living, gravity);
+                BukkitCompat.setAI(living, ai);
                 living.setCanPickupItems(canPickupItems);
                 living.setRemoveWhenFarAway(removeWhenFarAway);
                 living.setMaxHealth(maxHealth);

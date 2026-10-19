@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.gui;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 
@@ -180,14 +181,14 @@ public class GUIMultiPageView {
     }
 
     public GUIItem createFirstPageButton() {
-        return OkasoBukkitGUIItem.builder(Material.CLOCK)
+        return OkasoBukkitGUIItem.builder(BukkitCompat.item("CLOCK"))
             .name(GUIMessages.get(GUIMessages.PAGE_FIRST))
             .clickHandler(event -> firstPage())
             .build();
     }
 
     public GUIItem createLastPageButton() {
-        return OkasoBukkitGUIItem.builder(Material.CLOCK)
+        return OkasoBukkitGUIItem.builder(BukkitCompat.item("CLOCK"))
             .name(GUIMessages.get(GUIMessages.PAGE_LAST))
             .clickHandler(event -> lastPage())
             .build();

@@ -1,6 +1,7 @@
 package com.zaryxstudios.okaso.item;
 
 import com.zaryxstudios.okaso.common.item.ItemBuilder;
+import com.zaryxstudios.okaso.common.compat.CompatGuarded;
 import com.zaryxstudios.okaso.common.compat.CompatibilityNames;
 
 import org.bukkit.ChatColor;
@@ -141,6 +142,7 @@ public class OkasoBukkitItemBuilder implements ItemBuilder {
     }
 
     @Override
+    @CompatGuarded(since = "1.13")
     public ItemBuilder durability(short durability) {
         if (HAS_SET_DURABILITY) {
             try {

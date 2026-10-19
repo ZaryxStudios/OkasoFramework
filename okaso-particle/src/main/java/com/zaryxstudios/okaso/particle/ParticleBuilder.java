@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.particle;
 
+import com.zaryxstudios.okaso.common.compat.CompatGuarded;
 import com.zaryxstudios.okaso.common.OkasoAPI;
 import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 import com.zaryxstudios.okaso.common.particle.ParticleManager;
@@ -24,6 +25,7 @@ public class ParticleBuilder {
     private Color transitionColor;
     private float size = 1.0f;
     private Material material;
+    @CompatGuarded(since = "1.13")
     private BlockData blockData;
     private ItemStack itemStack;
 

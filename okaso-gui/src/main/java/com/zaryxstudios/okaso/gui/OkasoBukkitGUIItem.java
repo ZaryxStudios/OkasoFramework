@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.gui;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.gui.GUIClickEvent;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 import org.bukkit.Color;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 import lombok.Getter;
@@ -137,6 +137,9 @@ public class OkasoBukkitGUIItem implements GUIItem {
             if (stack == null) return this;
             this.material = stack.getType();
             this.amount = stack.getAmount();
+            if (stack.getDurability() > 0) {
+                this.durability = stack.getDurability();
+            }
             if (stack.hasItemMeta()) {
                 ItemMeta meta = stack.getItemMeta();
                 if (meta.hasDisplayName()) this.displayName = meta.getDisplayName();
@@ -149,14 +152,8 @@ public class OkasoBukkitGUIItem implements GUIItem {
                         this.skullOwner = skull.getOwner();
                     }
                 }
-                try {
-                    this.unbreakable = meta.isUnbreakable();
-                } catch (NoSuchMethodError ignored) {}
-                try {
-                    if (meta.hasCustomModelData()) {
-                        this.customModelData = meta.getCustomModelData();
-                    }
-                } catch (NoSuchMethodError ignored) {}
+                this.unbreakable = BukkitCompat.isUnbreakable(meta);
+                this.customModelData = BukkitCompat.getCustomModelData(meta);
             }
             return this;
         }
@@ -243,8 +240,10 @@ public class OkasoBukkitGUIItem implements GUIItem {
 
         public Builder headTexture(String base64) {
             this.texture = base64;
-            if (base64 != null && material != Material.PLAYER_HEAD && material != Material.PLAYER_WALL_HEAD) {
-                this.material = Material.PLAYER_HEAD;
+            if (base64 != null && !BukkitCompat.isPlayerHead(material)) {
+                ItemStack head = BukkitCompat.item("PLAYER_HEAD");
+                this.material = head.getType();
+                this.durability = head.getDurability();
             }
             return this;
         }
@@ -314,17 +313,11 @@ public class OkasoBukkitGUIItem implements GUIItem {
                     meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                 }
                 if (unbreakable) {
-                    try {
-                        meta.setUnbreakable(true);
-                    } catch (NoSuchMethodError ignored) {
-                    }
+                    BukkitCompat.setUnbreakable(meta, true);
                     meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
                 }
                 if (customModelData >= 0) {
-                    try {
-                        meta.setCustomModelData(customModelData);
-                    } catch (NoSuchMethodError ignored) {
-                    }
+                    BukkitCompat.setCustomModelData(meta, customModelData);
                 }
                 if (!flags.isEmpty()) {
                     meta.addItemFlags(flags.toArray(new ItemFlag[0]));
@@ -332,10 +325,10 @@ public class OkasoBukkitGUIItem implements GUIItem {
                 if (meta instanceof PotionMeta) {
                     PotionMeta potionMeta = (PotionMeta) meta;
                     if (potionColor != null) {
-                        potionMeta.setColor(potionColor);
+                        BukkitCompat.setPotionColor(potionMeta, potionColor);
                     }
                     if (potionType != null) {
-                        potionMeta.setBasePotionData(new PotionData(potionType, potionExtended, potionUpgraded));
+                        BukkitCompat.setBasePotion(potionMeta, potionType, potionExtended, potionUpgraded);
                     }
                 }
                 if (meta instanceof LeatherArmorMeta) {
@@ -525,21 +518,14 @@ public class OkasoBukkitGUIItem implements GUIItem {
         if (itemStack == null) return false;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return false;
-        try {
-            return meta.isUnbreakable();
-        } catch (NoSuchMethodError e) {
-            return false;
-        }
+        return BukkitCompat.isUnbreakable(meta);
     }
 
     public void setUnbreakable(boolean unbreakable) {
         if (itemStack == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return;
-        try {
-            meta.setUnbreakable(unbreakable);
-        } catch (NoSuchMethodError ignored) {
-        }
+        BukkitCompat.setUnbreakable(meta, unbreakable);
         if (unbreakable) {
             meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         } else {
@@ -552,21 +538,14 @@ public class OkasoBukkitGUIItem implements GUIItem {
         if (itemStack == null) return -1;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return -1;
-        try {
-            return meta.getCustomModelData();
-        } catch (NoSuchMethodError e) {
-            return -1;
-        }
+        return BukkitCompat.getCustomModelData(meta);
     }
 
     public void setCustomModelData(int data) {
         if (itemStack == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return;
-        try {
-            meta.setCustomModelData(data);
-        } catch (NoSuchMethodError ignored) {
-        }
+        BukkitCompat.setCustomModelData(meta, data);
         itemStack.setItemMeta(meta);
     }
 
@@ -707,14 +686,14 @@ public class OkasoBukkitGUIItem implements GUIItem {
     }
 
     public static OkasoBukkitGUIItem confirmButton(GUIClickHandler handler) {
-        return builder(Material.LIME_WOOL)
+        return builder(BukkitCompat.item("LIME_WOOL"))
             .name(GUIMessages.get(GUIMessages.BUTTON_CONFIRM))
             .clickHandler(handler)
             .build();
     }
 
     public static OkasoBukkitGUIItem cancelButton(GUIClickHandler handler) {
-        return builder(Material.RED_WOOL)
+        return builder(BukkitCompat.item("RED_WOOL"))
             .name(GUIMessages.get(GUIMessages.BUTTON_CANCEL))
             .clickHandler(handler)
             .build();

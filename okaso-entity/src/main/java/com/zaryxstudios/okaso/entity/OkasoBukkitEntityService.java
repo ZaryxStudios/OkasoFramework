@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.entity;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.entity.*;
 import com.zaryxstudios.okaso.common.Preconditions;
 
@@ -131,7 +132,7 @@ public final class OkasoBukkitEntityService implements EntityService {
     @SuppressWarnings("unchecked")
     public Collection<Object> getPassengers(Object entity) {
         if (!(entity instanceof Entity)) return Collections.emptyList();
-        return (Collection<Object>) (Collection<?>) ((Entity) entity).getPassengers();
+        return (Collection<Object>) (Collection<?>) BukkitCompat.getPassengers((Entity) entity);
     }
 
     @Override

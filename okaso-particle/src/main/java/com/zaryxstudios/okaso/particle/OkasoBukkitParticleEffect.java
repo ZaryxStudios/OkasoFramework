@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.particle;
 
+import com.zaryxstudios.okaso.common.compat.CompatGuarded;
 import com.zaryxstudios.okaso.common.particle.OkasoParticleEffect;
 
 import org.bukkit.Bukkit;
@@ -118,6 +119,7 @@ public class OkasoBukkitParticleEffect implements OkasoParticleEffect {
     private Color transitionColor;
     private float size;
     private Material material;
+    @CompatGuarded(since = "1.13")
     private BlockData blockData;
     private ItemStack itemStack;
     private boolean useColor;

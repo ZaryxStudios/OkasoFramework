@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.hologram;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.hologram.HologramLineType;
 import com.zaryxstudios.okaso.common.hologram.HologramRenderer;
 
@@ -65,11 +66,11 @@ public class ArmorStandRenderer implements HologramRenderer {
             stand.setMarker(marker);
             stand.setBasePlate(basePlate);
             stand.setSmall(small);
-            stand.setGlowing(glowing);
-            stand.setInvulnerable(invulnerable);
-            stand.setCollidable(collidable);
-            stand.setSilent(silent);
-            stand.setAI(ai);
+            BukkitCompat.setGlowing(stand, glowing);
+            BukkitCompat.setInvulnerable(stand, invulnerable);
+            BukkitCompat.setCollidable(stand, collidable);
+            BukkitCompat.setSilent(stand, silent);
+            BukkitCompat.setAI(stand, ai);
             stand.setRemoveWhenFarAway(removeWhenFarAway);
             stand.setMaxHealth(maxHealth);
             stand.setHealth(maxHealth);
@@ -90,7 +91,7 @@ public class ArmorStandRenderer implements HologramRenderer {
         try {
             Item item = world.dropItem(loc, stack);
             item.setPickupDelay(Integer.MAX_VALUE);
-            item.setUnlimitedLifetime(true);
+            BukkitCompat.setUnlimitedLifetime(item, true);
             item.setVelocity(item.getVelocity().zero());
             entities.add(item);
             return item;
@@ -115,11 +116,11 @@ public class ArmorStandRenderer implements HologramRenderer {
             entities.add(entity);
             if (entity instanceof LivingEntity) {
                 LivingEntity living = (LivingEntity) entity;
-                living.setCollidable(collidable);
-                living.setInvulnerable(invulnerable);
-                living.setSilent(silent);
-                living.setGravity(gravity);
-                living.setAI(ai);
+                BukkitCompat.setCollidable(living, collidable);
+                BukkitCompat.setInvulnerable(living, invulnerable);
+                BukkitCompat.setSilent(living, silent);
+                BukkitCompat.setGravity(living, gravity);
+                BukkitCompat.setAI(living, ai);
                 living.setCanPickupItems(canPickupItems);
                 living.setRemoveWhenFarAway(removeWhenFarAway);
                 living.setMaxHealth(maxHealth);

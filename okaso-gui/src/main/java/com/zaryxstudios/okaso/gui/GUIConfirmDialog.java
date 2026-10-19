@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.gui;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
 
@@ -21,8 +22,8 @@ public class GUIConfirmDialog {
     private GUIItem cancelItem;
     private String confirmName;
     private String cancelName;
-    private Material confirmMaterial;
-    private Material cancelMaterial;
+    private ItemStack confirmStack;
+    private ItemStack cancelStack;
     private Consumer<Player> onConfirm;
     private Consumer<Player> onCancel;
     private int confirmSlot;
@@ -34,8 +35,8 @@ public class GUIConfirmDialog {
         this.plugin = plugin;
         this.title = GUIMessages.get(GUIMessages.DIALOG_TITLE);
         this.message = GUIMessages.get(GUIMessages.DIALOG_MESSAGE);
-        this.confirmMaterial = Material.LIME_WOOL;
-        this.cancelMaterial = Material.RED_WOOL;
+        this.confirmStack = BukkitCompat.item("LIME_WOOL");
+        this.cancelStack = BukkitCompat.item("RED_WOOL");
         this.confirmName = GUIMessages.get(GUIMessages.BUTTON_CONFIRM);
         this.cancelName = GUIMessages.get(GUIMessages.BUTTON_CANCEL);
         this.confirmSlot = 11;
@@ -84,12 +85,12 @@ public class GUIConfirmDialog {
     }
 
     public GUIConfirmDialog confirmMaterial(Material material) {
-        this.confirmMaterial = material;
+        this.confirmStack = new ItemStack(material);
         return this;
     }
 
     public GUIConfirmDialog cancelMaterial(Material material) {
-        this.cancelMaterial = material;
+        this.cancelStack = new ItemStack(material);
         return this;
     }
 
@@ -115,7 +116,7 @@ public class GUIConfirmDialog {
 
     public void open(Player player) {
         OkasoBukkitGUI gui = new OkasoBukkitGUI(plugin, TextColorizer.translate(title), 27);
-        gui.fillBorder(OkasoBukkitGUIItem.of(Material.GRAY_STAINED_GLASS_PANE));
+        gui.fillBorder(OkasoBukkitGUIItem.of(BukkitCompat.item("GRAY_STAINED_GLASS_PANE")));
         if (messageItem != null) {
             gui.setItem(messageSlot, messageItem);
         } else if (message != null) {
@@ -125,7 +126,7 @@ public class GUIConfirmDialog {
         }
         GUIItem confirm = confirmItem;
         if (confirm == null) {
-            confirm = OkasoBukkitGUIItem.builder(confirmMaterial)
+            confirm = OkasoBukkitGUIItem.builder(confirmStack)
                 .name(confirmName)
                 .build();
         }
@@ -133,7 +134,7 @@ public class GUIConfirmDialog {
         gui.setItem(confirmSlot, OkasoBukkitGUIItem.of(
             confirmFinal.getItemStack() instanceof ItemStack
                 ? (ItemStack) confirmFinal.getItemStack()
-                : new ItemStack(confirmMaterial),
+                : confirmStack.clone(),
             event -> {
                 if (onConfirm != null) {
                     Object clicked = event.getWhoClicked();
@@ -145,7 +146,7 @@ public class GUIConfirmDialog {
             }));
         GUIItem cancel = cancelItem;
         if (cancel == null) {
-            cancel = OkasoBukkitGUIItem.builder(cancelMaterial)
+            cancel = OkasoBukkitGUIItem.builder(cancelStack)
                 .name(cancelName)
                 .build();
         }
@@ -153,7 +154,7 @@ public class GUIConfirmDialog {
         gui.setItem(cancelSlot, OkasoBukkitGUIItem.of(
             cancelFinal.getItemStack() instanceof ItemStack
                 ? (ItemStack) cancelFinal.getItemStack()
-                : new ItemStack(cancelMaterial),
+                : cancelStack.clone(),
             event -> {
                 if (onCancel != null) {
                     Object clicked = event.getWhoClicked();
@@ -182,11 +183,12 @@ public class GUIConfirmDialog {
                                           Consumer<Player> onDelete) {
         Map<String, Object> placeholders = new HashMap<>();
         placeholders.put("item", itemName);
-        return new GUIConfirmDialog(plugin)
+        GUIConfirmDialog dialog = new GUIConfirmDialog(plugin)
             .title(GUIMessages.get(GUIMessages.DIALOG_DELETE_TITLE, placeholders, itemName))
             .message(GUIMessages.get(GUIMessages.DIALOG_DELETE_MESSAGE, placeholders, itemName))
-            .confirmMaterial(Material.RED_WOOL)
             .confirmName(GUIMessages.get(GUIMessages.DIALOG_DELETE_CONFIRM))
             .onConfirm(onDelete);
+        dialog.confirmStack = BukkitCompat.item("RED_WOOL");
+        return dialog;
     }
 }

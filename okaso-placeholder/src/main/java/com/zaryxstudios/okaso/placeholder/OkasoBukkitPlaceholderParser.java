@@ -1,12 +1,13 @@
 package com.zaryxstudios.okaso.placeholder;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.placeholder.PlaceholderParser;
 import com.zaryxstudios.okaso.common.placeholder.PlaceholderRegistry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
@@ -108,7 +109,7 @@ public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
             case "player_health":
                 return String.valueOf((int) player.getHealth());
             case "player_max_health":
-                return String.valueOf((int) player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                return String.valueOf((int) BukkitCompat.getMaxHealth(player));
             case "player_food":
                 return String.valueOf(player.getFoodLevel());
             case "player_saturation":
@@ -163,9 +164,11 @@ public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
             case "player_pitch":
                 return String.format("%.2f", player.getLocation().getPitch());
             case "player_held_item":
-                return player.getInventory().getItemInMainHand() != null ? player.getInventory().getItemInMainHand().getType().name() : "AIR";
+                ItemStack held = BukkitCompat.getItemInMainHand(player.getInventory());
+                return held != null ? held.getType().name() : "AIR";
             case "player_held_item_amount":
-                return String.valueOf(player.getInventory().getItemInMainHand().getAmount());
+                ItemStack heldStack = BukkitCompat.getItemInMainHand(player.getInventory());
+                return String.valueOf(heldStack != null ? heldStack.getAmount() : 0);
             case "player_armor_helmet":
                 return player.getInventory().getHelmet() != null ? player.getInventory().getHelmet().getType().name() : "AIR";
             case "player_armor_chestplate":

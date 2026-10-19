@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.gui;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.gui.GUI;
 import com.zaryxstudios.okaso.common.gui.GUIItem;
 import com.zaryxstudios.okaso.common.text.TextColorizer;
@@ -87,7 +88,7 @@ public class OkasoBukkitGUI implements GUI, Listener {
         if (type == InventoryType.CHEST) {
             throw new IllegalArgumentException("Use the size-based constructor for CHEST inventory type");
         }
-        if (!type.isCreatable()) {
+        if (!BukkitCompat.isCreatable(type)) {
             throw new IllegalArgumentException("InventoryType " + type + " is not creatable");
         }
         int invSize = type.getDefaultSize();

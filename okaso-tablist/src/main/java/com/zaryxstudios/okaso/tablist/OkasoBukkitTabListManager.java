@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.tablist;
 
+import com.zaryxstudios.okaso.common.compat.CompatGuarded;
 import com.zaryxstudios.okaso.common.tablist.TabListManager;
 
 import org.bukkit.Bukkit;
@@ -25,6 +26,7 @@ public class OkasoBukkitTabListManager implements TabListManager {
     }
 
     @Override
+    @CompatGuarded(since = "1.13")
     public void setHeaderAndFooter(Object player, String header, String footer) {
         if (!(player instanceof Player)) return;
         Player p = (Player) player;

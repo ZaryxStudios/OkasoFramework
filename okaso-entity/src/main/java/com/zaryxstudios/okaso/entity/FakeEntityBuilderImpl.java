@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.entity;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.entity.FakeEntityBuilder;
 
 import java.lang.reflect.Method;
@@ -167,7 +168,7 @@ final class FakeEntityBuilderImpl extends AbstractNPCBuilder<FakeEntityBuilder> 
     void apply() {
         applyCommon(entity);
         if (heldItem != null && entity instanceof LivingEntity) {
-            ((LivingEntity) entity).getEquipment().setItemInMainHand(heldItem);
+            BukkitCompat.setItemInMainHand(((LivingEntity) entity).getEquipment(), heldItem);
         }
         safeInvoke(entity, "setBaby", baby);
         if (variant != 0) {

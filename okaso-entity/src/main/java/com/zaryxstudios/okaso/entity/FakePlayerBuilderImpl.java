@@ -1,5 +1,6 @@
 package com.zaryxstudios.okaso.entity;
 
+import com.zaryxstudios.okaso.common.compat.BukkitCompat;
 import com.zaryxstudios.okaso.common.entity.FakePlayerBuilder;
 import com.zaryxstudios.okaso.common.entity.SkinData;
 import com.zaryxstudios.okaso.common.entity.SkinData;
@@ -162,8 +163,8 @@ final class FakePlayerBuilderImpl extends AbstractNPCBuilder<FakePlayerBuilder> 
         applyCommon(entity);
         if (entity instanceof LivingEntity) {
             LivingEntity le = (LivingEntity) entity;
-            if (mainHand != null) le.getEquipment().setItemInMainHand(mainHand);
-            if (offHand != null) le.getEquipment().setItemInOffHand(offHand);
+            if (mainHand != null) BukkitCompat.setItemInMainHand(le.getEquipment(), mainHand);
+            if (offHand != null) BukkitCompat.setItemInOffHand(le.getEquipment(), offHand);
             applySkullPreview(le);
         }
     }
