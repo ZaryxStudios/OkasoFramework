@@ -22,16 +22,24 @@ final class PacketCompatibilityResolver {
     private static final ConcurrentMap<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
 
     static {
-        String versionString = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        String[] packageParts = Bukkit.getServer().getClass().getPackage().getName().split("\\.");
+        // Paper 1.20.5+ no longer puts the version in the CraftBukkit package (org.bukkit.craftbukkit)
+        String versionString = packageParts.length > 3 ? packageParts[3] : "";
         VERSION = versionString;
-        
+
         int major = 1;
         int minor = 7;
         try {
-            String[] parts = versionString.split("_");
-            if (parts.length >= 2) {
-                major = Integer.parseInt(parts[0].replace("v", ""));
-                minor = Integer.parseInt(parts[1].split("R")[0]);
+            if (versionString.isEmpty()) {
+                String[] parts = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
+                major = Integer.parseInt(parts[0]);
+                minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            } else {
+                String[] parts = versionString.split("_");
+                if (parts.length >= 2) {
+                    major = Integer.parseInt(parts[0].replace("v", ""));
+                    minor = Integer.parseInt(parts[1].split("R")[0]);
+                }
             }
         } catch (Exception ignored) {
         }
@@ -41,8 +49,8 @@ final class PacketCompatibilityResolver {
         IS_LEGACY = major == 1 && minor <= 12;
         IS_MODERN = major > 1 || (major == 1 && minor >= 13);
         
-        NMS_PACKAGE = "net.minecraft.server." + versionString;
-        CRAFTBUKKIT_PACKAGE = "org.bukkit.craftbukkit." + versionString;
+        NMS_PACKAGE = versionString.isEmpty() ? "net.minecraft.server" : "net.minecraft.server." + versionString;
+        CRAFTBUKKIT_PACKAGE = versionString.isEmpty() ? "org.bukkit.craftbukkit" : "org.bukkit.craftbukkit." + versionString;
     }
 
     private PacketCompatibilityResolver() {}

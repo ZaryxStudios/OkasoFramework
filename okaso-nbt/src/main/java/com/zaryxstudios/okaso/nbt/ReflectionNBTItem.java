@@ -13,7 +13,6 @@ public class ReflectionNBTItem implements NBTItem {
 
     private static final Logger LOGGER = Logger.getLogger(ReflectionNBTItem.class.getName());
 
-    private static final String CRAFT_BUKKIT = "org.bukkit.craftbukkit.";
     private static final String CRAFT_ITEM_STACK = "inventory.CraftItemStack";
 
     private final ItemStack bukkitStack;
@@ -102,9 +101,9 @@ public class ReflectionNBTItem implements NBTItem {
 
     private static Class<?> getCraftClass(String name) {
         try {
-            String version = org.bukkit.Bukkit.getServer().getClass().getPackage().getName()
-                .replace("org.bukkit.craftbukkit.", "");
-            return Class.forName(CRAFT_BUKKIT + version + "." + name);
+            // Paper 1.20.5+ no longer puts the version in the CraftBukkit package
+            String pkg = org.bukkit.Bukkit.getServer().getClass().getPackage().getName();
+            return Class.forName(pkg + "." + name);
         } catch (Exception e) {
             return null;
         }
