@@ -15,7 +15,8 @@ jobs:
     name: Build and resolve Paper versions
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
+      paper: ${{ steps.matrix.outputs.paper }}
+      proxy: ${{ steps.matrix.outputs.proxy }}
 
     steps:
       - name: Checkout repository
@@ -32,9 +33,11 @@ jobs:
       - name: Build with Maven
         run: mvn install -DskipTests --batch-mode
 
-      - name: Resolve Paper versions
+      - name: Resolve server versions
         id: matrix
-        run: echo "matrix=$(python3 scripts/compat/paper-matrix.py)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "paper=$(python3 scripts/compat/matrix.py)" >> "$GITHUB_OUTPUT"
+          echo "proxy=$(python3 scripts/compat/matrix.py --proxies)" >> "$GITHUB_OUTPUT"
 
       - name: Upload jars
         uses: actions/upload-artifact@v4
@@ -42,6 +45,9 @@ jobs:
           name: compat-jars
           path: |
             okaso-bukkit/target/okaso-bukkit-*.jar
+            okaso-bungeecord/target/okaso-bungeecord-*.jar
+            okaso-waterfall/target/okaso-waterfall-*.jar
+            okaso-velocity/target/okaso-velocity-*.jar
             okaso-smoke/target/okaso-smoke-*.jar
           if-no-files-found: error
 
@@ -52,7 +58,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.build.outputs.paper) }}
 
     steps:
       - name: Checkout repository
@@ -91,4 +97,46 @@ jobs:
             target/compat/paper-${{ matrix.mc }}/server.log
             target/compat/paper-${{ matrix.mc }}/logs/
             target/compat/paper-${{ matrix.mc }}/plugins/OkasoSmoke/result.json
+          if-no-files-found: ignore
+
+  proxy-smoke:
+    name: ${{ matrix.platform }} ${{ matrix.version || 'latest' }} (Java ${{ matrix.java }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build.outputs.proxy) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download jars
+        uses: actions/download-artifact@v4
+        with:
+          name: compat-jars
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+
+      - name: Cache proxy jar
+        uses: actions/cache@v4
+        with:
+          path: .compat-cache
+          key: ${{ matrix.platform }}-${{ matrix.version }}-${{ github.run_id }}
+          restore-keys: ${{ matrix.platform }}-${{ matrix.version }}-
+
+      - name: Run smoke test
+        run: bash scripts/compat/run-proxy.sh "${{ matrix.platform }}" "${{ matrix.version }}"
+
+      - name: Upload proxy log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.version || 'latest' }}-log
+          path: target/compat/*/server.log
           if-no-files-found: ignore
