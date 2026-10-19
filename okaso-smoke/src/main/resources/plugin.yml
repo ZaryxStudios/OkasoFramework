@@ -1,0 +1,6 @@
+name: OkasoSmoke
+version: ${project.version}
+api-version: "1.13"
+main: com.zaryxstudios.okaso.smoke.OkasoSmokePlugin
+depend: [Okaso]
+description: Exercises Okaso on a real server, writes plugins/OkasoSmoke/result.json and shuts the server down. CI only.

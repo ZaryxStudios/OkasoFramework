@@ -35,3 +35,6 @@ Thumbs.db
 *~
 
 # Misc
+
+# Paper server jars downloaded by scripts/compat/run-paper.sh
+.compat-cache/

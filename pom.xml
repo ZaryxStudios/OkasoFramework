@@ -359,6 +359,7 @@
         <module>okaso-redis</module>
         <module>okaso-module</module>
         <module>okaso-test</module>
+        <module>okaso-smoke</module>
     </modules>
 
     <build>

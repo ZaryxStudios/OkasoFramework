@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.zaryxstudios.okaso</groupId>
+        <artifactId>okaso</artifactId>
+        <version>1.8.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>okaso-smoke</artifactId>
+    <packaging>jar</packaging>
+    <name>Okaso Smoke Test</name>
+    <description>Bukkit plugin that exercises Okaso on a real server and then shuts it down. Used by CI only; not released.</description>
+    <dependencies>
+        <dependency>
+            <groupId>com.zaryxstudios.okaso</groupId>
+            <artifactId>okaso-bukkit</artifactId>
+            <version>${okaso.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
