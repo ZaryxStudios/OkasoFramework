@@ -49,6 +49,12 @@
         <jedis.version>4.4.3</jedis.version>
         <lombok.version>1.18.30</lombok.version>
         <junit.version>4.13.2</junit.version>
+        <animal.sniffer.version>1.23</animal.sniffer.version>
+        <!-- Oldest Bukkit API Okaso supports; bytecode is checked against it -->
+        <okaso.compat.spigot.version>1.8.8-R0.1-SNAPSHOT</okaso.compat.spigot.version>
+        <okaso.compat.failOnError>false</okaso.compat.failOnError>
+        <okaso.compat.javaHome>${java.home}</okaso.compat.javaHome>
+        <okaso.compat.skip>false</okaso.compat.skip>
     </properties>
 
     <dependencies>
@@ -299,6 +305,10 @@
             <id>md5-repo</id>
             <url>https://repo.md-5.io/content/repositories/releases/</url>
         </repository>
+        <repository>
+            <id>spigotmc-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
@@ -315,6 +325,7 @@
     </distributionManagement>
 
     <modules>
+        <module>okaso-signature</module>
         <module>okaso-common</module>
         <module>okaso-command</module>
         <module>okaso-config</module>
@@ -370,6 +381,38 @@
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.4.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>animal-sniffer-maven-plugin</artifactId>
+                    <version>${animal.sniffer.version}</version>
+                    <executions>
+                        <execution>
+                            <id>check-oldest-bukkit-api</id>
+                            <phase>process-classes</phase>
+                            <goals><goal>check</goal></goals>
+                            <configuration>
+                                <signature>
+                                    <groupId>com.zaryxstudios.okaso</groupId>
+                                    <artifactId>okaso-signature</artifactId>
+                                    <version>${okaso.version}</version>
+                                </signature>
+                                <excludeDependencies>
+                                    <exclude>org.spigotmc:spigot-api</exclude>
+                                </excludeDependencies>
+                                <annotations>
+                                    <annotation>com.zaryxstudios.okaso.common.compat.CompatGuarded</annotation>
+                                </annotations>
+                                <failOnError>${okaso.compat.failOnError}</failOnError>
+                                <skip>${okaso.compat.skip}</skip>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
