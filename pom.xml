@@ -52,7 +52,7 @@
         <animal.sniffer.version>1.23</animal.sniffer.version>
         <!-- Oldest Bukkit API Okaso supports; bytecode is checked against it -->
         <okaso.compat.spigot.version>1.8.8-R0.1-SNAPSHOT</okaso.compat.spigot.version>
-        <okaso.compat.failOnError>false</okaso.compat.failOnError>
+        <okaso.compat.failOnError>true</okaso.compat.failOnError>
         <okaso.compat.javaHome>${java.home}</okaso.compat.javaHome>
         <okaso.compat.skip>false</okaso.compat.skip>
     </properties>
