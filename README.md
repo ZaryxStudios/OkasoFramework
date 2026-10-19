@@ -22,10 +22,10 @@ mvn install -DskipTests -Dokaso.compat.javaHome=/path/to/java8
 
 The build produces shaded JARs in each adapter's `target/` directory:
 
-- `okaso-bukkit/target/okaso-bukkit-1.8.1.jar` — for Bukkit/Spigot/Paper servers
-- `okaso-bungeecord/target/okaso-bungeecord-1.8.1.jar` — for BungeeCord proxies
-- `okaso-velocity/target/okaso-velocity-1.8.1.jar` — for Velocity proxies
-- `okaso-waterfall/target/okaso-waterfall-1.8.1.jar` — for Waterfall proxies
+- `okaso-bukkit/target/okaso-bukkit-1.8.2.jar` — for Bukkit/Spigot/Paper servers
+- `okaso-bungeecord/target/okaso-bungeecord-1.8.2.jar` — for BungeeCord proxies
+- `okaso-velocity/target/okaso-velocity-1.8.2.jar` — for Velocity proxies
+- `okaso-waterfall/target/okaso-waterfall-1.8.2.jar` — for Waterfall proxies
 
 ## Compatibility
 
@@ -45,7 +45,7 @@ Copy the appropriate adapter JAR into your server or proxy's `plugins/` folder a
 <dependency>
     <groupId>com.zaryxstudios.okaso</groupId>
     <artifactId>okaso-bukkit</artifactId>
-    <version>1.8.1</version>
+    <version>1.8.2</version>
     <scope>provided</scope>
 </dependency>
 ```
