@@ -31,8 +31,34 @@ jobs:
 
       - name: Build with Maven
         run: |
+          set -o pipefail
           mvn install -DskipTests=${{ github.event.inputs.skip-tests || 'true' }} \
-            --batch-mode
+            --batch-mode | tee build.log
+
+      - name: Report Bukkit 1.8.8 API compatibility
+        if: always()
+        run: |
+          grep "Undefined reference" build.log | sed 's#^\[ERROR\] ##; s#^.*/okaso-#okaso-#' | sort -u > api-compat.txt || true
+          COUNT=$(wc -l < api-compat.txt)
+          {
+            echo "## Bukkit 1.8.8 API compatibility"
+            echo ""
+            echo "$COUNT reference(s) to API missing in Spigot 1.8.8."
+            if [ "$COUNT" -gt 0 ]; then
+              echo ""
+              echo '```'
+              cat api-compat.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload API compatibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-compat-report
+          path: api-compat.txt
+          if-no-files-found: ignore
 
       - name: Upload Okaso Bukkit JAR
         uses: actions/upload-artifact@v4
