@@ -1,0 +1,94 @@
+name: Compatibility
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+  schedule:
+    # Weekly, so new Paper releases are picked up without code changes
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and resolve Paper versions
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+
+      # Also runs the Spigot 1.8.8 API signature check
+      - name: Build with Maven
+        run: mvn install -DskipTests --batch-mode
+
+      - name: Resolve Paper versions
+        id: matrix
+        run: echo "matrix=$(python3 scripts/compat/paper-matrix.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: compat-jars
+          path: |
+            okaso-bukkit/target/okaso-bukkit-*.jar
+            okaso-smoke/target/okaso-smoke-*.jar
+          if-no-files-found: error
+
+  paper-smoke:
+    name: Paper ${{ matrix.mc }} (Java ${{ matrix.java }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download jars
+        uses: actions/download-artifact@v4
+        with:
+          name: compat-jars
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+
+      - name: Cache Paper server jar
+        uses: actions/cache@v4
+        with:
+          path: .compat-cache
+          key: paper-${{ matrix.mc }}-${{ github.run_id }}
+          restore-keys: paper-${{ matrix.mc }}-
+
+      # Accepts the Minecraft EULA for the throwaway test server
+      - name: Run smoke test
+        env:
+          ALLOW_FAIL: ${{ matrix.allow_fail }}
+        run: bash scripts/compat/run-paper.sh "${{ matrix.mc }}"
+
+      - name: Upload server log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-${{ matrix.mc }}-log
+          path: |
+            target/compat/paper-${{ matrix.mc }}/server.log
+            target/compat/paper-${{ matrix.mc }}/logs/
+            target/compat/paper-${{ matrix.mc }}/plugins/OkasoSmoke/result.json
+          if-no-files-found: ignore
