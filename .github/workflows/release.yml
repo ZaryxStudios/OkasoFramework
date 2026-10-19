@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - '*'
 
 jobs:
   release:
@@ -32,8 +33,12 @@ jobs:
       - name: Generate changelog
         run: |
           CURRENT_TAG="${GITHUB_REF_NAME}"
-          PREVIOUS_TAG=$(git tag --list 'v*' --sort=-version:refname \
-            | grep -x -A 999 "$CURRENT_TAG" | tail -n +2 | head -1)
+          CURRENT_VERSION="${GITHUB_REF_NAME#v}"
+          PREVIOUS_VERSION=$(git tag | sed 's/^v//' | grep -vx "$CURRENT_VERSION" | sort -Vr | head -1)
+          PREVIOUS_TAG=""
+          if [ -n "$PREVIOUS_VERSION" ]; then
+            PREVIOUS_TAG=$(git tag --list "v$PREVIOUS_VERSION" --list "$PREVIOUS_VERSION" | head -1)
+          fi
 
           if [ -z "$PREVIOUS_TAG" ]; then
             RANGE="HEAD"
