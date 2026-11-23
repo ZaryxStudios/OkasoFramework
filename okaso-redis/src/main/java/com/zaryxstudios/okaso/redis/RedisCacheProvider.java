@@ -79,8 +79,7 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
     @Override
     public int size() {
         try (Jedis jedis = pool.getResource()) {
-            Set<String> keys = jedis.keys(prefix + "*");
-            return keys.size();
+            return scanKeys(jedis).size();
         }
     }
 
