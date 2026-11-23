@@ -29,11 +29,10 @@ public class MultiMap<K, V> {
     }
 
     public void remove(K key, V value) {
-        Set<V> values = backing.get(key);
-        if (values != null) {
+        backing.computeIfPresent(key, (k, values) -> {
             values.remove(value);
-            if (values.isEmpty()) backing.remove(key);
-        }
+            return values.isEmpty() ? null : values;
+        });
     }
 
     public void removeAll(K key) {
