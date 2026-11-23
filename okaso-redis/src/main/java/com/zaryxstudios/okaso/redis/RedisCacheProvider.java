@@ -69,7 +69,7 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
     @Override
     public void clear() {
         try (Jedis jedis = pool.getResource()) {
-            Set<String> keys = jedis.keys(prefix + "*");
+            Set<String> keys = scanKeys(jedis);
             if (!keys.isEmpty()) {
                 jedis.del(keys.toArray(new String[0]));
             }
