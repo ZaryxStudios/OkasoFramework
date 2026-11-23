@@ -63,7 +63,14 @@ public class AnnotationEventRegistry {
     }
 
     public void unregisterAll() {
-        eventBus.shutdown();
+        List<Object> snapshot;
+        synchronized (listeners) {
+            snapshot = new ArrayList<>(listeners);
+            listeners.clear();
+        }
+        for (Object listener : snapshot) {
+            eventBus.unregister(listener);
+        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
