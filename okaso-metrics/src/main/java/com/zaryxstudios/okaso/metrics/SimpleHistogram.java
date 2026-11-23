@@ -42,7 +42,7 @@ public class SimpleHistogram implements Histogram {
     public long getCount() {
         lock.readLock().lock();
         try {
-            return values.size();
+            return totalCount;
         } finally {
             lock.readLock().unlock();
         }
