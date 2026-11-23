@@ -45,7 +45,10 @@ public class DefaultSecurityManager implements OkasoSecurityManager {
 
     @Override
     public boolean verifyPassword(String password, String hash) {
-        return hashPassword(password).equals(hash);
+        if (password == null || hash == null) return false;
+        byte[] expected = hashPassword(password).getBytes(StandardCharsets.UTF_8);
+        byte[] actual = hash.getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(expected, actual);
     }
 
     @Override
