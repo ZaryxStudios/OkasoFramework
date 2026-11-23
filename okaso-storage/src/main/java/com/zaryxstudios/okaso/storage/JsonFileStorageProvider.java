@@ -78,11 +78,7 @@ public class JsonFileStorageProvider implements StorageProvider {
         lock.writeLock().lock();
         try {
             data.put(key, value);
-            if (settings.isAutoSave()) {
-                dirty.set(true);
-            } else {
-                saveToFile();
-            }
+            markDirtyOrSave();
         } finally {
             lock.writeLock().unlock();
         }
