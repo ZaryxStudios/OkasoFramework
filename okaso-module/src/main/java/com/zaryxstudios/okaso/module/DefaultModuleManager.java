@@ -120,13 +120,21 @@ public class DefaultModuleManager implements ModuleManager {
             module.onEnable();
             LOG.info(LogMessages.get(LogMessages.MODULE_ENABLED, name));
             for (ModuleLifecycleListener l : listeners) {
-                try { l.onModuleEnabled(name); } catch (Exception ignored) {}
+                try {
+                    l.onModuleEnabled(name);
+                } catch (Exception listenerError) {
+                    LOG.log(Level.WARNING, "Lifecycle listener failed on enable of " + name, listenerError);
+                }
             }
             return true;
         } catch (Exception e) {
             LOG.severe(LogMessages.get(LogMessages.MODULE_ENABLE_FAILED, name, e.getMessage()));
             for (ModuleLifecycleListener l : listeners) {
-                try { l.onModuleEnableFailed(name, e); } catch (Exception ignored) {}
+                try {
+                    l.onModuleEnableFailed(name, e);
+                } catch (Exception listenerError) {
+                    LOG.log(Level.WARNING, "Lifecycle listener failed on enable failure of " + name, listenerError);
+                }
             }
             return false;
         }
