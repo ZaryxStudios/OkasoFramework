@@ -80,13 +80,7 @@ public class DefaultSecurityManager implements OkasoSecurityManager {
     @Override
     public boolean isRateLimited(String key) {
         long now = System.currentTimeMillis();
-        RateLimitEntry entry = rateLimits.get(key);
-
-        if (entry == null) {
-            entry = new RateLimitEntry(now, new AtomicLong(1));
-            rateLimits.put(key, entry);
-            return false;
-        }
+        RateLimitEntry entry = rateLimits.computeIfAbsent(key, k -> new RateLimitEntry(now, new AtomicLong(0)));
 
         synchronized (entry) {
             if (now - entry.timestamp > rateLimitWindowMs) {
