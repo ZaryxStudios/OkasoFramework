@@ -15,7 +15,8 @@ public class MultiMap<K, V> {
     }
 
     public Collection<V> get(K key) {
-        return backing.getOrDefault(key, new HashSet<>());
+        Set<V> values = backing.get(key);
+        return values == null ? new HashSet<>() : new HashSet<>(values);
     }
 
     public boolean containsKey(K key) {
