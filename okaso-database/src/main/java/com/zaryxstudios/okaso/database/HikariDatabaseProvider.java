@@ -342,7 +342,7 @@ public class HikariDatabaseProvider {
                         return dataSource.getHikariPoolMXBean().getThreadsAwaitingConnection();
                     }
                     @Override public boolean isAlive() {
-                        return isAlive();
+                        return HikariDatabaseProvider.this.isAlive();
                     }
                 }, name);
             }
