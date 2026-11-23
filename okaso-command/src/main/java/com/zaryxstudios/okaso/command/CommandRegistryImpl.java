@@ -235,7 +235,7 @@ public class CommandRegistryImpl {
 
     private void recordCooldown(OkasoCommandSender sender, CommandEntry entry) {
         if (entry.cooldown > 0 && sender.isPlayer()) {
-            cooldowns.computeIfAbsent(sender.getName(), k -> new HashMap<>()).put(entry.name, System.currentTimeMillis());
+            cooldowns.computeIfAbsent(sender.getName(), k -> new ConcurrentHashMap<>()).put(entry.name, System.currentTimeMillis());
         }
     }
 
