@@ -303,7 +303,9 @@ public class HikariDatabaseProvider {
                 Object result = method.invoke(poolMXBean);
                 return result instanceof Number ? ((Number) result).intValue() : 0;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Failed to read pool metric " + metric, e);
+        }
         return 0;
     }
 
