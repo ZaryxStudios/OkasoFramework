@@ -6,6 +6,7 @@ import com.zaryxstudios.okaso.common.message.LogMessages;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import lombok.Getter;
