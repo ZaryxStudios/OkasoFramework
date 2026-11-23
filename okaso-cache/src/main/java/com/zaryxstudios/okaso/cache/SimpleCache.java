@@ -64,11 +64,13 @@ public class SimpleCache<K, V> implements Cache<K, V> {
 
     @Override
     public V putIfAbsent(K key, V value) {
-        V old = cache.get(key);
-        if (old == null) {
-            cache.put(key, value);
+        synchronized (cache) {
+            V old = cache.get(key);
+            if (old == null) {
+                cache.put(key, value);
+            }
+            return old;
         }
-        return old;
     }
 
     @Override
