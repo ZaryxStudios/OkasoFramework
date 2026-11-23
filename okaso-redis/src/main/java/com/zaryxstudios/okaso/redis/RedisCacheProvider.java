@@ -86,7 +86,7 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
     @Override
     public Set<K> keys() {
         try (Jedis jedis = pool.getResource()) {
-            Set<String> rawKeys = jedis.keys(prefix + "*");
+            Set<String> rawKeys = scanKeys(jedis);
             Set<K> result = new HashSet<>();
             for (String raw : rawKeys) {
                 String stripped = raw.substring(prefix.length());
