@@ -3,7 +3,6 @@ package com.zaryxstudios.okaso.cache;
 import com.zaryxstudios.okaso.common.cache.Cache;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -65,15 +64,7 @@ public class ExpiringCache<K, V> implements Cache<K, V> {
 
     private void evictExpired() {
         long now = System.currentTimeMillis();
-        Set<K> expired = new HashSet<>();
-        for (Map.Entry<K, ExpiringEntry<V>> e : cache.entrySet()) {
-            if (now > e.getValue().expiry) {
-                expired.add(e.getKey());
-            }
-        }
-        for (K key : expired) {
-            cache.remove(key);
-        }
+        cache.values().removeIf(entry -> now > entry.expiry);
     }
 
     @Override
