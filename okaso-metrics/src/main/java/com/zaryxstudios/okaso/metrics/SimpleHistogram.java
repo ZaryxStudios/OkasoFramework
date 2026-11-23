@@ -15,6 +15,8 @@ public class SimpleHistogram implements Histogram {
     private final String name;
     private final List<Long> values;
     private final ReentrantReadWriteLock lock;
+    private static final int MAX_SAMPLES = 10_000;
+    private long totalCount;
 
     public SimpleHistogram(String name) {
         this.name = name;
@@ -26,7 +28,11 @@ public class SimpleHistogram implements Histogram {
     public void record(long value) {
         lock.writeLock().lock();
         try {
+            if (values.size() >= MAX_SAMPLES) {
+                values.remove(0);
+            }
             values.add(value);
+            totalCount++;
         } finally {
             lock.writeLock().unlock();
         }
