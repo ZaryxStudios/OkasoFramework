@@ -5,6 +5,8 @@ import com.zaryxstudios.okaso.common.cache.Cache;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -130,5 +132,17 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
 
     private String redisKey(K key) {
         return prefix + key;
+    }
+
+    private Set<String> scanKeys(Jedis jedis) {
+        Set<String> found = new HashSet<>();
+        ScanParams params = new ScanParams().match(prefix + "*").count(500);
+        String cursor = ScanParams.SCAN_POINTER_START;
+        do {
+            ScanResult<String> page = jedis.scan(cursor, params);
+            found.addAll(page.getResult());
+            cursor = page.getCursor();
+        } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+        return found;
     }
 }
