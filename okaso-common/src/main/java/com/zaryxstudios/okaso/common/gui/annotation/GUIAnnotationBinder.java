@@ -29,7 +29,8 @@ public final class GUIAnnotationBinder {
                 if (item != null) {
                     gui.setItem(ann.value(), item);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "GUISlot field " + field.getName() + " could not be bound", e);
             }
         }
         for (Method method : findAllMethods(clazz)) {
