@@ -41,7 +41,8 @@ public class NbtStructureWriter {
             out.writeByte(10);
             out.writeShort(0);
 
-            writeNamedTag(out, (byte) 11, "size");
+            writeNamedTag(out, (byte) 9, "size");
+            out.writeByte(3);
             out.writeInt(3);
             out.writeInt(structure.getWidth());
             out.writeInt(structure.getHeight());
@@ -51,8 +52,6 @@ public class NbtStructureWriter {
             out.writeByte(10); 
             out.writeInt(paletteOrder.size());
             for (String entry : paletteOrder) {
-                out.writeByte(10);
-                out.writeShort(0);
                 writeStringTag(out, "Name", entry);
                 out.writeByte(0);
             }
@@ -61,10 +60,8 @@ public class NbtStructureWriter {
             out.writeByte(10);
             out.writeInt(blockEntries.size());
             for (int[] entry : blockEntries) {
-                out.writeByte(10);
-                out.writeShort(0);
-
-                writeNamedTag(out, (byte) 11, "pos");
+                writeNamedTag(out, (byte) 9, "pos");
+                out.writeByte(3);
                 out.writeInt(3);
                 out.writeInt(entry[0]);
                 out.writeInt(entry[1]);
