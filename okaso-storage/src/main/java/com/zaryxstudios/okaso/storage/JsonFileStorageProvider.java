@@ -207,7 +207,7 @@ public class JsonFileStorageProvider implements StorageProvider {
     }
 
     private void markDirtyOrSave() {
-        if (settings.isAutoSave()) {
+        if (scheduler != null) {
             dirty.set(true);
         } else {
             saveToFile();
