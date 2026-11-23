@@ -114,7 +114,8 @@ public class OkasoWebhookClient implements WebhookClient {
         if (retryAfter != null) {
             try {
                 double seconds = Double.parseDouble(retryAfter);
-                return Math.max(1L, (long) (seconds * 1000L));
+                if (Double.isNaN(seconds)) return RATE_LIMIT_RESET_MS;
+                return Math.min(300_000L, Math.max(1L, (long) (seconds * 1000L)));
             } catch (NumberFormatException ignored) {
             }
         }
