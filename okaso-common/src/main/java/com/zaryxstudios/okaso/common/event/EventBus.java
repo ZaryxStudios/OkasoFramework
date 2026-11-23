@@ -70,8 +70,8 @@ public class EventBus {
     protected void onHandlerError(OkasoEvent event, Exception exception) {
         try {
             OkasoAPI api = OkasoAPI.getInstance();
-            api.getPlugin().getOkasoLogger().warning(
-                "[EventBus] Handler error for " + event.getClass().getSimpleName() + ": " + exception.getMessage());
+            api.getPlugin().getOkasoLogger().log(java.util.logging.Level.WARNING,
+                "[EventBus] Handler error for " + event.getClass().getSimpleName(), exception);
         } catch (Exception ignored) {
             System.err.println("[Okaso EventBus] Handler error for " + event.getClass().getSimpleName() + ": " + exception.getMessage());
         }
