@@ -78,12 +78,16 @@ public class ExpiringCache<K, V> implements Cache<K, V> {
 
     @Override
     public V putIfAbsent(K key, V value) {
-        ExpiringEntry<V> existing = cache.get(key);
-        if (existing == null || System.currentTimeMillis() > existing.expiry) {
-            cache.putIfAbsent(key, new ExpiringEntry<V>(value, System.currentTimeMillis() + ttlMillis));
-            return null;
-        }
-        return existing.value;
+        long now = System.currentTimeMillis();
+        ExpiringEntry<V>[] previous = new ExpiringEntry[1];
+        cache.compute(key, (k, existing) -> {
+            if (existing == null || now > existing.expiry) {
+                return new ExpiringEntry<V>(value, now + ttlMillis);
+            }
+            previous[0] = existing;
+            return existing;
+        });
+        return previous[0] == null ? null : previous[0].value;
     }
 
     @Override
