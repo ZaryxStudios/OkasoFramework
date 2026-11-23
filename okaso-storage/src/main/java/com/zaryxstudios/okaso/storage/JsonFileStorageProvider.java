@@ -244,6 +244,7 @@ public class JsonFileStorageProvider implements StorageProvider {
             move(temp, file);
             dirty.set(false);
         } catch (IOException e) {
+            dirty.set(true);
             LOGGER.log(Level.SEVERE, StorageMessages.get(StorageMessages.SAVE_FAILED,
                 file.getAbsolutePath(), String.valueOf(e.getMessage())));
         }
