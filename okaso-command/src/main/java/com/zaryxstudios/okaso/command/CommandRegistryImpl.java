@@ -229,8 +229,10 @@ public class CommandRegistryImpl {
     }
 
     private long remainingCooldown(OkasoCommandSender sender, CommandEntry entry) {
-        Long lastUse = cooldowns.get(sender.getName()).get(entry.name);
-        return (entry.cooldown * 50L - (System.currentTimeMillis() - lastUse)) / 50;
+        Map<String, Long> playerCooldowns = cooldowns.get(sender.getName());
+        Long lastUse = playerCooldowns == null ? null : playerCooldowns.get(entry.name);
+        if (lastUse == null) return 0;
+        return Math.max(0, (entry.cooldown * 50L - (System.currentTimeMillis() - lastUse)) / 50);
     }
 
     private void recordCooldown(OkasoCommandSender sender, CommandEntry entry) {
