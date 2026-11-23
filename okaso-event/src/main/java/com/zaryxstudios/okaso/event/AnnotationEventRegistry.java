@@ -59,6 +59,7 @@ public class AnnotationEventRegistry {
     }
 
     public void unregister(Object listener) {
+        listeners.remove(listener);
         eventBus.unregister(listener);
     }
 
