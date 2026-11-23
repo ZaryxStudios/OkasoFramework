@@ -125,7 +125,9 @@ public class OkasoBukkitPlugin extends JavaPlugin implements OkasoPlugin {
 
         reg.register(PlaceholderRegistry.class, new SimplePlaceholderRegistry());
 
-        reg.register(OkasoScoreboardManager.class, new OkasoBukkitScoreboardManager());
+        OkasoBukkitScoreboardManager scoreboardManager = new OkasoBukkitScoreboardManager();
+        getServer().getPluginManager().registerEvents(scoreboardManager, this);
+        reg.register(OkasoScoreboardManager.class, scoreboardManager);
 
         reg.register(TabListManager.class, new OkasoBukkitTabListManager());
 
