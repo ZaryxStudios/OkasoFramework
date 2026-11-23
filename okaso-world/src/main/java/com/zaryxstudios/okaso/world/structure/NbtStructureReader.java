@@ -30,6 +30,8 @@ public class NbtStructureReader {
             Map<String, Object> root = readCompound(in);
 
             return parseStructure(name, root);
+        } catch (StackOverflowError | ClassCastException e) {
+            throw new IOException("Malformed structure file: " + filePath, e);
         }
     }
 
