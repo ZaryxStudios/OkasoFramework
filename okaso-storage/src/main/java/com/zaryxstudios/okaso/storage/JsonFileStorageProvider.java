@@ -225,6 +225,12 @@ public class JsonFileStorageProvider implements StorageProvider {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, StorageMessages.get(StorageMessages.LOAD_FAILED,
                 file.getAbsolutePath(), String.valueOf(e.getMessage())));
+            try {
+                Files.copy(file.toPath(), new File(file.getAbsolutePath() + ".corrupt").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException backupFailure) {
+                LOGGER.log(Level.WARNING, "Could not back up unreadable storage file " + file.getAbsolutePath(), backupFailure);
+            }
         } finally {
             lock.writeLock().unlock();
         }
