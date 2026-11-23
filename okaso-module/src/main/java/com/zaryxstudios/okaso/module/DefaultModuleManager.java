@@ -145,7 +145,11 @@ public class DefaultModuleManager implements ModuleManager {
             module.onDisable();
             LOG.info(LogMessages.get(LogMessages.MODULE_DISABLED, name));
             for (ModuleLifecycleListener l : listeners) {
-                try { l.onModuleDisabled(name); } catch (Exception ignored) {}
+                try {
+                    l.onModuleDisabled(name);
+                } catch (Exception listenerError) {
+                    LOG.log(Level.WARNING, "Lifecycle listener failed on disable of " + name, listenerError);
+                }
             }
         } catch (Exception e) {
             LOG.warning(LogMessages.get(LogMessages.MODULE_DISABLE_FAILED, name, e.getMessage()));
