@@ -213,17 +213,21 @@ public class HikariDatabaseProvider {
             T result = function.apply(conn);
             conn.commit();
             return result;
-        } catch (SQLException e) {
+        } catch (SQLException | RuntimeException e) {
             if (conn != null) {
                 try {
                     conn.rollback();
                 } catch (SQLException ignored) {}
             }
+            if (e instanceof RuntimeException) throw (RuntimeException) e;
             throw new RuntimeException("Transaction failed", e);
         } finally {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
+                } catch (SQLException ignored) {}
+                try {
+                    conn.close();
                 } catch (SQLException ignored) {}
             }
         }
