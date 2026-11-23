@@ -360,7 +360,9 @@ public class HikariDatabaseProvider {
             if (mbs.isRegistered(name)) {
                 mbs.unregisterMBean(name);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Failed to unregister MBean", e);
+        }
     }
 
     public interface HikariDatabaseProviderMXBean {
