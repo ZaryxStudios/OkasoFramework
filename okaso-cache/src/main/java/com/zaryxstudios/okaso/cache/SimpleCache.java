@@ -19,12 +19,12 @@ public class SimpleCache<K, V> implements Cache<K, V> {
 
     public SimpleCache(int maxSize) {
         this.maxSize = maxSize;
-        this.cache = new LinkedHashMap<K, V>(16, 0.75f, true) {
+        this.cache = Collections.synchronizedMap(new LinkedHashMap<K, V>(16, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
                 return maxSize > 0 && size() > maxSize;
             }
-        };
+        });
     }
 
     @Override
