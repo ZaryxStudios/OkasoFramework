@@ -41,6 +41,9 @@ public final class SkinResolver {
             throw new IOException("Unknown Minecraft player: " + playerName);
         }
         String rawId = idNode.get("id").asText();
+        if (!rawId.matches("[0-9a-fA-F]{32}")) {
+            throw new IOException("Invalid profile id for player: " + playerName);
+        }
         JsonNode profile = get(SESSION_PROFILE_URL + rawId + "?unsigned=false");
         if (profile == null || !profile.has("properties")) {
             throw new IOException("No profile data for player: " + playerName);
