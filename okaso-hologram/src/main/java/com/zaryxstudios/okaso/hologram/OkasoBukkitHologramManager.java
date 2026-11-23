@@ -198,7 +198,7 @@ public class OkasoBukkitHologramManager implements HologramManager {
         double radiusSq = radius * radius;
         for (OkasoBukkitHologram h : holograms.values()) {
             Location hLoc = h.getLocation();
-            if (hLoc != null && hLoc.getWorld().equals(location.getWorld())) {
+            if (hLoc != null && hLoc.getWorld() != null && hLoc.getWorld().equals(location.getWorld())) {
                 if (hLoc.distanceSquared(location) <= radiusSq) {
                     result.add(h);
                 }
