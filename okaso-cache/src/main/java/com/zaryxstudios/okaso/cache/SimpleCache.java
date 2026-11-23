@@ -4,6 +4,7 @@ import com.zaryxstudios.okaso.common.cache.Cache;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -59,7 +60,9 @@ public class SimpleCache<K, V> implements Cache<K, V> {
 
     @Override
     public Set<K> keys() {
-        return Collections.unmodifiableSet(cache.keySet());
+        synchronized (cache) {
+            return Collections.unmodifiableSet(new LinkedHashSet<>(cache.keySet()));
+        }
     }
 
     @Override
