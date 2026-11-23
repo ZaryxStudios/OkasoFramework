@@ -303,7 +303,7 @@ public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
         String expr = placeholder.substring(5);
         try {
             return String.valueOf(evaluateMathExpression(expr));
-        } catch (Exception e) {
+        } catch (Exception | StackOverflowError e) {
             return "Error";
         }
     }
