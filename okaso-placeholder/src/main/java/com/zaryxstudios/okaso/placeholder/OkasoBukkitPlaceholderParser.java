@@ -303,7 +303,7 @@ public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
         String expr = placeholder.substring(5);
         try {
             return String.valueOf(evaluateMathExpression(expr));
-        } catch (Exception e) {
+        } catch (Exception | StackOverflowError e) {
             return "Error";
         }
     }
@@ -454,7 +454,7 @@ public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
                     formatted = value.get().toLowerCase();
                 } else if (lowerFormat.equals("capitalize")) {
                     String v = value.get();
-                    formatted = v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase();
+                    formatted = v.isEmpty() ? v : v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase();
                 } else if (lowerFormat.equals("title")) {
                     String[] words = value.get().split("\\s+");
                     StringBuilder sb = new StringBuilder();
@@ -471,7 +471,7 @@ public class OkasoBukkitPlaceholderParser implements PlaceholderParser {
                 }
                 matcher.appendReplacement(result, Matcher.quoteReplacement(formatted));
             } else {
-                matcher.appendReplacement(result, matcher.group(0));
+                matcher.appendReplacement(result, Matcher.quoteReplacement(matcher.group(0)));
             }
         }
         matcher.appendTail(result);

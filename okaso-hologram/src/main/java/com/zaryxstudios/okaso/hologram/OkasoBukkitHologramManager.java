@@ -198,7 +198,7 @@ public class OkasoBukkitHologramManager implements HologramManager {
         double radiusSq = radius * radius;
         for (OkasoBukkitHologram h : holograms.values()) {
             Location hLoc = h.getLocation();
-            if (hLoc != null && hLoc.getWorld().equals(location.getWorld())) {
+            if (hLoc != null && hLoc.getWorld() != null && hLoc.getWorld().equals(location.getWorld())) {
                 if (hLoc.distanceSquared(location) <= radiusSq) {
                     result.add(h);
                 }
@@ -282,10 +282,12 @@ public class OkasoBukkitHologramManager implements HologramManager {
         if (holograms.containsKey(newId)) return false;
         OkasoBukkitHologram h = holograms.remove(oldId);
         if (h == null) return false;
+        boolean wasRunning = h.isRunning();
+        h.stop();
         OkasoBukkitHologram newHologram = new OkasoBukkitHologram(
             newId, h.getLocation(), new ArrayList<>(h.getLines()), h.getRenderer()
         );
-        if (h.isRunning()) {
+        if (wasRunning) {
             newHologram.start();
         }
         holograms.put(newId, newHologram);

@@ -67,7 +67,22 @@ public class OkasoBukkitPermissionManager implements PermissionManager {
     @Override
     public void removePermission(Object player, String permission) {
         if (player instanceof org.bukkit.entity.Player) {
-            ((org.bukkit.entity.Player) player).addAttachment(plugin, permission, false);
+            org.bukkit.entity.Player target = (org.bukkit.entity.Player) player;
+            boolean negated = false;
+            for (org.bukkit.permissions.PermissionAttachmentInfo info : target.getEffectivePermissions()) {
+                org.bukkit.permissions.PermissionAttachment attachment = info.getAttachment();
+                if (attachment == null || !plugin.equals(attachment.getPlugin())) continue;
+                Boolean value = attachment.getPermissions().get(permission);
+                if (value == null) continue;
+                if (value) {
+                    attachment.unsetPermission(permission);
+                } else {
+                    negated = true;
+                }
+            }
+            if (!negated && target.hasPermission(permission)) {
+                target.addAttachment(plugin, permission, false);
+            }
         }
     }
 }

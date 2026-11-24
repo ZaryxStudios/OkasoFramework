@@ -7,8 +7,12 @@ import com.zaryxstudios.okaso.common.gui.GUIItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class GUIAnnotationBinder {
+
+    private static final Logger LOGGER = Logger.getLogger(GUIAnnotationBinder.class.getName());
 
     private GUIAnnotationBinder() {
     }
@@ -25,7 +29,8 @@ public final class GUIAnnotationBinder {
                 if (item != null) {
                     gui.setItem(ann.value(), item);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "GUISlot field " + field.getName() + " could not be bound", e);
             }
         }
         for (Method method : findAllMethods(clazz)) {
@@ -55,7 +60,8 @@ public final class GUIAnnotationBinder {
                 if (!event.isCancelled()) {
                     try {
                         method.invoke(controller, event);
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "GUIClick handler " + method.getName() + " failed", e);
                     }
                 }
             }

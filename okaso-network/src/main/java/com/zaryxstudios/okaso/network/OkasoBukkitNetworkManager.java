@@ -7,8 +7,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class OkasoBukkitNetworkManager implements NetworkManager, PluginMessageListener {
 
@@ -20,8 +20,8 @@ public class OkasoBukkitNetworkManager implements NetworkManager, PluginMessageL
     public OkasoBukkitNetworkManager(Plugin plugin) {
         this.plugin = plugin;
         this.messenger = plugin.getServer().getMessenger();
-        this.incomingChannels = new HashSet<>();
-        this.outgoingChannels = new HashSet<>();
+        this.incomingChannels = ConcurrentHashMap.newKeySet();
+        this.outgoingChannels = ConcurrentHashMap.newKeySet();
     }
 
     @Override

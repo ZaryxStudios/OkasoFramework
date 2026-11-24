@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.Getter;
 
@@ -38,7 +39,7 @@ public class CommandRegistryImpl {
 
     public CommandRegistryImpl() {
         this.commands = new LinkedHashMap<>();
-        this.cooldowns = new HashMap<>();
+        this.cooldowns = new ConcurrentHashMap<>();
     }
     public void setMessageProvider(MessageProvider messageProvider) {
         this.messageProvider = messageProvider;
@@ -228,13 +229,15 @@ public class CommandRegistryImpl {
     }
 
     private long remainingCooldown(OkasoCommandSender sender, CommandEntry entry) {
-        Long lastUse = cooldowns.get(sender.getName()).get(entry.name);
-        return (entry.cooldown * 50L - (System.currentTimeMillis() - lastUse)) / 50;
+        Map<String, Long> playerCooldowns = cooldowns.get(sender.getName());
+        Long lastUse = playerCooldowns == null ? null : playerCooldowns.get(entry.name);
+        if (lastUse == null) return 0;
+        return Math.max(0, (entry.cooldown * 50L - (System.currentTimeMillis() - lastUse)) / 50);
     }
 
     private void recordCooldown(OkasoCommandSender sender, CommandEntry entry) {
         if (entry.cooldown > 0 && sender.isPlayer()) {
-            cooldowns.computeIfAbsent(sender.getName(), k -> new HashMap<>()).put(entry.name, System.currentTimeMillis());
+            cooldowns.computeIfAbsent(sender.getName(), k -> new ConcurrentHashMap<>()).put(entry.name, System.currentTimeMillis());
         }
     }
 

@@ -6,7 +6,10 @@ import com.zaryxstudios.okaso.common.config.OkasoConfigurationSection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +35,7 @@ public class DefaultConfigurationProvider implements OkasoConfigurationProvider 
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setIndent(2);
         options.setPrettyFlow(true);
-        this.yaml = new Yaml(options);
+        this.yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(options), options);
         this.mapper = new ObjectMapper();
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }

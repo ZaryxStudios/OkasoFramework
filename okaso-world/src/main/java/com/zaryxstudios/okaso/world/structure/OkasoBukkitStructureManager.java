@@ -389,7 +389,7 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
                     int by = Integer.parseInt(parts[1]);
                     int bz = Integer.parseInt(parts[2]);
                     String materialName = parts[3];
-                    byte bdata = Byte.parseByte(parts[4]);
+                    byte bdata = (byte) Integer.parseInt(parts[4]);
 
                     try {
                         Material mat = Material.valueOf(materialName);
@@ -403,7 +403,7 @@ public class OkasoBukkitStructureManager implements OkasoStructureManager {
 
             logger.fine(LogMessages.get(LogMessages.STRUCTURE_LOADED, structName, blockCount));
             return structure;
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             logger.log(Level.SEVERE, LogMessages.get(LogMessages.STRUCTURE_LOAD_FAILED, name), e);
             return null;
         }

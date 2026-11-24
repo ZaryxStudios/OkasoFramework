@@ -6,6 +6,9 @@ import com.zaryxstudios.okaso.common.scoreboard.OkasoScoreboardObjective;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
@@ -22,7 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager {
+public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager, Listener {
 
     private static final Method GET_NEW_SCOREBOARD;
 
@@ -50,6 +53,11 @@ public class OkasoBukkitScoreboardManager implements OkasoScoreboardManager {
 
     public OkasoBukkitScoreboardManager() {
         this.objectives = new ConcurrentHashMap<>();
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        objectives.remove(event.getPlayer().getUniqueId());
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.zaryxstudios.okaso.common.message.LogMessages;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import lombok.Getter;
@@ -120,13 +121,21 @@ public class DefaultModuleManager implements ModuleManager {
             module.onEnable();
             LOG.info(LogMessages.get(LogMessages.MODULE_ENABLED, name));
             for (ModuleLifecycleListener l : listeners) {
-                try { l.onModuleEnabled(name); } catch (Exception ignored) {}
+                try {
+                    l.onModuleEnabled(name);
+                } catch (Exception listenerError) {
+                    LOG.log(Level.WARNING, "Lifecycle listener failed on enable of " + name, listenerError);
+                }
             }
             return true;
         } catch (Exception e) {
             LOG.severe(LogMessages.get(LogMessages.MODULE_ENABLE_FAILED, name, e.getMessage()));
             for (ModuleLifecycleListener l : listeners) {
-                try { l.onModuleEnableFailed(name, e); } catch (Exception ignored) {}
+                try {
+                    l.onModuleEnableFailed(name, e);
+                } catch (Exception listenerError) {
+                    LOG.log(Level.WARNING, "Lifecycle listener failed on enable failure of " + name, listenerError);
+                }
             }
             return false;
         }
@@ -137,7 +146,11 @@ public class DefaultModuleManager implements ModuleManager {
             module.onDisable();
             LOG.info(LogMessages.get(LogMessages.MODULE_DISABLED, name));
             for (ModuleLifecycleListener l : listeners) {
-                try { l.onModuleDisabled(name); } catch (Exception ignored) {}
+                try {
+                    l.onModuleDisabled(name);
+                } catch (Exception listenerError) {
+                    LOG.log(Level.WARNING, "Lifecycle listener failed on disable of " + name, listenerError);
+                }
             }
         } catch (Exception e) {
             LOG.warning(LogMessages.get(LogMessages.MODULE_DISABLE_FAILED, name, e.getMessage()));

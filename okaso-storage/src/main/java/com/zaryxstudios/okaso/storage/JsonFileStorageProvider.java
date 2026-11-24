@@ -78,11 +78,7 @@ public class JsonFileStorageProvider implements StorageProvider {
         lock.writeLock().lock();
         try {
             data.put(key, value);
-            if (settings.isAutoSave()) {
-                dirty.set(true);
-            } else {
-                saveToFile();
-            }
+            markDirtyOrSave();
         } finally {
             lock.writeLock().unlock();
         }
@@ -211,7 +207,7 @@ public class JsonFileStorageProvider implements StorageProvider {
     }
 
     private void markDirtyOrSave() {
-        if (settings.isAutoSave()) {
+        if (scheduler != null) {
             dirty.set(true);
         } else {
             saveToFile();
@@ -229,6 +225,12 @@ public class JsonFileStorageProvider implements StorageProvider {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, StorageMessages.get(StorageMessages.LOAD_FAILED,
                 file.getAbsolutePath(), String.valueOf(e.getMessage())));
+            try {
+                Files.copy(file.toPath(), new File(file.getAbsolutePath() + ".corrupt").toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException backupFailure) {
+                LOGGER.log(Level.WARNING, "Could not back up unreadable storage file " + file.getAbsolutePath(), backupFailure);
+            }
         } finally {
             lock.writeLock().unlock();
         }
@@ -248,6 +250,7 @@ public class JsonFileStorageProvider implements StorageProvider {
             move(temp, file);
             dirty.set(false);
         } catch (IOException e) {
+            dirty.set(true);
             LOGGER.log(Level.SEVERE, StorageMessages.get(StorageMessages.SAVE_FAILED,
                 file.getAbsolutePath(), String.valueOf(e.getMessage())));
         }

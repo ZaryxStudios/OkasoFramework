@@ -185,17 +185,21 @@ public class HikariDatabaseProvider {
             conn.setAutoCommit(false);
             consumer.accept(conn);
             conn.commit();
-        } catch (SQLException e) {
+        } catch (SQLException | RuntimeException e) {
             if (conn != null) {
                 try {
                     conn.rollback();
                 } catch (SQLException ignored) {}
             }
+            if (e instanceof RuntimeException) throw (RuntimeException) e;
             throw new RuntimeException("Transaction failed", e);
         } finally {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
+                } catch (SQLException ignored) {}
+                try {
+                    conn.close();
                 } catch (SQLException ignored) {}
             }
         }
@@ -209,17 +213,21 @@ public class HikariDatabaseProvider {
             T result = function.apply(conn);
             conn.commit();
             return result;
-        } catch (SQLException e) {
+        } catch (SQLException | RuntimeException e) {
             if (conn != null) {
                 try {
                     conn.rollback();
                 } catch (SQLException ignored) {}
             }
+            if (e instanceof RuntimeException) throw (RuntimeException) e;
             throw new RuntimeException("Transaction failed", e);
         } finally {
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
+                } catch (SQLException ignored) {}
+                try {
+                    conn.close();
                 } catch (SQLException ignored) {}
             }
         }
@@ -303,7 +311,9 @@ public class HikariDatabaseProvider {
                 Object result = method.invoke(poolMXBean);
                 return result instanceof Number ? ((Number) result).intValue() : 0;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Failed to read pool metric " + metric, e);
+        }
         return 0;
     }
 
@@ -342,7 +352,7 @@ public class HikariDatabaseProvider {
                         return dataSource.getHikariPoolMXBean().getThreadsAwaitingConnection();
                     }
                     @Override public boolean isAlive() {
-                        return isAlive();
+                        return HikariDatabaseProvider.this.isAlive();
                     }
                 }, name);
             }
@@ -358,7 +368,9 @@ public class HikariDatabaseProvider {
             if (mbs.isRegistered(name)) {
                 mbs.unregisterMBean(name);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Failed to unregister MBean", e);
+        }
     }
 
     public interface HikariDatabaseProviderMXBean {

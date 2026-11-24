@@ -5,6 +5,8 @@ import com.zaryxstudios.okaso.common.cache.Cache;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -67,7 +69,7 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
     @Override
     public void clear() {
         try (Jedis jedis = pool.getResource()) {
-            Set<String> keys = jedis.keys(prefix + "*");
+            Set<String> keys = scanKeys(jedis);
             if (!keys.isEmpty()) {
                 jedis.del(keys.toArray(new String[0]));
             }
@@ -77,15 +79,14 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
     @Override
     public int size() {
         try (Jedis jedis = pool.getResource()) {
-            Set<String> keys = jedis.keys(prefix + "*");
-            return keys.size();
+            return scanKeys(jedis).size();
         }
     }
 
     @Override
     public Set<K> keys() {
         try (Jedis jedis = pool.getResource()) {
-            Set<String> rawKeys = jedis.keys(prefix + "*");
+            Set<String> rawKeys = scanKeys(jedis);
             Set<K> result = new HashSet<>();
             for (String raw : rawKeys) {
                 String stripped = raw.substring(prefix.length());
@@ -130,5 +131,17 @@ public class RedisCacheProvider<K, V> implements Cache<K, V> {
 
     private String redisKey(K key) {
         return prefix + key;
+    }
+
+    private Set<String> scanKeys(Jedis jedis) {
+        Set<String> found = new HashSet<>();
+        ScanParams params = new ScanParams().match(prefix + "*").count(500);
+        String cursor = ScanParams.SCAN_POINTER_START;
+        do {
+            ScanResult<String> page = jedis.scan(cursor, params);
+            found.addAll(page.getResult());
+            cursor = page.getCursor();
+        } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+        return found;
     }
 }

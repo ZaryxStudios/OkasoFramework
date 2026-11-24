@@ -7,7 +7,10 @@ import com.zaryxstudios.okaso.common.event.OkasoEventPriority;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.function.Consumer;
@@ -17,12 +20,15 @@ public class AnnotationEventRegistry {
     private static final Logger LOGGER = Logger.getLogger(AnnotationEventRegistry.class.getName());
 
     private final EventBus eventBus;
+    private final Set<Object> listeners = Collections.synchronizedSet(
+        Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>()));
 
     public AnnotationEventRegistry(EventBus eventBus) {
         this.eventBus = eventBus;
     }
 
     public void register(Object listener) {
+        listeners.add(listener);
         for (Method method : findAllMethods(listener.getClass())) {
             OkasoEventHandler ann = method.getAnnotation(OkasoEventHandler.class);
             if (ann == null) continue;
@@ -53,11 +59,19 @@ public class AnnotationEventRegistry {
     }
 
     public void unregister(Object listener) {
+        listeners.remove(listener);
         eventBus.unregister(listener);
     }
 
     public void unregisterAll() {
-        eventBus.shutdown();
+        List<Object> snapshot;
+        synchronized (listeners) {
+            snapshot = new ArrayList<>(listeners);
+            listeners.clear();
+        }
+        for (Object listener : snapshot) {
+            eventBus.unregister(listener);
+        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

@@ -1,21 +1,22 @@
 package com.zaryxstudios.okaso.common.collection;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MultiMap<K, V> {
 
-    private final Map<K, Set<V>> backing = new HashMap<>();
+    private final Map<K, Set<V>> backing = new ConcurrentHashMap<>();
 
     public void put(K key, V value) {
-        backing.computeIfAbsent(key, k -> new HashSet<>()).add(value);
+        backing.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(value);
     }
 
     public Collection<V> get(K key) {
-        return backing.getOrDefault(key, new HashSet<>());
+        Set<V> values = backing.get(key);
+        return values == null ? new HashSet<>() : new HashSet<>(values);
     }
 
     public boolean containsKey(K key) {
@@ -28,11 +29,10 @@ public class MultiMap<K, V> {
     }
 
     public void remove(K key, V value) {
-        Set<V> values = backing.get(key);
-        if (values != null) {
+        backing.computeIfPresent(key, (k, values) -> {
             values.remove(value);
-            if (values.isEmpty()) backing.remove(key);
-        }
+            return values.isEmpty() ? null : values;
+        });
     }
 
     public void removeAll(K key) {

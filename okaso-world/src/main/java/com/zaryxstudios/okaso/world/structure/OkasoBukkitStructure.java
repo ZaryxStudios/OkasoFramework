@@ -30,6 +30,9 @@ public class OkasoBukkitStructure implements OkasoStructure {
         if (width <= 0 || height <= 0 || length <= 0) {
             throw new IllegalArgumentException("Structure dimensions must be positive");
         }
+        if ((long) width * height * length > 16_777_216L) {
+            throw new IllegalArgumentException("Structure is too large");
+        }
         this.name = name;
         this.width = width;
         this.height = height;
